@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Video Generation API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-container {
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #e6ffe6;
+            border: 1px solid #4caf50;
+            color: #2e7d32;
+        }
+        .error {
+            background: #ffe6e6;
+            border: 1px solid #f44336;
+            color: #c62828;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Video Generation API</h1>
+    
+    <div class="form-container">
+        <h2>Generate Test Video</h2>
+        <form id="videoForm">
+            <div>
+                <label for="prompt">Prompt:</label><br>
+                <input type="text" id="prompt" name="prompt" value="test video generation" style="width: 100%;">
+            </div>
+            <div>
+                <label for="duration">Duration (seconds):</label><br>
+                <input type="number" id="duration" name="duration" value="5" min="3" max="10">
+            </div>
+            <button type="submit">Generate Video</button>
+        </form>
+        
+        <div id="result"></div>
+        <div id="videoContainer" style="display: none;">
+            <h3>Generated Video:</h3>
+            <video id="generatedVideo" controls>
+                Your browser does not support the video tag.
+            </video>
+            <p id="videoInfo"></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('videoForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            const videoContainer = document.getElementById('videoContainer');
+            const video = document.getElementById('generatedVideo');
+            const videoInfo = document.getElementById('videoInfo');
+            
+            const prompt = document.getElementById('prompt').value;
+            const duration = parseInt(document.getElementById('duration').value);
+            
+            // Show loading
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = 'Generating video... This may take a few seconds.';
+            videoContainer.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:3002/api/test-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ prompt, duration })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `Success! ${data.message}\n\nVideo URL: ${data.videoUrl}\nFile size: ${data.videoSize} bytes\nFilename: ${data.filename}`;
+                    
+                    // Show video
+                    video.src = data.videoUrl;
+                    videoInfo.textContent = `Size: ${data.videoSize} bytes | File: ${data.filename}`;
+                    videoContainer.style.display = 'block';
+                    
+                    video.onloadeddata = () => {
+                        console.log('Video loaded successfully');
+                        console.log('Duration:', video.duration);
+                        console.log('Dimensions:', video.videoWidth, 'x', video.videoHeight);
+                    };
+                    
+                    video.onerror = (e) => {
+                        console.error('Video playback error:', e);
+                        resultDiv.className = 'result error';
+                        resultDiv.textContent += '\n\nError: Video failed to load/play';
+                    };
+                    
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${data.error}`;
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network Error: ${error.message}`;
+                console.error('Request error:', error);
+            }
+        });
+    </script>
+</body>
+</html>

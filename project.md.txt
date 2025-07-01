@@ -1,0 +1,214 @@
+Building Your AI Creative Suite: An A-to-Z Guide
+This document provides a complete roadmap for building your application, which will offer AI-powered image generation, image upscaling, and video generation.
+
+1. Core Architecture
+Given your requirements, a modern, serverless, full-stack architecture using Next.js is the ideal choice.
+
+Frontend: Built with React (via Next.js).
+
+Backend: Implemented as API Routes within the same Next.js application.
+
+Why this architecture?
+
+Simplicity: You manage a single codebase for both frontend and backend.
+
+Performance: Next.js offers server-side rendering (SSR) and static site generation (SSG) for a fast user experience.
+
+Scalability: Vercel (the creator of Next.js) provides seamless, scalable, serverless deployment.
+
+Data and Workflow Diagram:
+
+[User on Frontend] -> [Calls Next.js API Route] -> [Clerk Middleware (Auth)] -> [Backend Logic]
+                                                                                      |
+     +--------------------------------------------------------------------------------+
+     |                  |                      |                     |                 |
+[Imagen API]    [Veo/Wan 2.1 API]    [Supabase (DB)]    [Cloudflare R2 (Storage)]    [PhonePe API]
+(Image Gen/Up)      (Video Gen)       (Save Metadata)        (Store Media)          (Handle Payment)
+
+2. Prerequisites & Initial Setup
+Before you write any code, you need to set up accounts for all the services you'll be using.
+
+Node.js & npm: Make sure you have the latest LTS version of Node.js installed on your machine.
+
+Code Editor: VS Code is highly recommended.
+
+Create Accounts:
+
+Google Cloud Platform (GCP): For Imagen and Veo APIs. You'll need to enable the Vertex AI API.
+
+Clerk: For authentication. Create a new application in your Clerk dashboard.
+
+Supabase: For your database. Create a new project.
+
+Cloudflare: For R2 storage. You will need to create an R2 bucket.
+
+PhonePe: Register for a merchant account to get API keys for the payment gateway.
+
+(Optional) Replicate: For the Wan 2.1 video model. It provides a simple API for open-source models.
+
+Initialize Next.js Project:
+
+npx create-next-app@latest your-app-name
+
+During setup, choose TypeScript for better code quality and maintainability.
+
+3. Backend Development (Next.js API Routes)
+Your backend will live in the src/pages/api/ directory. Each file here becomes a serverless function. All sensitive operations (calling AI APIs, database writes, file storage) will happen here to protect your API keys.
+
+Key Backend Endpoints to Build:
+/api/generate/image:
+
+Receives a prompt and an optional referenceImage from the frontend.
+
+Calls the Google Imagen API.
+
+On success, uploads the generated image to Cloudflare R2.
+
+Saves metadata (prompt, user ID, image URL from R2) to your Supabase generations table.
+
+Returns the public URL of the image.
+
+/api/upscale/image:
+
+Receives an imageUrl to upscale.
+
+Calls the Imagen API's upscaling function.
+
+Uploads the upscaled image to R2 and saves metadata to Supabase.
+
+/api/generate/video:
+
+Receives a prompt and a model choice ('veo' or 'wan2.1').
+
+Based on the choice, calls the appropriate API (Google Veo or Replicate's Wan 2.1).
+
+Video generation is asynchronous. The API will likely return a job ID. You'll need another endpoint to check the status.
+
+/api/generate/video-status/[jobId]:
+
+Polls the video generation service to check if the video is ready.
+
+Once ready, uploads it to R2 and updates the record in Supabase.
+
+/api/payments/initiate:
+
+Receives a planId or amount.
+
+Calls the PhonePe API to create a payment request.
+
+Returns the redirectUrl for the frontend to send the user to.
+
+/api/webhooks/phonepe:
+
+This is a crucial endpoint that PhonePe will call to notify you of payment status.
+
+It must verify the webhook signature.
+
+On success, it updates the user's subscription or credits in your Supabase users or subscriptions table.
+
+4. Frontend Development (React Components)
+Your frontend will be built in the src/components/ and src/pages/ directories. For a modern and clean UI, consider using a component library like Shadcn/UI or Mantine.
+
+Key Pages and Components:
+Authentication Flow (pages /sign-in & /sign-up):
+
+Clerk provides pre-built components (<SignIn />, <SignUp />) that handle this entire flow for you with just a few lines of code.
+
+Main Generation UI (page /generate):
+
+Tabs for "Image Generation," "Upscale," and "Video Generation."
+
+Input fields for prompts, file uploads for reference images, and model selection dropdowns.
+
+A "Generate" button that calls your backend API routes.
+
+Loading indicators to show while the AI is working.
+
+A display area to show the final result.
+
+User Gallery (page /dashboard):
+
+Fetches and displays a grid of the logged-in user's past generations from your Supabase database.
+
+Billing/Pricing Page (page /pricing):
+
+Displays your subscription plans or credit packages.
+
+Each plan's "Buy Now" button will trigger the call to your /api/payments/initiate endpoint.
+
+Layout and Navigation:
+
+Use Clerk's <UserButton /> component in your navigation bar. It automatically shows the user's profile picture and provides sign-out functionality.
+
+5. Step-by-Step Integrations
+a) Clerk (Authentication)
+Install: npm install @clerk/nextjs
+
+Environment Variables: Create a .env.local file and add your Clerk keys:
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
+CLERK_SECRET_KEY=sk_...
+
+Wrap Your App: In src/pages/_app.tsx, wrap your main component with <ClerkProvider>.
+
+Protect API Routes: Use Clerk's withAuth middleware to secure your backend endpoints.
+
+b) Supabase (Database)
+Install: npm install @supabase/supabase-js
+
+Create a Client: Create a utility file (src/lib/supabaseClient.ts) to initialize the Supabase client. You'll get the URL and anon key from your Supabase project settings.
+
+Database Schema: In the Supabase dashboard's SQL Editor, create your tables:
+
+generations: (id, user_id, prompt, image_url, video_url, model_used, created_at)
+
+user_profiles: (id (references auth.users), credits, subscription_status)
+
+Interact: From your backend API routes, use the Supabase client to query and insert data.
+
+c) Cloudflare R2 / Backblaze B2 (Storage)
+Both are S3-compatible. Cloudflare R2 is often preferred for its zero egress fees.
+
+Install S3 SDK: npm install @aws-sdk/client-s3
+
+Setup: In your backend, configure the S3 client with your R2/B2 credentials (Endpoint, Access Key, Secret Key).
+
+Upload Logic: When an AI model returns image or video data (e.g., as a base64 string or buffer), your backend will use the S3 SDK's PutObjectCommand to upload it to your bucket.
+
+d) AI & Payment APIs
+Google APIs (Imagen/Veo):
+
+Install the Google Cloud client library: npm install @google-cloud/vertexai
+
+In your backend, authenticate using Application Default Credentials (ADC) or a service account key file.
+
+Use the library to make calls to the imagegeneration or videogeneration models.
+
+Wan 2.1 (via Replicate):
+
+Install the Replicate client: npm install replicate
+
+Use your Replicate API token to call the model from your backend.
+
+PhonePe Gateway:
+
+This will be a direct fetch call from your backend to the PhonePe API endpoints.
+
+You will need to construct a request body with your merchant ID, transaction details, and a checksum (a hash generated using your Salt Key) for security.
+
+6. Deployment
+Platform: Vercel is the best choice for deploying a Next.js application.
+
+Process:
+
+Push your code to a GitHub, GitLab, or Bitbucket repository.
+
+Import the repository into Vercel.
+
+Vercel will automatically detect that it's a Next.js project.
+
+Crucially, add all your environment variables (from .env.local) to the Vercel project settings. This includes keys for Clerk, Supabase, R2, Google AI, and PhonePe.
+
+Deploy. Vercel will handle the build process and deploy your app globally on its edge network.
+
+This plan provides a high-level but complete overview. The key is to tackle one piece at a time: start with user authentication, then build the image generation feature end-to-end, then add payments, and so on. Good luck!

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Test Image</title>
+</head>
+<body>
+    <canvas id="canvas" width="200" height="200"></canvas>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Create a simple test image
+        ctx.fillStyle = '#4CAF50';
+        ctx.fillRect(0, 0, 200, 200);
+        
+        ctx.fillStyle = '#FFF';
+        ctx.font = '20px Arial';
+        ctx.fillText('Test Image', 50, 100);
+        
+        // Convert to blob and download
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'test-image.png';
+            a.click();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Video Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .video-container {
+            margin: 20px 0;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            height: auto;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .loading {
+            display: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Video Generation Test</h1>
+    
+    <div class="video-container">
+        <h2>Test Generated Video</h2>
+        <p>This tests if our generated video files can be played in the browser.</p>
+        
+        <button onclick="testMinimalMP4()">Test Minimal MP4</button>
+        <div id="loading" class="loading">Generating video...</div>
+        <div id="result"></div>
+        
+        <div id="video-container" style="display: none;">
+            <h3>Generated Video:</h3>
+            <video id="test-video" controls>
+                Your browser does not support the video tag.
+            </video>
+            <p id="video-info"></p>
+        </div>
+    </div>
+
+    <script>
+        async function testMinimalMP4() {
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            const videoContainer = document.getElementById('video-container');
+            const video = document.getElementById('test-video');
+            const videoInfo = document.getElementById('video-info');
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.innerHTML = '';
+            videoContainer.style.display = 'none';
+            
+            try {
+                // Create a minimal MP4 video data URL
+                const minimalMP4Base64 = 'AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAr1tZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzEwOCAzMWU5ZjM3IC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAABWWWIhAAz//727L4FNf2f0JcRLMXaSnA+KqSAgHc0wAAAAwAAAwAAFgn0I7DkqgAAAAZBmiQYhn/+1oQAAAAJQZ5CeIZ/+1oQAAAACUGeYniGf/taEAAAAAlBnoZ4hn/7WhAAAAA=';
+                
+                const videoDataUrl = `data:video/mp4;base64,${minimalMP4Base64}`;
+                
+                video.src = videoDataUrl;
+                videoInfo.textContent = `Video size: ${minimalMP4Base64.length} characters (base64)`;
+                
+                video.onloadeddata = () => {
+                    loadingDiv.style.display = 'none';
+                    resultDiv.innerHTML = '<div class="success">Video loaded successfully!</div>';
+                    videoContainer.style.display = 'block';
+                    console.log('Video loaded successfully');
+                    console.log('Video duration:', video.duration);
+                    console.log('Video dimensions:', video.videoWidth, 'x', video.videoHeight);
+                };
+                
+                video.onerror = (e) => {
+                    loadingDiv.style.display = 'none';
+                    resultDiv.innerHTML = '<div class="error">Failed to load video: ' + e.message + '</div>';
+                    console.error('Video error:', e);
+                };
+                
+                // Also test if we can create a blob URL
+                const binaryString = atob(minimalMP4Base64);
+                const bytes = new Uint8Array(binaryString.length);
+                for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                const blob = new Blob([bytes], { type: 'video/mp4' });
+                const blobUrl = URL.createObjectURL(blob);
+                
+                console.log('Blob URL created:', blobUrl);
+                console.log('Blob size:', blob.size, 'bytes');
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultDiv.innerHTML = '<div class="error">Error: ' + error.message + '</div>';
+                console.error('Test error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

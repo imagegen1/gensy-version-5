@@ -1,0 +1,209 @@
+Product Requirements Document: AI Creative Suite
+
+
+
+
+Document Owner
+
+Product Manager
+
+Date
+
+June 16, 2025
+
+Version
+
+1.0
+
+Status
+
+Draft
+
+1. Introduction & Vision
+The AI Creative Suite is a web-based platform designed to empower creators by providing a set of powerful, intuitive, and accessible AI-powered tools. In a market where AI is rapidly changing the creative landscape, our product will offer a seamless and integrated experience for generating high-quality visual content.
+
+The vision is to create a go-to destination for digital artists, marketers, and content creators to quickly turn their ideas into stunning images and videos, bridging the gap between imagination and final asset.
+
+2. Goals & Objectives
+The primary goals for the initial release (v1.0) of this product are:
+
+User Acquisition: Attract and onboard an initial user base of content creators and AI enthusiasts.
+
+Core Feature Validation: Validate the demand and usability of the core features: image generation, image upscaling, and video generation.
+
+Monetization: Establish a clear path to revenue through a subscription and credit-based payment model.
+
+User Experience: Deliver a fast, reliable, and intuitive user experience that encourages repeat usage.
+
+3. Target Audience
+Digital Artists & Designers: Individuals looking for inspiration or tools to accelerate their creative workflow.
+
+Content Creators & Marketers: Professionals who need to generate unique visual assets for social media, blogs, advertisements, and other marketing materials.
+
+Small Business Owners: Entrepreneurs who need high-quality visuals for their brand without the high cost of a dedicated designer.
+
+AI Hobbyists & Enthusiasts: Users who are keen to explore and experiment with the latest generative AI technologies.
+
+4. User Stories
+ID
+
+User Story
+
+US-01
+
+As a content creator, I want to generate a unique image from a text prompt so that I can create a custom blog post header.
+
+US-02
+
+As a designer, I want to provide a reference image along with a prompt to guide the AI's style so that the output matches my existing brand aesthetic.
+
+US-03
+
+As a photographer, I want to upscale a low-resolution photo so that I can print it in a larger format without losing quality.
+
+US-04
+
+As a social media manager, I want to generate a short, eye-catching video clip from a text prompt to use as an Instagram Reel.
+
+US-05
+
+As a new user, I want to sign up quickly using my Google or GitHub account so that I don't have to create another password.
+
+US-06
+
+As a subscribed user, I want to view a gallery of all my past creations so that I can easily find, download, or reuse them.
+
+US-07
+
+As a user, I want to purchase a subscription or a credit pack using PhonePe so that I can access premium features.
+
+5. Product Features & Requirements
+5.1. Feature 1: AI Image Generation
+Description: Users can generate new images based on text prompts or by providing a reference image.
+
+Requirements:
+
+Must have a text input field for the user's prompt.
+
+Must have an option to upload a reference image (optional).
+
+The backend will use the Google Imagen API.
+
+Generated images must be displayed to the user on the frontend.
+
+The system must handle loading states while the image is being generated.
+
+All generated images will be stored in the designated object storage (Cloudflare R2).
+
+Metadata (user_id, prompt, image URL) must be saved to the Supabase database.
+
+5.2. Feature 2: AI Image Upscaling
+Description: Users can increase the resolution of an existing image.
+
+Requirements:
+
+Must allow users to upload an image file.
+
+The backend will use the Google Imagen API's upscaling functionality.
+
+The upscaled image must be presented to the user.
+
+The upscaled image must be stored in object storage (Cloudflare R2) and its metadata saved to Supabase.
+
+5.3. Feature 3: AI Video Generation
+Description: Users can generate short video clips from text prompts.
+
+Requirements:
+
+Must have a text input field for the user's prompt.
+
+Must provide a dropdown for the user to select the video model (Google Veo or Wan 2.1).
+
+Video generation is an asynchronous process. The UI must inform the user that the video is being processed and will be available shortly.
+
+The system will poll for the video's status and update the UI when complete.
+
+Generated videos will be stored in object storage (Cloudflare R2) and metadata saved to Supabase.
+
+5.4. Feature 4: User Authentication & Management
+Description: Secure user sign-up, login, and profile management.
+
+Requirements:
+
+Integration with Clerk for authentication.
+
+Support for social logins (e.g., Google, GitHub) and traditional email/password.
+
+Secure handling of user sessions.
+
+A user profile/dashboard area.
+
+5.5. Feature 5: Payments & Subscriptions
+Description: A system for users to pay for services.
+
+Requirements:
+
+Integration with PhonePe as the payment gateway.
+
+A pricing page displaying available subscription plans and/or one-time credit packages.
+
+A secure checkout process that redirects the user to PhonePe and handles the return callback.
+
+A backend webhook to listen for successful payment notifications from PhonePe.
+
+User accounts in the Supabase database must be updated with their new credit balance or subscription status upon successful payment.
+
+6. Technical Stack & Dependencies
+Frontend: Next.js (React)
+
+Backend: Next.js API Routes (Serverless Functions)
+
+Authentication: Clerk
+
+Database: Supabase (PostgreSQL)
+
+Object Storage: Cloudflare R2 (S3-Compatible)
+
+AI APIs: Google Vertex AI (Imagen, Veo), Replicate (for Wan 2.1)
+
+Payment Gateway: PhonePe
+
+Deployment: Vercel
+
+7. Success Metrics
+The success of the AI Creative Suite v1.0 will be measured by:
+
+User Engagement:
+
+Monthly Active Users (MAU).
+
+Average number of generations (image/video) per user per week.
+
+User retention rate (Week 1, Week 4).
+
+Monetization:
+
+Conversion Rate (percentage of free users who purchase a plan).
+
+Monthly Recurring Revenue (MRR).
+
+Average Revenue Per User (ARPU).
+
+Technical Performance:
+
+Average API response time for generation requests.
+
+Uptime of the service (>99.9%).
+
+8. Out of Scope for v1.0
+The following features will not be included in the initial release but may be considered for future versions:
+
+Advanced image editing (e.g., in-painting, out-painting, style transfer).
+
+Advanced video editing features (e.g., trimming, adding audio).
+
+Team accounts and collaboration features.
+
+A native mobile application.
+
+Integration with other cloud storage providers.

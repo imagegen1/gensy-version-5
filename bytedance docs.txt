@@ -1,0 +1,1628 @@
+DeepSeek-R1-0528 is now on BytePlus! Sign up for 500k free tokens, refer friends and earn up to $45!
+DeepSeek-R1-0528 is now on BytePlus! Sign up for 500k free tokens, refer friends and earn up to $45!
+P
+ModelArk
+Home
+/
+ModelArk
+/
+Model Capability
+/
+Video Generation
+Search in this doc
+Video Generation
+Last updated:  June 16, 2025 03:47:36 PMFirst publish time:  June 5, 2025 06:20:45 PM
+The video generative model has excellent semantic understanding and can quickly generate high-quality video clips based on user input text, pictures, etc. In this tutorial, you can learn how to generate videos by calling the video generative model API.
+
+Quick start
+You can quickly experience video generation capabilities with the code below.
+
+tip
+
+Video generation is an asynchronous interface. You need to create a video generation task first, and then query the video generation result through the ID of the video generation task.
+The video generation process takes a long time, please be patient when querying the results.
+curl
+curl https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks \ 
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ARK_API_KEY" \
+  -d '{
+    "model": "seedance-1-0-lite-i2v-250428",
+    "content": [
+        {
+            "type": "text",
+            "text": "In the sky, soft cotton - like clouds drift with subtle layered motions (some glide lazily, others billow gently as if touched by wind). On the road, a mix of cars, buses, and motorcycles moves smoothly with natural motion blur under the sun’s warm glow. Use cinematic camera techniques: wide establishing shots to capture the sky’s vastness and cloud dynamics, paired with tracking shots that follow vehicles’ steady movement — emphasizing the tranquil flow of clouds and the rhythmic motion of traffic.  --resolution 720p  --duration 5 --camerafixed false"
+        },
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "https://ark-doc.tos-ap-southeast-1.bytepluses.com/see_i2v.jpeg"
+            }
+        }
+     ]   
+  }'
+Get the task (Replace {id} with the task ID returned in the first step.)
+curl -X GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/{id} \ 
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer \$ARK_API_KEY" \ 
+
+Support model
+
+seedance-lite
+Model introduction:
+
+Model name
+
+version
+
+Model ID
+
+Model Domain
+
+output video format
+
+pricing
+(USD / thousand tokens)
+
+bytedance-seedance-lite
+
+250428
+
+seedance-1-0-lite-t2v-250428
+
+Text-to-Video
+
+Resolution: 720p, 480p
+Frame rate: 24 fps
+Duration: 5 seconds, 10 seconds
+
+0.0018
+
+250428
+
+seedance-1-0-lite-i2v-250428
+
+Image-to-video based on first frame
+
+Resolution: 720p, 480p
+Frame rate: 24 fps
+Duration: 5 seconds, 10 seconds
+
+
+Application Scenario
+The model supports the generation of videos with advanced visual beauty and rich detail levels, which can convert users' text and images into high-quality video works. It can be applied to a wide range of application scenarios such as e-commerce marketing, urban cultural and tourism promotion, animation education, and short dramas.
+
+Scene
+
+Description
+
+Advertising creative
+
+Can quickly produce advertising videos according to product characteristics and marketing goals, providing a variety of options for advertising creativity.
+
+Film and television production
+
+Generate a variety of complex special effects shots, quickly build realistic virtual scenes, generate animations for characters, and quickly generate short-form videos.
+
+Educational animation
+
+Quickly generate teaching animation examples, intuitively display knowledge content such as principles and production processes, and assist animation teaching.
+
+Game development
+
+Generate video content such as animation clips, character actions, cutscenes, etc. in the game to accelerate the visualization process of game creativity.
+
+Social media interaction
+
+Turn photos into dynamic videos for storytelling and daily recording. Such as making old photos move, personalized emojis, etc.
+
+
+API parameter description
+For a detailed introduction to the API interface for video generation, please refer toVideo Generation API.
+
+Model Text Command Comparison
+Append -- [parameters] after the text prompt to control the specifications of the video output, including aspect ratio, frame rate, resolution, etc. Different models may support different parameters and values, see the table below for details.
+
+seedance-1-0-lite-t2v
+Text-to-Video
+
+seedance-1-0-lite-i2v
+Image-to-video
+
+Resolution
+Resolution
+
+480P
+720P
+480P
+720P
+Ratio
+Aspect ratio
+
+480P gear: The resolutions corresponding to different video aspect ratios are as follows:
+16:9: 864 × 480
+4:3: 736 × 544
+1:1: 640 × 640
+3:4: 544 × 736
+9:16: 480 × 864
+9:21: 416 ×960
+720p gear, the resolutions corresponding to different video aspect ratios are as follows:
+16:9: 1248 × 704
+4:3: 1120 × 832
+1:1: 960 × 960
+3:4: 832 × 1120
+9:16: 704 × 1248
+9:21: 640× 1504
+adaptive, according to the proportion of the uploaded picture, automatically select the most suitable aspect ratio.
+The selected scale gear is consistent with the scale enumeration value of seedance t2v.
+
+Duration
+Generate video duration (seconds)
+
+5
+10
+5
+10
+Fps
+Frame rate
+
+24
+
+24
+
+Watermark
+Whether to include watermark
+
+✅
+
+✅
+
+Seed
+Seed integer
+
+✅
+
+✅
+
+CameraFixed
+Whether to fix the camera
+
+✅
+
+✅
+
+
+Use restrictions
+Task data (such as task status, video URL, etc.) is only retained for 24 hours and will be automatically cleared after timeout. Please be sure to save the generated video in time.
+The limit values vary for different models. For details, please refer to Video Generation.
+RPM Rate Limiting: Under a single primary account, when creating a video task, if the RPM (Requests Per Minute) limit of the model version is exceeded, an error will occur during the creation of the video generation task.
+Concurrency Limit: The maximum number of concurrent requests allowed for each model version under a single primary account. If this limit is exceeded, subsequent submitted requests will be queued.
+
+Instructions and Suggestions for Use
+Write the effect you want in concise and accurate natural language.
+If there is a clear expectation of the effect, it is recommended to use the raw image model to generate pictures that meet the expectations, and then use the raw video to generate video clips.
+Text-to-Video will have greater randomness and can be used to inspire creative inspiration.
+Please try to upload high definition and high quality pictures when uploading pictures. The quality of uploaded pictures has a great impact on Tusheng videos.
+When the generated video does not meet expectations, it is recommended to modify the prompt words, replace the abstract description with a concrete description, and pay attention to deleting the unimportant parts and prepositioning the important content.
+If you would like to disable the content filter, please refer to ModelArk Content Pre-filter Overview.
+
+Use example
+
+Set the generated video format
+By appending after the text prompt--[parameters]The method can control the specifications of the video output, including aspect ratio, frame rate, resolution, etc.
+
+//Specify the aspect ratio of the generated video as 16:9, duration as 5 seconds, frame rate as 24 fps, resolution as 720p, and include a watermark. The camera is not fixed.
+A woman in a green sequin dress stands in front of a pink background, with colorful confetti falling around her. --rt 16:9 --dur 5 --fps 24 --rs 720p --wm true --cf false
+
+Previous documentation
+Visual Understanding
+Next documentation
+Image Generation
+Quick start
+Support model
+seedance-lite
+Application Scenario
+API parameter description
+Model Text Command Comparison
+Use restrictions
+Instructions and Suggestions for Use
+Use example
+Set the generated video format
+Highlight to feedback
+Select the content you can quickly feedback the problem, and we will follow up
+Don’t show me again
+Ok, got it
+Products
+Featured
+AI & Personalization
+Compute
+Containers & Middleware
+Content Delivery
+Data Analytics
+Database
+Enterprise Services
+Media Services
+Networking
+Security
+Storage
+Solutions
+By industry
+By use case
+Support & resources
+BytePlus Free Tier
+AI Startups Accelerator
+Documentation
+Blog
+Events & webinars
+Customer success
+Insights
+Sitemap
+Report abuse
+BytePlus Concepts
+Company
+About us
+Privacy & Security
+Partner Network
+Partner Central
+Careers
+Engage us
+Contact sales
+Contact support
+Get started for free
+Become a Partner
+© 2025 BytePlus Pte Ltd.
+•
+Term of Service
+•
+Privacy Policy
+•
+Cookie preferences
+BytePlus harnesses the expertise and technology of
+ByteDance logo
+BytePlus LinkedIn
+
+Model List
+Last updated:  June 16, 2025 03:01:20 PMFirst publish time:  March 28, 2025 01:03:52 PM
+ModelArk provides a wealth of models for you to use. You can easily incorporate model services into your business by following tutorials or API instructions.
+
+Model Recommendation
+skylark-pro
+
+skylark-lite
+
+deepseek
+
+The skylark-pro models are powerful models that can generate response with deep contextual understanding, creativity and nuanced reasoning. It can support complex problem-solving, handling intricate tasks such as advanced logic, generating long-form content, and simulating multi-turn dialogues.
+
+Context length: 128k
+High quality, low cost, very cost-effective
+The skylark-lite models are optimized models that prioritise faster response times or lower resource usage. It is designed for use cases where real-time interactions or resource management is a priority, while still offering relatively high-quality AI experience.
+
+Context length: 32768
+Faster and cheaper.
+DeepSeek-R1 is a large-scale reasoning model developed by DeepSeek. Utilizing reinforcement learning extensively during post-training, DeepSeek-R1 significantly improves reasoning ability with minimal labeled data. Its performance in math, coding, and natural language reasoning tasks rivals OpenAI's o1 model.
+DeepSeek-V3 is a Mixture-of-Experts (MoE) model developed by DeepSeek. It outperforms other open-source models like Qwen2.5-72B and Llama-3.1-405B on multiple benchmarks, rivaling top-tier closed-source models such as GPT-4o and Claude-3.5-Sonnet.
+
+High performance, full blood version
+
+Deep Thinking
+Tutorial: Deep Thinking | API: Chat API
+
+Model Name
+
+Version
+
+Model ID
+
+Model Domain
+
+Context Length
+
+Max Input Tokens
+
+Max Output Tokens
+
+Max COT Tokens
+
+Model rate limit
+
+Free Credit
+(Token)
+
+deepseek-r1
+
+250528
+
+deepseek-r1-250528
+
+General task
+Complex task
+
+128k
+
+96k
+
+16k
+
+default: 4k
+
+32k
+
+15k RPM
+800k TPM
+
+500,000
+
+250120
+
+deepseek-r1-250120
+
+General task
+Complex task
+
+96k
+
+64k
+
+16k
+
+default: 4k
+
+32k
+
+15k RPM
+800k TPM
+
+deepseek-r1-distill-qwen-32b
+
+250120
+
+deepseek-r1-distill-qwen-32b-250120
+
+General task
+Complex task
+
+64k
+
+32k
+
+8k
+
+default: 4k
+
+32k
+
+15k RPM
+800k TPM
+
+500,000
+
+
+Text generation
+Tutorial:Text Generation | API: Chat API
+
+Model Name
+
+Version
+
+Model ID
+
+Model Domain
+
+Context Length
+
+Max Output Tokens
+
+Model rate limit
+
+Free Credit
+(Token)
+
+deepseek-v3
+
+250324 main version
+
+deepseek-v3-250324
+
+can be invoked using deepseek-v3.
+
+General task
+
+128k
+
+16k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+500,000
+
+241226
+
+deepseek-v3-241226
+
+General task
+
+64k
+
+8k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+skylark-pro
+
+250215
+
+skylark-pro-250215
+
+Long text
+
+128k
+
+12k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+500,000
+
+250415 main version
+
+skylark-pro-250415
+
+can be invoked using skylark-pro.
+
+Long text
+
+128k
+
+12k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+skylark-lite
+
+250215
+
+skylark-lite-250215
+
+General task
+
+32k
+
+12k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+500,000
+
+
+Visual Understanding
+Tutorial: Video Generation | API: Chat API
+
+Model Name
+
+Version
+
+Model ID
+
+Model Domain
+
+Context Length
+
+Max Output Tokens
+
+Model rate limit
+
+Free Credit
+(Token)
+
+skylark-vision
+
+250515recommend
+
+skylark-vision-250515
+
+Visual understanding
+
+128k
+
+12k
+
+default: 4k
+
+15k RPM
+800k TPM
+
+500k
+
+
+Video Generation
+Tutorial: Video Generation | API: VIdeo Generation API
+
+Model Name
+
+Version
+
+Model ID
+
+Model capabilities
+
+Output Video Format
+
+Requests Per Minute
+
+When creating a video generation task, the number of requests sent per minute
+
+Concurrency limit
+
+Price
+(USD / thousand tokens)
+
+bytedance-seedance-1-0-lite
+
+250428 recommend
+
+seedance-1-0-lite-t2v-250428
+
+Text-to-Video
+
+Resolution: 720p，480p
+Frame Rate: 24 fps
+Duration: 5s，10s
+
+300
+
+5
+
+0.0018
+
+250428
+recommend
+
+seedance-1-0-lite-i2v-250428
+
+Image-to-Video
+
+Resolution: 720p，480p
+Frame Rate: 24 fps
+Duration: 5s，10s
+
+300
+
+5
+
+0.0018
+
+
+Image Generation
+Tutorial: Image Generation | API: Image Generation API
+
+Model Name
+
+Version
+
+Model ID
+
+）	
+Model capabilities
+
+Max Images per Minutes
+
+Price
+(USD / image)
+
+bytedance-seedream-3.0-t2i
+
+250415highly recommended
+
+bytedance-seedream-3-0-t2i-250415
+
+Text-to-Image
+
+500
+
+0.03
+
+
+Embedding
+
+skylark-embedding-vision
+API: Embedding Vision API
+
+Model Name
+
+Version
+
+Model ID
+
+Model Domain
+
+Context Length
+
+Maximum vector dimension
+
+Free Credit
+(Token)
+
+skylark-embedding-vision
+
+250328
+
+skylark-embedding-vision-250328
+
+Graphics and text vectorization, support Chinese and English
+
+8k
+
+3072
+
+500,000
+
+Video Generation API
+Last updated:  June 27, 2025 12:21:27 PMFirst publish time:  June 5, 2025 06:21:03 PM
+This article introduces the parameters of the video generation model API, which is convenient for you to initiate video generation requests to the large model through the interface. The model will generate a video based on the incoming picture and text information. After the generation is completed, you can query the task conditionally and get the generated video.
+
+This article is for you to review and understand the meaning and value of interface fields. If you want to view the complete sample code and how to use the interface, you can consult the tutorial Video Generation.
+
+
+Authentication method
+This API supports API key authentication. For more information, seeSignature Authentication Methods.
+
+Create video generation task API
+POST https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks
+
+Usage Limitations
+Task data (such as task status, video URL, etc.) is only retained for 24 hours and will be automatically cleared after timeout. Please be sure to save the generated video in time.
+The limit values vary for different models. For details, please refer to Video Generation.
+RPM Rate Limiting: Under a single primary account, when creating a video task, if the RPM (Requests Per Minute) limit of the model version is exceeded, an error will occur during the creation of the video generation task.
+Concurrency Limit: The maximum number of concurrent requests allowed for each model version under a single primary account. If this limit is exceeded, subsequent submitted requests will be queued.
+
+Request parameters
+
+Request body
+Parameter
+
+subfield
+
+Value Type
+
+Required
+
+Default Value
+
+Description
+
+Sample Value
+
+model
+
+-
+
+String
+
+Yes
+
+-
+
+Model ID of the video generative model, or using the configured video generative model Get the Endpoint ID(Endpoint ID).
+
+warning
+
+You need to open the video generative model to be used in the opening management page in advance.
+Model ID query please visit Model List.
+seedance-1-0-lite-t2v
+Or
+ep-2024*-*
+
+content
+
+-
+
+List
+
+Yes
+
+-
+
+Example:
+
+[
+  {
+    "type": "text",
+    "text": "A little dog is running in the sunshine. 16:9"
+  },
+  {
+    "type": "image_url",
+    "image_url": {
+      "url":"https://xxx.jpg"
+    }
+  }
+]
+-
+
+type
+
+String
+
+Yes
+
+-
+
+Enter the type of content. Value:
+
+"Text" : Enter the content of the model as text.
+"image_url" : Enter the content of the model as picture.
+"text"
+
+text
+
+String
+
+Yes
+
+-
+
+Enter the text content for the model, a description of the video to be generated, and a text prompt and parameters. If "type": "text" is required.
+Parameters are used to control the output specifications of the video, e.g. frame size aspect ratio, video frame number, etc. See details Model text command (optional).
+
+Example: Text prompt word
+
+{
+    "type": "text",
+    "text": "A little dog is running in the sunshine."
+}
+Example: Text prompt + parameters
+
+{
+    "type": "text",
+    "text": "A little dog is running in the sunshine --ratio 16:9"
+}
+-
+
+image_url
+
+Object
+
+Yes
+
+-
+
+Enter the picture object for the model, if "type": "image_url" you need to pass in.
+
+-
+
+image_url.url
+
+String
+
+Yes
+
+-
+
+The first frame picture used to generate video supports URL or Base64 encoding.
+
+When using picture URL, make sure picture URL accessible.
+When encoding with picture Base64, follow this format data: image/{picture format}; base64, {Base64 encoding} .
+tip
+
+The incoming picture needs to meet the following conditions:
+
+Format support: JPEG (JPG), PNG, WEBP, BMP, TIFF, GIF.
+Aspect ratios range (2:5, 5:2), i.e. width/height in the range (0.4, 2.5).
+The pixel range of the picture side length (300, 6000), that is, the short side pixels should be greater than 300 px, and the long side pixels should be less than 6000 px.
+Picture file is less than 10MB.
+Example: Passing in picture URL
+
+{
+    "type": "image_url",
+    "image_url": {
+      "url":"https://xxx.jpg"
+    }
+}
+Example: incoming picture Base64 encoding
+
+{
+    "type": "image_url",
+    "image_url": {
+        "url":  "data:image/jpeg;base64,{base64_image}"
+    }
+}
+-
+
+callback_url
+
+-
+
+string
+
+No
+
+-
+
+Please fill in the callback notification address for the result of this generation task. When there is a status change in the video generation task, Ark will send a callback request containing the latest task status to this address.
+The content structure of the callback request is consistent with the response body of Query video generation task information API.
+The status returned by the callback includes the following states:
+
+queued: In the queue.
+running: The task is running.
+succeeded: The task is successful. (If the sending fails, that is, the information of successful sending is not received within 5 seconds, the callback will be made three times)
+failed: The task fails. (If the sending fails, that is, the information of successful sending is not received within 5 seconds, the callback will be made three times)
+"callback_url": "https://"
+-
+
+
+Model text command (optional)
+By appending -- [parameters] after the text prompt word, you can help you control the specifications of the video output, including aspect ratio, frame rate, resolution, etc.
+
+warning
+
+Different models may support different parameters and values, see Model Text Command Comparison. When the parameters or values entered do not match the selected model, the content is ignored or an error is reported.
+
+Parameter
+
+Value Type
+
+Description
+
+Default Value
+
+Example
+
+resolution
+
+String
+
+Video resolution, enumeration value:
+
+480p: The short side pixel value is 480.
+720p: The short side pixel value is 720.
+720p
+
+The old man in the hat walks forward with a smile on his face --rs 720p
+The old man wearing a hat walks forward with a smile on his face --resolution 720p
+
+ratio
+
+String
+
+Generate video aspect ratio, currently supports settings 480P and 720P two gears aspect ratio.
+
+16:9
+4:3
+1:1
+3:4
+9:16
+21:9
+9:21
+adaptive: Automatically select the most suitable aspect ratio based on the ratio of the uploaded image.
+t2v：16:9
+i2v：adaptive
+
+The old man in the hat walks forward with a smile on his face --ratio 1:1
+The old man in the hat walks forward with a smile on his face --ratio 16:9
+
+duration
+
+Integer
+
+Generated video duration in seconds. Enumeration value:
+
+5
+10
+5
+
+The old man in the hat walks forward with a smile on his face --duration 5
+The old man in the hat walks forward with a smile on his face - dur 10
+
+fps
+
+Integer
+
+Frame rate, the number of video frames in one second. Enumeration value:
+
+16
+24
+24
+
+The old man in the hat walks forward with a smile on his face - framepersecond 24
+The old man in the hat walks forward with a smile on his face --fps 24 "
+
+watermark
+
+Boolean
+
+Generate whether the video contains a watermark. Valid values:
+
+false : without watermark.
+true : contains watermark.
+false
+
+The old man in the hat walks forward with a smile on his face --watermark true
+The old man in the hat walks forward with a smile on his face --wm true
+
+seed
+
+Integer
+
+Seed integer to control the randomness of generated content. Range of values: integers between -1, 2 ^ 32-1] .
+
+warning
+
+When no seed value is specified or seed is set to -1, a random number is used instead.
+Changing the seed value is a way to achieve different results for the same request. Using the same seed value for the same request will produce similar results, but exact consistency is not guaranteed.
+-1 , randomly generates an integer in [0, 2 ^ 32-1]
+
+The old man wearing a hat walks forward with a smile on his face - seed 42
+
+camerafixed
+
+Boolean
+
+Whether to fix the camera position. Enum values:
+
+true: Fix the camera position. The platform will append instructions to fix the camera position in the user's prompt, but the actual effect is not guaranteed.
+false: Do not fix the camera position.
+false
+
+The old man wearing a hat walks forward with a smile on his face - camerafixed true
+The old man wearing a hat walks forward with a smile on his face - cf true
+
+
+Response parameters
+Parameter
+
+Value Type
+
+Description
+
+id
+
+String
+
+The video generation task ID.
+
+---
+
+Request example
+curl -X POST https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ARK_API_KEY" \
+  -d '{
+    "model": "seedance-1-0-lite-t2v-250428",
+    "content": [
+        {
+            "type": "text",
+            "text": "Photorealistic style: Under a clear blue sky, a vast expanse of white daisy fields stretches out. The camera gradually zooms in and finally fixates on a close - up of a single daisy, with several glistening dewdrops resting on its petals.  --ratio 16:9  --resolution 720p  --duration 5 --camerafixed false"
+        }
+     ],
+    "callback_url": "https://"
+}'
+
+Sample response
+{
+    "id": "cgt-2024*-*",
+}
+
+Query video generation task information API
+GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/{id}
+
+Request parameters
+The following parameters are Query String Parameters, passed in URL String.
+
+Parameter
+
+Value Type
+
+Required
+
+Description
+
+Sample Value
+
+id
+
+String
+
+Required
+
+The video generation task ID.
+
+cgt-2024*-*
+
+
+Response parameters
+Parameter
+
+sub-parameter
+
+Value Type
+
+Description
+
+Sample Value
+
+id
+
+-
+
+String
+
+Generate task ID
+
+cgt-2024*-*
+
+model
+
+-
+
+String
+
+The model name and version used by the task, model name - version
+
+***
+
+status
+
+-
+
+String
+
+Task status, and related information:
+
+Queued : In line.
+Running : The task is running.
+Cancelled : cancel task, cancel status 24h automatic delete (only support queued state of the task is canceled), see Cancel or delete content generation tasks.
+Succeeded : The mission was successful.
+Failed : The task failed.
+queued
+
+error
+
+-
+
+Object
+
+Error message, back when the task fails.
+
+-
+
+code
+
+String
+
+Error code, see for details Error handling.
+
+OutputVideoSensitiveContentDetected
+
+message
+
+String
+
+Error message, see for details Error handling.
+
+The request failed because the output video may contain sensitive information
+
+created_at
+
+-
+
+Integer
+
+Unix timestamp (seconds) of the task creation time.
+
+1718049470
+
+updated_at
+
+-
+
+Integer
+
+Unix timestamp (in seconds) of the current status update time of the task.
+
+1718049470
+
+content
+
+-
+
+Object
+
+When the video generation task is completed, this field is output, containing the URL that generated the video download.
+
+"content":{
+    "video_url":"https://xxx"
+ }
+-
+
+video_url
+
+String
+
+URL to generate video.
+
+In order to ensure Information Security, the generated video will be cleaned up after 24 hours, please dump it in time.
+
+https://xxx
+
+usage
+
+-
+
+Object
+
+The token usage for this request.
+
+-
+
+completion_tokens
+
+Integer
+
+Number of tokens generated by the model.
+
+35800
+
+total_tokens
+
+Integer
+
+The total number of tokens consumed by this request (enter + output).
+
+tip
+
+The video generative model does not count the enter token, the enter token is 0, so total_tokens = completion_tokens.
+
+35800
+
+---
+
+Request example
+curl -X GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/cgt-2024*-* \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 59385462-" 
+
+Sample responses
+Non- failed state back example
+
+{
+    "id"："cgt-2024*-*",
+    "model":"*",//Different from the meaning of the request parameter, this refers to the {model name} - {version} used by the task
+    "status":"succeeded",
+    "created_at":"1718049470",
+    "updated_at":"1718049470",
+    "content":{
+        "video_url":"https://xxx"，
+     }，
+    "usage":{
+        "completion_tokens":35800，
+        "total_tokens":35800
+    }
+}
+Failed state back example
+
+{
+    "id"："cgt-2024*-*",
+    "model":"*", //Different from the meaning of the request parameter, this refers to the {model name} - {version} used by the task
+    "status":"failed",
+    "error":{
+        "code":"OutputVideoSensitiveContentDetected"，
+        "message":"The request failed because the output video may contain sensitive information.Request ID: {id}"
+    }
+    "created_at":"1718049470",
+    "updated_at":"1718049470"
+}
+
+Query Content Generation Task List API
+GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks?page_num={page_num}&page_size={page_size}&filter.status={filter.status}&filter.task_ids={filter.task_ids}&filter.model={filter.model}
+
+Request parameters
+The following parameters are Query String Parameters, passed in URL String.
+
+Parameter
+
+Value Type
+
+Required
+
+Sample Value
+
+Description
+
+page_num
+
+Integer
+
+optional
+
+10
+
+Page number, value range: [1,500].
+
+page_size
+
+Integer
+
+optional
+
+20
+
+The amount of data per page, the range of values: [1,500]
+
+filter.status
+
+String
+
+optional
+
+-
+
+Filter parameters to query the status of a task.
+
+Queued : The task in the queue.
+Running : A running task.
+Cancelled : Cancelled tasks can only be queried for tasks cancelled within 24h. Cancelled tasks beyond 24h will be deleted. See the cancel task interface Cancel or delete content generation tasks.
+Succeeded : A successful mission.
+Failed : The failed task.
+filter.task_ids
+
+Array of String
+
+optional
+
+-
+
+Video generation task ID, precise search.
+Supports searching multiple task IDs simultaneously.
+
+filter.model
+
+String
+
+optional
+
+-
+
+Unlike the back parameter, the inference Endpoint ID used for the task is precisely searched.
+
+
+Response parameters
+Parameter
+
+sub-parameter
+
+Value Type
+
+Description
+
+Error Message
+
+items
+
+-
+
+Array
+
+Video generation task list.
+
+-
+
+id
+
+String
+
+Generate the task ID.
+
+cgt-2024*-*
+
+model
+
+String
+
+Unlike the request parameter, it refers to the model name and version used by the task, < model name > - < version > .
+
+***
+
+status
+
+String
+
+Task status, and related information:
+
+Queued : In line.
+Running : The task is running.
+Cancelled : Cancelled tasks can only be queried for tasks cancelled within 24h. Tasks in the cancel state will be deleted if they exceed 24h. See the cancel task interface Cancel or delete content generation tasks.
+Succeeded : The mission was successful.
+Failed : The task failed.
+queued
+
+error
+
+Object
+
+Errors, including error codes and error messages, are returned when the task fails.
+
+Code: Error code, see for details Error handling.
+Message: Error message, see for details Error handling.
+-
+
+created_at
+
+Integer
+
+Unix timestamp (seconds) of the task creation time.
+
+1718049470
+
+updated_at
+
+Integer
+
+Unix timestamp (in seconds) of the current status update time of the task.
+
+1718049470
+
+content
+
+Object
+
+Output video information, including video download URL.
+
+"content":{
+    "video_url":"https://xxx"
+ }
+In order to ensure Information Security, the generated video will be cleaned up after 24 hours, please dump it in time.
+
+-
+
+usage
+
+Object
+
+The amount of tokens used for this request.
+
+"usage":{
+   "completion_tokens":35800，
+}
+-
+
+total
+
+-
+
+Integer
+
+Number of tasks that meet the filter criteria.
+
+200
+
+
+Request example
+curl -X GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks?page_num=1&page_size=100&filter.task_ids=cgt-&filter.task_ids=cgt-** \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 59385462-" 
+
+Sample responses
+{
+   "items": [
+       {
+          "id"："cgt-2024*-*",
+          "model":"*",   //Different from the meaning of the request parameter, this refers to the {model name} - {version} used by the task
+          "status":"succeeded",
+          "created_at":"1718049470",
+          "updated_at":"1718049470",
+          "content":{
+            "video_url":"https://xxx"，
+          }，
+          "usage":{
+               "completion_tokens":35800，
+          }
+        }，
+        {
+          "id"："cgt-2024*-*",
+          "model":"*",  //Different from the meaning of the request parameter, this refers to the {model name} - {version} used by the task
+          "status":"succeeded",
+          "created_at":"1718049870",
+          "updated_at":"1718049870",
+          "content":{
+            "video_url":"https://xxx"，
+          }，
+          "usage":{
+               "completion_tokens":35800，
+          }
+        }，
+     ] ,
+   "total": 2
+}
+
+Cancel or delete content generation tasks
+DELETE https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/{id}
+
+Request parameters
+The following parameters are Query String Parameters, passed in URL String.
+
+Parameter
+
+Value Type
+
+Required
+
+Description
+
+Sample Value
+
+id
+
+String
+
+Required
+
+The video generation task ID.
+
+cgt-2024*-*
+
+
+Response parameters
+This interface has no back parameters.
+
+Request example
+curl -X DELETE https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/cgt-2024*-* \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer 59385462-" 
+
+Sample response
+{}
+
+Related instructions
+The task state is different, the DELETE interface is called, and the actions performed are different, as detailed in the following table.
+
+current task status
+
+Support DELETE actions
+
+Meaning of actions
+
+Task state after DELETE actions
+
+queued
+
+Supported
+
+Task cancel is queued and the task status is changed to cancelled .
+
+cancelled
+
+running
+
+Not supported
+
+-
+
+-
+
+succeeded
+
+Supported
+
+Delete video to generate task records, and subsequent queries will not be supported.
+
+-
+
+failed
+
+Supported
+
+Delete video to generate task records, and subsequent queries will not be supported.
+
+-
+
+cancelled
+
+Not supported
+Automatically deleted after 24 hours
+
+-
+
+-
+
+
+Error handling
+
+Error response
+For more information about the return structure and parameters, see .
+
+Error Code
+The following table describes the error codes related to the business logic for this API. See Public Error Code Common Error Codes.
+
+HTTP Error Code
+
+Type
+
+Code
+
+Message
+
+Description
+
+400
+
+BadRequest
+
+InputTextSensitiveContentDetected
+
+The request failed because the input text may contain sensitive information.Request ID: {id}
+
+The entered text may contain sensitive information, please replace it and try again.
+
+400
+
+BadRequest
+
+InputImageSensitiveContentDetected
+
+The request failed because the input image may contain sensitive information.Request ID: {id}
+
+The image you entered may contain sensitive information. Please try again after replacing it.
+
+400
+
+BadRequest
+
+OutputVideoSensitiveContentDetected
+
+The request failed because the output video may contain sensitive information.Request ID: {id}
+
+The generated video may contain sensitive information, please try again after changing the content you entered.
+
+429
+
+TooManyRequests
+
+QuotaExceeded
+
+The request has exceeded the quota. Request ID: {id}
+
+The number of tasks currently in the account queue has exceeded the limit, please try again later.
+
+echo "----- create i2v request -----"
+curl -X POST https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eca88181-4393-49db-8815-bb1c9d03d829" \
+  -d '{
+    "model": "seedance-1-0-lite-i2v-250428",
+    "content": [
+        {
+            "type": "text",
+            "text": "In the sky, soft cotton - like clouds drift with subtle layered motions (some glide lazily, others billow gently as if touched by wind). On the road, a mix of cars, buses, and motorcycles moves smoothly with natural motion blur under the sun’s warm glow. Use cinematic camera techniques: wide establishing shots to capture the sky’s vastness and cloud dynamics, paired with tracking shots that follow vehicles’ steady movement — emphasizing the tranquil flow of clouds and the rhythmic motion of traffic.  --resolution 720p  --duration 5 --camerafixed false"
+        },
+        {
+            "type": "image_url",
+            "image_url": {
+                "url": "https://ark-doc.tos-ap-southeast-1.bytepluses.com/see_i2v.jpeg"
+            }
+        }
+    ]
+}'
+
+echo "----- get request -----"
+curl -X GET https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks/{id} \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer eca88181-4393-49db-8815-bb1c9d03d829"
+---
+
+Quick access test
+After selecting the enabled model, the information will be automatically filled into the code sample for you. You can copy it with one click to call it, and quickly access the preset reasoning service.
+Select model and activate.(Activated)

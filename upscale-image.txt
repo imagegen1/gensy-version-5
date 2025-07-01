@@ -1,0 +1,275 @@
+import React, { useState } from 'react';
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { 
+  Upload, 
+  Image as ImageIcon, 
+  Plus, 
+  User,
+  Sparkles,
+  Video,
+  Clock
+} from 'lucide-react';
+
+// Types
+interface Asset {
+  id: string;
+  name: string;
+  thumbnail: string;
+  selected: boolean;
+}
+
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  badges: string[];
+  selected: boolean;
+}
+
+// Mock data
+const mockAssets: Asset[] = [
+  {
+    id: '1',
+    name: 'Image 1',
+    thumbnail: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=100&h=100&fit=crop',
+    selected: true
+  },
+  {
+    id: '2',
+    name: 'Image 2',
+    thumbnail: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=100&h=100&fit=crop',
+    selected: false
+  },
+  {
+    id: '3',
+    name: 'Image 3',
+    thumbnail: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=100&h=100&fit=crop',
+    selected: false
+  }
+];
+
+const mockTools: Tool[] = [
+  // Removed Image Upscaler and Video Enhancer as per request
+  // {
+  //   id: '1',
+  //   name: 'Image Upscaler',
+  //   description: 'Increase image resolution up to 4x with stunning detail.',
+  //   badges: ['High Quality', 'Fast'],
+  //   selected: true
+  // },
+  // {
+  //   id: '2',
+  //   name: 'Video Enhancer',
+  //   description: 'Improve video quality, fix artifacts, and increase resolution.',
+  //   badges: ['8K Support', 'Beta'],
+  //   selected: false
+  // }
+];
+
+// Asset Gallery Component
+const AssetGallery: React.FC<{
+  assets: Asset[];
+  onAssetSelect: (id: string) => void;
+  onAddAsset: () => void;
+}> = ({ assets, onAssetSelect, onAddAsset }) => {
+  return (
+    <div className="w-20 bg-background border-r border-border flex flex-col">
+      <div className="p-4 border-b border-border">
+        <Button
+          size="sm"
+          onClick={onAddAsset}
+          className="w-full h-12 bg-primary hover:bg-primary/90"
+        >
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+        {assets.map((asset) => (
+          <button
+            key={asset.id}
+            onClick={() => onAssetSelect(asset.id)}
+            className={cn(
+              "w-full h-12 rounded-md overflow-hidden border-2 transition-colors",
+              asset.selected ? "border-blue-500" : "border-border hover:border-border/60"
+            )}
+          >
+            <img
+              src={asset.thumbnail}
+              alt={asset.name}
+              className="w-full h-full object-cover"
+            />
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Tool Selector Component
+const ToolSelector: React.FC<{
+  tools: Tool[];
+  onToolSelect: (id: string) => void;
+}> = ({ tools, onToolSelect }) => {
+  // If there are no tools, this component will not render anything, effectively removing the sidebar.
+  if (tools.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="w-80 bg-background border-r border-border p-4">
+      <div className="space-y-3">
+        {tools.map((tool) => (
+          <Card
+            key={tool.id}
+            className={cn(
+              "p-4 cursor-pointer transition-all hover:shadow-md",
+              tool.selected ? "border-blue-500 bg-blue-50/50 dark:bg-blue-950/20" : "border-border"
+            )}
+            onClick={() => onToolSelect(tool.id)}
+          >
+            <div className="space-y-3">
+              <h3 className="font-semibold text-foreground">{tool.name}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {tool.description}
+              </p>
+              <div className="flex gap-2 flex-wrap">
+                {tool.badges.map((badge, index) => (
+                  <Badge
+                    key={index}
+                    variant={index === 0 ? "default" : "secondary"}
+                    className="text-xs"
+                  >
+                    {badge}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// Main Interaction Area Component
+const MainInteractionArea: React.FC<{
+  onUpload: () => void;
+  onSelectAsset: () => void;
+}> = ({ onUpload, onSelectAsset }) => {
+  return (
+    <div className="flex-1 bg-background p-8 flex items-center justify-center">
+      <Card className="w-full max-w-md p-8 bg-card border-border">
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
+            <ImageIcon className="h-8 w-8 text-muted-foreground" />
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-foreground">AI Suite</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Welcome to your AI Suite. Upload a new file or select an existing asset from your gallery to get started.
+            </p>
+          </div>
+          
+          <div className="flex gap-3 w-full">
+            <Button
+              onClick={onUpload}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={onSelectAsset}
+              className="flex-1"
+            >
+              Select asset
+            </Button>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            Average processing time: N/A
+          </p>
+        </div>
+      </Card>
+    </div>
+  );
+};
+
+// Header Component
+const Header: React.FC = () => {
+  return (
+    <header className="h-16 bg-background border-b border-border px-6 flex items-center justify-between">
+      <div className="flex items-center">
+        <h1 className="text-xl font-bold text-foreground">AI Suite</h1>
+      </div>
+      <div className="flex items-center">
+        <Avatar className="h-8 w-8">
+          <div className="w-full h-full bg-primary rounded-full flex items-center justify-center">
+            <User className="h-4 w-4 text-primary-foreground" />
+          </div>
+        </Avatar>
+      </div>
+    </header>
+  );
+};
+
+// Main Component
+const AIImageUpscaler: React.FC = () => {
+  const [assets, setAssets] = useState<Asset[]>(mockAssets);
+  const [tools, setTools] = useState<Tool[]>(mockTools);
+
+  const handleAssetSelect = (id: string) => {
+    setAssets(prev => prev.map(asset => ({
+      ...asset,
+      selected: asset.id === id
+    })));
+  };
+
+  const handleToolSelect = (id: string) => {
+    setTools(prev => prev.map(tool => ({
+      ...tool,
+      selected: tool.id === id
+    })));
+  };
+
+  const handleAddAsset = () => {
+    console.log('Add new asset');
+  };
+
+  const handleUpload = () => {
+    console.log('Upload new file');
+  };
+
+  const handleSelectAsset = () => {
+    console.log('Select existing asset');
+  };
+
+  return (
+    <div className="h-screen bg-background text-foreground flex flex-col">
+      <Header />
+      <div className="flex-1 flex">
+        <AssetGallery
+          assets={assets}
+          onAssetSelect={handleAssetSelect}
+          onAddAsset={handleAddAsset}
+        />
+        <ToolSelector
+          tools={tools}
+          onToolSelect={handleToolSelect}
+        />
+        <MainInteractionArea
+          onUpload={handleUpload}
+          onSelectAsset={handleSelectAsset}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default AIImageUpscaler;
