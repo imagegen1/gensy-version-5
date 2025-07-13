@@ -113,6 +113,8 @@ export function InteractiveUnifiedGalleryWrapper() {
     setError(null)
 
     try {
+      const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
       // Construct video API params the same way as the working video gallery
       const videoParams = new URLSearchParams({
         type: 'video',
@@ -121,6 +123,10 @@ export function InteractiveUnifiedGalleryWrapper() {
         offset: '0',
         include_count: 'true'
       })
+
+      if (isTestMode) {
+        videoParams.append('testMode', 'true')
+      }
 
       // Load both images and videos in parallel
       const [imagesResponse, videosResponse] = await Promise.all([

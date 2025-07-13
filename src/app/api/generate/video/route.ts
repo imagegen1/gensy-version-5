@@ -154,9 +154,19 @@ export async function POST(request: NextRequest) {
       if (model.includes('ByteDance') || model.includes('Seedream') || model === 'bytedance-seedream-1.0-lite-t2v') {
         finalProvider = 'bytedance'
         modelId = 'bytedance-seedream-1.0-lite-t2v'
-      } else if (model.includes('veo') || model.includes('Veo') || model === 'veo-2.0-generate-001' || model === 'veo-3.0-generate-preview') {
+      } else if (model.includes('veo') || model.includes('Veo') ||
+                 model === 'veo-2.0-generate-001' ||
+                 model === 'veo-3.0-generate-preview' ||
+                 model === 'veo-3.0-fast-generate-preview') {
         finalProvider = 'google-veo'
-        modelId = model.includes('3.0') ? 'veo-3.0-generate-preview' : 'veo-2.0-generate-001'
+        // Proper Veo model mapping based on exact model names
+        if (model.includes('3.0 Fast') || model.includes('veo-3.0-fast') || model.includes('Veo 3.0 Fast')) {
+          modelId = 'veo-3.0-fast-generate-preview'
+        } else if (model.includes('3.0') || model.includes('veo-3.0-generate') || model.includes('Veo 3.0') || model.includes('Veo 3')) {
+          modelId = 'veo-3.0-generate-preview'
+        } else {
+          modelId = 'veo-2.0-generate-001'
+        }
       } else if (model.includes('replicate') || model.includes('wan')) {
         finalProvider = 'replicate-wan'
         modelId = model
@@ -175,6 +185,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`🤖 [${requestId}] VIDEO GENERATION: Using model: ${modelId}, provider: ${finalProvider}`)
+    console.log(`🔍 [${requestId}] VIDEO GENERATION: Model mapping debug - original model: "${model}", mapped modelId: "${modelId}"`)
 
     let profile, creditCost, currentCredits
 
@@ -312,10 +323,13 @@ export async function POST(request: NextRequest) {
         enhancePrompt,
         sampleCount,
         seed,
-        model: (model === 'veo-2.0-generate-001' || model === 'veo-3.0-generate-preview')
-          ? model
+        model: (modelId === 'veo-2.0-generate-001' ||
+                modelId === 'veo-3.0-generate-preview' ||
+                modelId === 'veo-3.0-fast-generate-preview')
+          ? modelId
           : (finalProvider === 'google-veo' ? 'veo-2.0-generate-001' : undefined)
       }
+      console.log(`🔍 [${requestId}] VIDEO GENERATION: Final model in options: "${options.model}", modelId was: "${modelId}"`)
       console.log(`⚙️ [${requestId}] VIDEO GENERATION: Generation options prepared:`, {
         ...options,
         referenceImage: options.referenceImage ? '[BASE64_DATA]' : undefined
@@ -332,11 +346,46 @@ export async function POST(request: NextRequest) {
           // Create Google Veo specific options
           const veoOptions = {
             ...options,
-            model: (model === 'veo-2.0-generate-001' || model === 'veo-3.0-generate-preview')
-              ? model as 'veo-2.0-generate-001' | 'veo-3.0-generate-preview'
-              : 'veo-2.0-generate-001' as const
+            // Override the model with the correctly mapped modelId
+            model: modelId as 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
           }
-          result = await GoogleVeoService.generateVideo(prompt, veoOptions, generation.id)
+
+          console.log(`🎬 [${requestId}] VIDEO GENERATION: Calling Google Veo service with model: ${veoOptions.model}`)
+
+          try {
+            result = await GoogleVeoService.generateVideo(prompt, veoOptions, generation.id)
+          } catch (error) {
+            // Handle Veo 3.0 access issues with automatic fallback to Veo 2.0
+            if (veoOptions.model.includes('veo-3.0') && error instanceof Error && error.message.includes('allowlist access')) {
+              console.warn(`🔄 [${requestId}] VIDEO GENERATION: Veo 3.0 not accessible, falling back to Veo 2.0`)
+
+              // Fallback to Veo 2.0
+              const fallbackOptions = {
+                ...veoOptions,
+                model: 'veo-2.0-generate-001' as const,
+                // Adjust parameters for Veo 2.0 compatibility
+                generateAudio: undefined // Veo 2.0 doesn't support audio generation
+              }
+
+              console.log(`🎬 [${requestId}] VIDEO GENERATION: Retrying with Veo 2.0 fallback`)
+              result = await GoogleVeoService.generateVideo(prompt, fallbackOptions, generation.id)
+
+              // Update the generation record to reflect the fallback
+              await supabase
+                .from('generations')
+                .update({
+                  model_used: 'veo-2.0-generate-001',
+                  metadata: {
+                    ...generation.metadata,
+                    fallback_reason: 'veo_3_access_not_available',
+                    original_model_requested: modelId
+                  }
+                })
+                .eq('id', generation.id)
+            } else {
+              throw error
+            }
+          }
         } else if (finalProvider === 'bytedance') {
           // Create ByteDance specific options
           const bytedanceOptions = {
@@ -672,46 +721,74 @@ async function handleVideoCompletion(
     }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+    // Check for test mode
+    const { searchParams } = new URL(request.url)
+    const testMode = searchParams.get('testMode') === 'true'
+    const isTestMode = process.env.NODE_ENV === 'development' &&
+                      (process.env.NEXT_PUBLIC_TEST_MODE === 'true' || testMode)
+
+    let userId
+    let profile
+
+    if (isTestMode) {
+      console.log('🧪 VIDEO GENERATE GET: Test mode enabled - bypassing authentication')
+      userId = 'test-user'
+      profile = { id: 'test-profile' }
+    } else {
+      const { userId: authUserId } = await auth()
+      if (!authUserId) {
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      userId = authUserId
+
+      const supabase = createServiceRoleClient()
+
+      // Get user's recent video generations
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .single()
+
+      if (!profileData) {
+        return NextResponse.json(
+          { error: 'User profile not found' },
+          { status: 404 }
+        )
+      }
+      profile = profileData
     }
 
-    const supabase = createServiceRoleClient()
+    let generations = []
 
-    // Get user's recent video generations
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .single()
+    if (isTestMode) {
+      console.log('🧪 VIDEO GENERATE GET: Test mode - returning mock generations')
+      generations = []
+    } else {
+      const supabase = createServiceRoleClient()
 
-    if (!profile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      )
-    }
+      const { data: generationsData, error } = await supabase
+        .from('generations')
+        .select('*')
+        .eq('user_id', profile.id)
+        .eq('type', 'video')
+        .order('created_at', { ascending: false })
+        .limit(20)
 
-    const { data: generations, error } = await supabase
-      .from('generations')
-      .select('*')
-      .eq('user_id', profile.id)
-      .eq('type', 'video')
-      .order('created_at', { ascending: false })
-      .limit(20)
+      if (error) {
+        console.error('Failed to fetch video generations:', error)
+        return NextResponse.json(
+          { error: 'Failed to fetch generations' },
+          { status: 500 }
+        )
+      }
 
-    if (error) {
-      console.error('Failed to fetch video generations:', error)
-      return NextResponse.json(
-        { error: 'Failed to fetch generations' },
-        { status: 500 }
-      )
+      generations = generationsData || []
     }
 
     // Get supported options

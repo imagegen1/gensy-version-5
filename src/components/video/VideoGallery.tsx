@@ -72,7 +72,9 @@ export function VideoGallery() {
   const loadVideos = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/generate/video')
+      const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+      const testModeParam = isTestMode ? '&testMode=true' : ''
+      const response = await fetch(`/api/generate/video?${testModeParam}`)
       if (response.ok) {
         const data = await response.json()
         setVideos(data.generations?.filter((g: any) => g.type === 'video' && g.status === 'completed') || [])

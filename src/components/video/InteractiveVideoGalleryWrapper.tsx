@@ -75,6 +75,8 @@ export function InteractiveVideoGalleryWrapper() {
     setError(null)
 
     try {
+      const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
       const params = new URLSearchParams({
         type: 'video',
         status: 'completed',
@@ -82,6 +84,10 @@ export function InteractiveVideoGalleryWrapper() {
         offset: '0',
         include_count: 'true'
       })
+
+      if (isTestMode) {
+        params.append('testMode', 'true')
+      }
 
       const response = await fetch(`/api/generations?${params}`)
       

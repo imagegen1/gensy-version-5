@@ -22,6 +22,9 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
   const [userCredits, setUserCredits] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Test mode for development - bypass authentication
+  const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+
   // Fetch user credits on mount
   useEffect(() => {
     fetchUserCredits()
@@ -34,9 +37,14 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
         const data = await response.json()
         setUserCredits(data.credits || 0)
       } else if (response.status === 401) {
-        // User not authenticated, redirect to sign in
-        window.location.href = '/auth/sign-in'
-        return
+        // User not authenticated, redirect to sign in (unless in test mode)
+        if (!isTestMode) {
+          window.location.href = '/auth/sign-in'
+          return
+        } else {
+          // In test mode, set default credits
+          setUserCredits(1000)
+        }
       }
     } catch (error) {
       console.error('Error fetching user credits:', error)

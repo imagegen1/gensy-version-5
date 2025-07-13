@@ -25,7 +25,9 @@ import {
 
 // Helper function to get proxied video URL
 const getProxiedVideoUrl = (generationId: string): string => {
-  return `/api/video/proxy?id=${encodeURIComponent(generationId)}`
+  const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+  const testModeParam = isTestMode ? '&testMode=true' : ''
+  return `/api/video/proxy?id=${encodeURIComponent(generationId)}${testModeParam}`
 }
 
 interface VideoGeneration {

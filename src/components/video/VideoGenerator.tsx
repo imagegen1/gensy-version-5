@@ -118,7 +118,7 @@ export function VideoGenerator() {
   // and starts polling independently of the async handleGenerate function
   useEffect(() => {
     if (pollingTrigger) {
-      const { generationId, gcsOutputDirectory, provider, taskId, timestamp } = pollingTrigger
+      const { generationId, gcsOutputDirectory, provider, taskId, operationName, timestamp } = pollingTrigger
       console.log(`🎯 [decoupled_${timestamp}] FRONTEND: Decoupled polling trigger activated`)
       console.log(`🎯 [decoupled_${timestamp}] FRONTEND: Polling data:`, {
         generationId,
@@ -142,7 +142,7 @@ export function VideoGenerator() {
       }
 
       // Start polling immediately with optimized settings
-      startStatusPolling(generationId, gcsOutputDirectory, provider, taskId)
+      startStatusPolling(generationId, gcsOutputDirectory, provider, taskId, operationName)
 
       // Clear the trigger to prevent re-triggering
       setPollingTrigger(null)
@@ -187,6 +187,7 @@ export function VideoGenerator() {
       const response = await fetch('/api/generate/video', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensure authentication cookies are sent
         body: JSON.stringify({ prompt, ...options })
       })
 
@@ -214,6 +215,7 @@ export function VideoGenerator() {
           gcsOutputDirectory: data.provider === 'bytedance' ? undefined : (data.gcsOutputDirectory || `gs://gensy-final/video-outputs/${data.generationId}`),
           provider: data.provider,
           taskId: data.taskId,
+          operationName: data.operationName, // Add operation name for enhanced polling
           timestamp: Date.now()
         })
 
@@ -233,7 +235,7 @@ export function VideoGenerator() {
     }
   }
 
-  const startStatusPolling = useCallback((generationId: string, gcsOutputDirectory: string, provider?: string, taskId?: string) => {
+  const startStatusPolling = useCallback((generationId: string, gcsOutputDirectory: string, provider?: string, taskId?: string, operationName?: string) => {
     const pollingId = `polling_${generationId.slice(-8)}_${Date.now()}`
     console.log(`🚨 [${pollingId}] FRONTEND: STORAGE POLLING started with:`, {
       generationId,
@@ -279,7 +281,8 @@ export function VideoGenerator() {
           generationId,
           gcsOutputDirectory,
           provider,
-          taskId
+          taskId,
+          operationName // Add operation name for enhanced polling
         }
 
         console.log(`📤 [${pollingId}] FRONTEND: Sending polling request with body:`, JSON.stringify(requestBody, null, 2))
@@ -289,12 +292,18 @@ export function VideoGenerator() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // Ensure authentication cookies are sent
           body: JSON.stringify(requestBody)
         })
 
         console.log(`📨 [${pollingId}] FRONTEND: Polling response status: ${response.status} (${elapsedTime}s elapsed)`)
 
         if (!response.ok) {
+          if (response.status === 401) {
+            console.error(`❌ [${pollingId}] FRONTEND: Authentication failed during polling - user may need to sign in again`)
+            setError('Authentication expired. Please refresh the page and try again.')
+            return true // Stop polling
+          }
           throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
 

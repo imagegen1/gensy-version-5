@@ -72,20 +72,32 @@ export async function GET(request: NextRequest) {
   console.log(`🎬 [${requestId}] VIDEO PROXY: Request received`)
 
   try {
-    // Check authentication
-    const { userId } = await auth()
-    if (!userId) {
-      console.log(`❌ [${requestId}] VIDEO PROXY: Authentication failed`)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Get query parameters
+    // Get query parameters first
     const { searchParams } = new URL(request.url)
     const generationId = searchParams.get('id')
     const directUrl = searchParams.get('url')
+    const testMode = searchParams.get('testMode') === 'true'
+
+    // Check for test mode
+    const isTestMode = process.env.NODE_ENV === 'development' &&
+                      (process.env.NEXT_PUBLIC_TEST_MODE === 'true' || testMode)
+
+    let userId
+    if (isTestMode) {
+      console.log(`🧪 [${requestId}] VIDEO PROXY: Test mode enabled - bypassing authentication`)
+      userId = 'test-user'
+    } else {
+      // Check authentication
+      const { userId: authUserId } = await auth()
+      if (!authUserId) {
+        console.log(`❌ [${requestId}] VIDEO PROXY: Authentication failed`)
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      userId = authUserId
+    }
 
     if (!generationId && !directUrl) {
       console.log(`❌ [${requestId}] VIDEO PROXY: Missing generation ID or URL`)
@@ -101,19 +113,26 @@ export async function GET(request: NextRequest) {
 
     console.log(`🔍 [${requestId}] VIDEO PROXY: Authenticated user ID: ${userId}`)
 
-    // Get user profile to map Clerk user ID to Supabase profile ID
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .single()
+    let profile
+    if (isTestMode) {
+      console.log(`🧪 [${requestId}] VIDEO PROXY: Test mode - using mock profile`)
+      profile = { id: 'test-profile' }
+    } else {
+      // Get user profile to map Clerk user ID to Supabase profile ID
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .single()
 
-    if (!profile) {
-      console.log(`❌ [${requestId}] VIDEO PROXY: User profile not found for Clerk ID: ${userId}`)
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      )
+      if (!profileData) {
+        console.log(`❌ [${requestId}] VIDEO PROXY: User profile not found for Clerk ID: ${userId}`)
+        return NextResponse.json(
+          { error: 'User profile not found' },
+          { status: 404 }
+        )
+      }
+      profile = profileData
     }
 
     console.log(`🔍 [${requestId}] VIDEO PROXY: Profile ID: ${profile.id}`)
@@ -121,16 +140,64 @@ export async function GET(request: NextRequest) {
     let videoUrl: string
 
     if (generationId) {
-      // Look up the video by generation ID
-      const { data: generation, error } = await supabase
-        .from('generations')
-        .select('result_url, user_id')
-        .eq('id', generationId)
-        .eq('type', 'video')
-        .single()
+      let generation
 
-      if (error || !generation) {
-        console.log(`❌ [${requestId}] VIDEO PROXY: Generation not found - ID: ${generationId}, Error: ${error?.message}`)
+      if (isTestMode && generationId.startsWith('test-generation-')) {
+        console.log(`🧪 [${requestId}] VIDEO PROXY: Test mode - looking up video in GCS directly`)
+        // For test mode, try to find the video directly in GCS
+        try {
+          const { Storage } = require('@google-cloud/storage')
+          const storage = new Storage({
+            projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
+          })
+
+          const bucket = storage.bucket('gensy-final')
+          const prefix = `video-outputs/${generationId}/`
+
+          console.log(`🗂️ [${requestId}] VIDEO PROXY: Checking GCS bucket for prefix: ${prefix}`)
+          const [files] = await bucket.getFiles({ prefix })
+
+          if (files.length > 0) {
+            const videoFile = files.find(file => file.name.endsWith('.mp4'))
+            if (videoFile) {
+              console.log(`✅ [${requestId}] VIDEO PROXY: Found test video file: ${videoFile.name}`)
+              // Generate a signed URL for the video
+              const [signedUrl] = await videoFile.getSignedUrl({
+                action: 'read',
+                expires: Date.now() + 60 * 60 * 1000, // 1 hour
+              })
+
+              generation = {
+                result_url: signedUrl,
+                user_id: profile.id // Allow access in test mode
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`❌ [${requestId}] VIDEO PROXY: Error accessing GCS:`, error)
+        }
+      } else {
+        // Look up the video by generation ID in database
+        const { data: generationData, error } = await supabase
+          .from('generations')
+          .select('result_url, user_id')
+          .eq('id', generationId)
+          .eq('type', 'video')
+          .single()
+
+        if (error || !generationData) {
+          console.log(`❌ [${requestId}] VIDEO PROXY: Generation not found - ID: ${generationId}, Error: ${error?.message}`)
+          return NextResponse.json(
+            { error: 'Video generation not found' },
+            { status: 404 }
+          )
+        }
+        generation = generationData
+      }
+
+      if (!generation) {
+        console.log(`❌ [${requestId}] VIDEO PROXY: Generation not found - ID: ${generationId}`)
         return NextResponse.json(
           { error: 'Video generation not found' },
           { status: 404 }
@@ -140,7 +207,7 @@ export async function GET(request: NextRequest) {
       console.log(`🔍 [${requestId}] VIDEO PROXY: Found generation - user_id: ${generation.user_id}, profile_id: ${profile.id}`)
 
       // Check if user owns the generation (generations table stores profile ID)
-      if (generation.user_id !== profile.id) {
+      if (!isTestMode && generation.user_id !== profile.id) {
         console.log(`❌ [${requestId}] VIDEO PROXY: Access denied - user does not own generation`)
         return NextResponse.json(
           { error: 'Access denied' },

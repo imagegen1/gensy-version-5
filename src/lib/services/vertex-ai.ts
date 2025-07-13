@@ -292,24 +292,35 @@ export class VertexAIService {
           success: true,
           models: [
             {
-              id: 'veo-001',
-              name: 'Google Veo',
-              type: 'video-generation',
-              capabilities: ['text-to-video', 'image-to-video', 'high-quality-generation'],
-              maxDuration: 60,
-              supportedAspectRatios: ['16:9', '9:16'],
-              supportedResolutions: ['480p', '720p'],
-              provider: 'google-vertex-ai',
-              pricing_credits: 10
-            },
-            {
-              id: 'veo-002',
-              name: 'Google Veo 2',
+              id: 'veo-2.0-generate-001',
+              name: 'Google Veo 2.0',
               type: 'video-generation',
               capabilities: ['text-to-video', 'image-to-video', 'frame-to-video', 'ultra-high-quality'],
-              maxDuration: 120,
+              maxDuration: 8,
               supportedAspectRatios: ['16:9', '9:16'],
-              supportedResolutions: ['480p', '720p'],
+              supportedResolutions: ['720p'],
+              provider: 'google-vertex-ai',
+              pricing_credits: 15
+            },
+            {
+              id: 'veo-3.0-generate-preview',
+              name: 'Google Veo 3.0',
+              type: 'video-generation',
+              capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'ultra-high-quality'],
+              maxDuration: 8,
+              supportedAspectRatios: ['16:9'], // Veo 3 only supports 16:9
+              supportedResolutions: ['720p'],
+              provider: 'google-vertex-ai',
+              pricing_credits: 20
+            },
+            {
+              id: 'veo-3.0-fast-generate-preview',
+              name: 'Google Veo 3.0 Fast',
+              type: 'video-generation',
+              capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'fast-generation'],
+              maxDuration: 8,
+              supportedAspectRatios: ['16:9'], // Veo 3 only supports 16:9
+              supportedResolutions: ['720p'],
               provider: 'google-vertex-ai',
               pricing_credits: 15
             }

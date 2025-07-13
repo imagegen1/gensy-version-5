@@ -10,6 +10,7 @@ import {
   Mic,
   CornerRightUp
 } from 'lucide-react'
+import { useAuth, useUser, SignInButton } from '@clerk/nextjs'
 import { useToast } from '@/components/ui/Toast'
 import {
   getThumbnailAspectRatio,
@@ -70,6 +71,24 @@ interface GenerationResult {
 
 export function EnhancedVideoGenerationInterface() {
   const { addToast } = useToast()
+  const { isSignedIn, userId } = useAuth()
+  const { user } = useUser()
+
+  // Test mode for development - bypass authentication
+  const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
+  const effectivelySignedIn = isSignedIn || isTestMode
+  const effectiveUserId = userId || (isTestMode ? 'test-user' : null)
+
+  // Debug logging
+  console.log('🔍 AUTH DEBUG:', {
+    NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_TEST_MODE: process.env.NEXT_PUBLIC_TEST_MODE,
+    isTestMode,
+    isSignedIn,
+    effectivelySignedIn,
+    userId,
+    effectiveUserId
+  })
 
   const [prompt, setPrompt] = useState('')
   const [showAspectRatioPopover, setShowAspectRatioPopover] = useState(false)
@@ -354,7 +373,11 @@ export function EnhancedVideoGenerationInterface() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt: prompt.trim(), type: 'video' }),
+        body: JSON.stringify({
+          prompt: prompt.trim(),
+          type: 'video',
+          testMode: isTestMode
+        }),
       })
 
       if (response.ok) {
@@ -396,6 +419,17 @@ export function EnhancedVideoGenerationInterface() {
   }
 
   const handleGenerate = async () => {
+    // Check authentication first - use direct Clerk values for more reliability
+    if (!isTestMode && (!isSignedIn || !userId)) {
+      setVideoError('Please sign in to generate videos')
+      addToast({
+        title: 'Authentication Required',
+        description: 'Please sign in to generate videos',
+        type: 'error'
+      })
+      return
+    }
+
     // Prevent double-click race condition
     if (isGenerating) {
       console.log('⚠️ FRONTEND: Generation already in progress. Ignoring duplicate request.')
@@ -490,6 +524,7 @@ export function EnhancedVideoGenerationInterface() {
         resolution: selectedResolution,
         model: selectedModel,
         sourceType,
+        testMode: isTestMode,
         ...(referenceImageBase64 && { referenceImage: referenceImageBase64 }),
         ...(startFrameBase64 && { startFrameImage: startFrameBase64 }),
         ...(endFrameBase64 && { endFrameImage: endFrameBase64 })
@@ -501,12 +536,19 @@ export function EnhancedVideoGenerationInterface() {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Ensure authentication cookies are sent
         body: JSON.stringify(requestPayload),
       })
 
       console.log(`📨 [${requestId}] FRONTEND: Response received, status: ${response.status}`)
       const result = await response.json()
       console.log(`📋 [${requestId}] FRONTEND: Response data:`, result)
+
+      // Handle authentication errors specifically
+      if (response.status === 401) {
+        console.error(`🔐 [${requestId}] FRONTEND: Authentication failed. User may not be signed in.`)
+        throw new Error('Authentication failed. Please sign in and try again.')
+      }
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to generate video')
@@ -567,7 +609,23 @@ export function EnhancedVideoGenerationInterface() {
       }
 
       console.error(`❌ [${requestId}] FRONTEND: Video generation error:`, error)
-      setVideoError(errorMessage)
+
+      // Check if this is a Veo 3.0 access issue
+      if (errorMessage.includes('allowlist access')) {
+        setVideoError('Veo 3.0 access not available. The system automatically fell back to Veo 2.0. To access Veo 3.0, please apply for allowlist access through the Google Cloud Console.')
+        addToast({
+          type: 'warning',
+          title: 'Veo 3.0 not available',
+          description: 'Using Veo 2.0 instead'
+        })
+      } else {
+        setVideoError(errorMessage)
+        addToast({
+          type: 'error',
+          title: 'Video generation failed',
+          description: errorMessage
+        })
+      }
 
       // Update the temp video with error state
       setGeneratedVideos(prev =>
@@ -601,16 +659,52 @@ export function EnhancedVideoGenerationInterface() {
 
         const response = await fetch('/api/generate/video/poll', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          credentials: 'include', // Ensure authentication cookies are sent
           body: JSON.stringify({
             generationId,
             // Only set gcsOutputDirectory for Google providers, not ByteDance
             gcsOutputDirectory: provider === 'bytedance' ? undefined : `gs://gensy-final/video-outputs/${generationId}`,
             provider,
-            taskId
+            taskId,
+            operationName, // Add operation name for enhanced polling
+            testMode: isTestMode
           })
         })
 
+        // Handle authentication errors specifically BEFORE parsing JSON
+        if (response.status === 401) {
+          console.error(`🔐 [${pollRequestId}] FRONTEND: Authentication failed during polling. This might be a session timeout.`)
+
+          // Try to parse the error response, but don't fail if it's not JSON
+          let errorDetails = 'Unknown authentication error'
+          try {
+            const errorResult = await response.json()
+            errorDetails = errorResult.error || errorResult.message || 'Authentication failed'
+            console.error(`🔐 [${pollRequestId}] FRONTEND: Error details:`, errorResult)
+          } catch (parseError) {
+            console.warn(`🔐 [${pollRequestId}] FRONTEND: Could not parse error response as JSON`)
+          }
+
+          // Try to refresh the page to re-authenticate
+          if (pollAttempts > 3) { // Only show error after a few attempts
+            setError('Authentication session expired. Please refresh the page and try again.')
+            setIsGenerating(false)
+            clearInterval(progressInterval)
+            return
+          }
+
+          // Continue polling for a few more attempts in case it's a temporary issue
+          console.log(`🔄 [${pollRequestId}] FRONTEND: Retrying authentication in 10 seconds...`)
+          setTimeout(pollForCompletion, 10000) // Wait longer before retry
+          return
+        }
+
+        // Parse JSON response for successful requests
         const result = await response.json()
         console.log(`📋 [${pollRequestId}] FRONTEND: Poll response:`, result)
 
@@ -719,6 +813,9 @@ export function EnhancedVideoGenerationInterface() {
 
 
 
+
+  // Authentication is now handled by Clerk middleware
+  // Component will only render if user is authenticated
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -1028,7 +1125,8 @@ export function EnhancedVideoGenerationInterface() {
                         }}
                         className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200 hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed"
                         type="button"
-                        disabled={isGenerating || isEnhancing}
+                        disabled={isGenerating || isEnhancing || !effectivelySignedIn}
+                        title={!effectivelySignedIn ? 'Please sign in to generate videos' : ''}
                       >
                         {isGenerating ? (
                           <div className="relative">
@@ -1263,6 +1361,11 @@ export function EnhancedVideoGenerationInterface() {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">{model.description}</p>
+                          {model.name.includes('Veo 3') && (
+                            <div className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded border border-amber-200 dark:border-amber-800">
+                              ⚠️ Requires allowlist access. Will fallback to Veo 2.0 if not available.
+                            </div>
+                          )}
                           {model.tags && model.tags.length > 0 && (
                             <div className="flex space-x-2 mb-2">
                               {model.tags.map((tag, index) => (

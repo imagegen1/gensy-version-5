@@ -27,7 +27,8 @@ export interface VideoGenerationOptions {
   personGeneration?: 'allow_adult' | 'dont_allow'
   sampleCount?: number // 1-4
   storageUri?: string // GCS bucket URI
-  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-preview'
+  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
+  generateAudio?: boolean // Required for Veo 3 models
 }
 
 export interface VideoGenerationResult {
@@ -140,13 +141,34 @@ export class GoogleVeoService {
       }
 
       // Set default options according to Veo API requirements
+      const modelId = options.model || 'veo-2.0-generate-001'
+      const isVeo3 = modelId.includes('veo-3.0')
+      const isVeo3Fast = modelId.includes('veo-3.0-fast')
+
+      console.log(`🎬 [${requestId}] GOOGLE VEO: Using model: ${modelId} (isVeo3: ${isVeo3}, isVeo3Fast: ${isVeo3Fast})`)
+
+      // Validate Veo 3 access and parameters
+      if (isVeo3) {
+        console.log(`🔍 [${requestId}] GOOGLE VEO: Veo 3.0 model detected, validating parameters...`)
+
+        // Veo 3.0 has specific requirements
+        if (options.duration && options.duration !== 8) {
+          console.warn(`⚠️ [${requestId}] GOOGLE VEO: Veo 3.0 only supports 8-second duration, adjusting from ${options.duration}`)
+        }
+        if (options.aspectRatio && options.aspectRatio !== '16:9') {
+          console.warn(`⚠️ [${requestId}] GOOGLE VEO: Veo 3.0 only supports 16:9 aspect ratio, adjusting from ${options.aspectRatio}`)
+        }
+      }
+
       const finalOptions: VideoGenerationOptions = {
-        duration: options.duration || 8, // Default to 8 seconds
-        aspectRatio: options.aspectRatio === '9:16' ? '9:16' : '16:9', // Only support 16:9 and 9:16
-        model: options.model || 'veo-2.0-generate-001',
-        sampleCount: Math.min(options.sampleCount || 1, 4), // Max 4 samples
+        // Duration handling: Both Veo 3.0 and Veo 3.0 Fast use 8 seconds as per Studio
+        duration: isVeo3 ? 8 : (options.duration || 8),
+        aspectRatio: isVeo3 ? '16:9' : (options.aspectRatio === '9:16' ? '9:16' : '16:9'), // Veo 3 only supports 16:9
+        model: modelId,
+        sampleCount: Math.min(options.sampleCount || 1, isVeo3Fast ? 2 : 4), // Veo 3 Fast max 2, others max 4
         enhancePrompt: options.enhancePrompt !== false, // Default to true
-        personGeneration: options.personGeneration || 'allow_adult',
+        personGeneration: isVeo3 ? 'allow_all' : (options.personGeneration || 'allow_adult'), // Studio uses 'allow_all' for Veo 3
+        generateAudio: isVeo3 ? (options.generateAudio !== false) : undefined, // Required for Veo 3, not supported by Veo 2
         seed: options.seed,
         negativePrompt: options.negativePrompt,
         ...options
@@ -181,6 +203,7 @@ export class GoogleVeoService {
       // =================================================================
 
       // Prepare the request payload according to Veo API specification
+      // Based on Vertex AI Studio investigation and official documentation
       const requestPayload = {
         instances: [{
           prompt: prompt,
@@ -192,23 +215,41 @@ export class GoogleVeoService {
           })
         }],
         parameters: {
-          durationSeconds: finalOptions.duration,
+          // Core parameters - using exact parameter names from Vertex AI Studio
+          durationSeconds: isVeo3 ? finalOptions.duration.toString() : finalOptions.duration, // Studio sends as string for Veo 3
           aspectRatio: finalOptions.aspectRatio,
           sampleCount: finalOptions.sampleCount,
-          enhancePrompt: finalOptions.enhancePrompt,
-          personGeneration: finalOptions.personGeneration,
-          storageUri: gcsOutputDirectory, // ✅ CORRECT PARAMETER NAME FROM OFFICIAL DOCS
+          storageUri: gcsOutputDirectory,
+
+          // Veo 3.0 specific parameters (required for Veo 3.0 models) - matching Studio exactly
+          ...(isVeo3 && {
+            generateAudio: true, // Studio always uses true
+            personGeneration: finalOptions.personGeneration, // Use the value from finalOptions (now 'allow_all')
+            addWatermark: true, // Studio uses true
+            includeRaiReason: true // Studio includes this parameter
+          }),
+
+          // Veo 2.0 specific parameters
+          ...(!isVeo3 && {
+            enhancePrompt: finalOptions.enhancePrompt !== false,
+            personGeneration: finalOptions.personGeneration === 'dont_allow' ? 'dont_allow' : 'allow_adult'
+          }),
+
+          // Optional parameters for all models
           ...(finalOptions.seed && { seed: finalOptions.seed }),
           ...(finalOptions.negativePrompt && { negativePrompt: finalOptions.negativePrompt })
         }
       }
 
       console.log(`🎬 [${requestId}] GOOGLE VEO: Sending request to Vertex AI...`)
+      console.log(`📋 [${requestId}] GOOGLE VEO: Request payload:`, JSON.stringify(requestPayload, null, 2))
 
       // Make the API call to Vertex AI Veo
       const location = this.getLocation()
       const projectId = this.getProjectId()
       const apiUrl = `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/${finalOptions.model}:predictLongRunning`
+
+      console.log(`🌐 [${requestId}] GOOGLE VEO: API URL:`, apiUrl)
 
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -226,11 +267,19 @@ export class GoogleVeoService {
           statusText: response.statusText,
           error: errorText
         })
+
+        // Check if this is a Veo 3.0 access issue
+        if (isVeo3 && (response.status === 403 || response.status === 404 || errorText.includes('not found') || errorText.includes('permission'))) {
+          console.warn(`🚫 [${requestId}] GOOGLE VEO: Veo 3.0 access not available. This model requires allowlist access.`)
+          throw new Error(`Veo 3.0 access not available. This model requires allowlist access. Please apply for access through the Google Cloud Console or use Veo 2.0 instead.`)
+        }
+
         throw new Error(`Vertex AI API error: ${response.status} ${response.statusText} - ${errorText}`)
       }
 
       const result = await response.json()
       console.log(`✅ [${requestId}] GOOGLE VEO: Request submitted successfully`)
+      console.log(`📋 [${requestId}] GOOGLE VEO: Full response:`, JSON.stringify(result, null, 2))
       console.log(`🔄 [${requestId}] GOOGLE VEO: Operation name:`, result.name)
 
 

@@ -142,11 +142,27 @@ export function ImageToVideoConverter({
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include', // Ensure authentication cookies are sent
           body: JSON.stringify({
             generationId,
             operationName
           })
         })
+
+        // Handle authentication errors before parsing JSON
+        if (response.status === 401) {
+          console.error('Authentication failed during polling - session may have expired')
+          setError('Authentication session expired. Please refresh the page and try again.')
+          clearInterval(interval)
+          setPollingInterval(null)
+          setIsGenerating(false)
+          return
+        }
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
         const data = await response.json()
 
         if (data.status === 'completed') {

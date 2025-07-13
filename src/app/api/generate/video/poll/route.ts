@@ -24,8 +24,90 @@ const pollRequestSchema = z.object({
   gcsOutputDirectory: z.string().optional(), // GCS bucket path where video will be saved (Google Veo)
   taskId: z.string().optional(), // ByteDance task ID
   provider: z.enum(['google-veo', 'bytedance']).optional(), // Provider type
+  operationName: z.string().optional(), // Google Vertex AI operation name for status checking
   testMode: z.boolean().optional()
 })
+
+// Helper function to check Google Vertex AI operation status with enhanced error handling
+// This function handles common Google Veo issues like 404 errors (expired operations)
+// and permission errors by gracefully falling back to GCS bucket polling
+async function checkOperationStatus(operationName: string, requestId: string) {
+  try {
+    console.log(`🔍 [${requestId}] OPERATION STATUS: Checking operation: ${operationName}`)
+
+    // Use Google Auth to get access token
+    const { GoogleAuth } = require('google-auth-library')
+    const auth = new GoogleAuth({
+      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      scopes: ['https://www.googleapis.com/auth/cloud-platform']
+    })
+
+    const authClient = await auth.getClient()
+    const accessToken = await authClient.getAccessToken()
+
+    if (!accessToken.token) {
+      throw new Error('Failed to get access token')
+    }
+
+    // Check operation status using Vertex AI API
+    const operationUrl = `https://us-central1-aiplatform.googleapis.com/v1/${operationName}`
+    console.log(`🔍 [${requestId}] OPERATION STATUS: Checking URL: ${operationUrl}`)
+
+    const response = await fetch(operationUrl, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${accessToken.token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+
+    console.log(`🔍 [${requestId}] OPERATION STATUS: Response status: ${response.status}`)
+
+    if (response.status === 404) {
+      console.log(`⚠️ [${requestId}] OPERATION STATUS: Operation not found (404) - this is common with Google Veo operations`)
+      console.log(`🔄 [${requestId}] OPERATION STATUS: Will fall back to GCS bucket polling for video completion`)
+      return { status: 'NOT_FOUND', error: 'Operation expired - falling back to GCS polling', done: false, fallbackToGCS: true }
+    }
+
+    if (response.status === 403) {
+      console.log(`❌ [${requestId}] OPERATION STATUS: Permission denied (403) - check service account permissions`)
+      console.log(`🔧 [${requestId}] OPERATION STATUS: Service account needs 'Vertex AI User' role or 'aiplatform.operations.get' permission`)
+      return { status: 'PERMISSION_DENIED', error: 'Permission denied - check service account permissions', done: false, fallbackToGCS: true }
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`❌ [${requestId}] OPERATION STATUS: Error response (${response.status}):`, errorText)
+      console.log(`🔄 [${requestId}] OPERATION STATUS: Will fall back to GCS bucket polling`)
+      return { status: 'API_ERROR', error: `API request failed: ${response.status}`, done: false, fallbackToGCS: true }
+    }
+
+    const operationData = await response.json()
+    console.log(`🔍 [${requestId}] OPERATION STATUS: Operation data:`, JSON.stringify(operationData, null, 2))
+
+    // Parse the operation status
+    if (operationData.done) {
+      if (operationData.error) {
+        console.log(`❌ [${requestId}] OPERATION STATUS: Operation failed with error:`, operationData.error)
+        return { status: 'FAILED', error: operationData.error.message, done: true }
+      } else if (operationData.response) {
+        console.log(`✅ [${requestId}] OPERATION STATUS: Operation completed successfully`)
+        return { status: 'SUCCEEDED', done: true, response: operationData.response }
+      } else {
+        console.log(`⚠️ [${requestId}] OPERATION STATUS: Operation done but no response or error`)
+        return { status: 'UNKNOWN', done: true }
+      }
+    } else {
+      console.log(`🔄 [${requestId}] OPERATION STATUS: Operation still running`)
+      return { status: 'RUNNING', done: false }
+    }
+
+  } catch (error) {
+    console.error(`❌ [${requestId}] OPERATION STATUS: Error:`, error)
+    console.log(`🔄 [${requestId}] OPERATION STATUS: Will fall back to GCS bucket polling`)
+    return { status: 'ERROR', error: error instanceof Error ? error.message : 'Unknown error', done: false, fallbackToGCS: true }
+  }
+}
 
 export async function POST(request: NextRequest) {
   // ULTIMATE SOLUTION: GCS bucket polling instead of broken Google API
@@ -45,12 +127,46 @@ export async function POST(request: NextRequest) {
       console.log(`🧪 [${requestId}] GCS POLL: Test mode enabled`)
       userId = 'test-user'
     } else {
-      // Check authentication
-      const authResult = await auth()
-      userId = authResult.userId
-      if (!userId) {
-        console.error(`❌ [${requestId}] GCS POLL: Unauthorized`)
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      // Check authentication with enhanced error handling
+      try {
+        console.log(`🔐 [${requestId}] GCS POLL: Attempting authentication...`)
+
+        // Log request headers for debugging
+        const authHeader = request.headers.get('authorization')
+        const cookieHeader = request.headers.get('cookie')
+        console.log(`🔐 [${requestId}] GCS POLL: Request headers:`, {
+          hasAuthHeader: !!authHeader,
+          hasCookieHeader: !!cookieHeader,
+          cookieLength: cookieHeader ? cookieHeader.length : 0
+        })
+
+        const authResult = await auth()
+        userId = authResult.userId
+
+        console.log(`🔐 [${requestId}] GCS POLL: Auth check result:`, {
+          hasUserId: !!authResult.userId,
+          sessionId: authResult.sessionId ? 'present' : 'missing',
+          userId: authResult.userId ? `${authResult.userId.substring(0, 8)}...` : 'none'
+        })
+
+        if (!userId) {
+          console.error(`❌ [${requestId}] GCS POLL: Unauthorized - no user ID found`)
+          console.error(`❌ [${requestId}] GCS POLL: Full auth result:`, authResult)
+          return NextResponse.json({
+            error: 'Authentication required. Please refresh the page and try again.',
+            code: 'AUTH_REQUIRED',
+            details: 'No user ID in authentication result'
+          }, { status: 401 })
+        }
+
+        console.log(`✅ [${requestId}] GCS POLL: Authentication successful - userId: ${userId.substring(0, 8)}...`)
+      } catch (authError) {
+        console.error(`❌ [${requestId}] GCS POLL: Authentication error:`, authError)
+        return NextResponse.json({
+          error: 'Authentication failed. Please refresh the page and try again.',
+          code: 'AUTH_ERROR',
+          details: authError instanceof Error ? authError.message : 'Unknown auth error'
+        }, { status: 401 })
       }
     }
 
@@ -64,13 +180,14 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const { generationId, gcsOutputDirectory, taskId, provider } = validationResult.data
+    const { generationId, gcsOutputDirectory, taskId, provider, operationName } = validationResult.data
 
     console.log(`🔄 [${requestId}] POLL: Polling for completion:`, {
       generationId,
       gcsOutputDirectory,
       taskId,
-      provider
+      provider,
+      operationName
     })
 
     // Handle ByteDance polling
@@ -210,23 +327,58 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle Google Veo polling (existing logic)
-    if (!gcsOutputDirectory) {
-      console.log(`⚠️ [${requestId}] GCS POLL: No GCS output directory provided, falling back to processing status`)
-      return NextResponse.json({
-        success: true,
-        status: 'processing',
-        message: 'Video generation in progress...'
-      })
-    }
+    // Handle Google Veo polling with operation status checking
+    if (provider === 'google-veo' || !provider) {
+      console.log(`🔍 [${requestId}] GOOGLE VEO POLL: Starting enhanced polling with operation status checking`)
 
-    // =================================================================
-    // --- ULTIMATE SOLUTION: DIRECT GCS BUCKET POLLING ---
-    // Instead of relying on Google's broken polling API, we check the
-    // storage bucket directly where the video will be created.
-    // =================================================================
+      // First, check operation status if we have an operation name
+      if (operationName) {
+        console.log(`🔍 [${requestId}] GOOGLE VEO POLL: Checking operation status first...`)
+        const operationStatus = await checkOperationStatus(operationName, requestId)
 
-    console.log(`🗂️ [${requestId}] GCS POLL: Checking bucket for completed video...`)
+        // Only return error for actual failures, not for fallback cases
+        if (operationStatus.status === 'FAILED') {
+          console.error(`❌ [${requestId}] GOOGLE VEO POLL: Operation failed:`, operationStatus.error)
+          return NextResponse.json({
+            success: false,
+            status: 'failed',
+            error: operationStatus.error || 'Video generation operation failed'
+          }, { status: 500 })
+        }
+
+        if (operationStatus.status === 'RUNNING') {
+          console.log(`🔄 [${requestId}] GOOGLE VEO POLL: Operation still running, continuing to poll...`)
+          return NextResponse.json({
+            success: true,
+            status: 'processing',
+            message: 'Video generation in progress...'
+          })
+        }
+
+        if (operationStatus.status === 'SUCCEEDED') {
+          console.log(`✅ [${requestId}] GOOGLE VEO POLL: Operation completed successfully! Now checking GCS bucket...`)
+          // Continue to GCS bucket check below
+        }
+
+        // Handle fallback cases (404, permission errors, etc.)
+        if (operationStatus.fallbackToGCS) {
+          console.log(`🔄 [${requestId}] GOOGLE VEO POLL: Operation status unavailable (${operationStatus.status}), falling back to GCS bucket polling`)
+          console.log(`📝 [${requestId}] GOOGLE VEO POLL: Reason: ${operationStatus.error}`)
+          // Continue to GCS bucket check below - don't return early
+        }
+      }
+
+      // Check GCS bucket for completed video
+      if (!gcsOutputDirectory) {
+        console.log(`⚠️ [${requestId}] GCS POLL: No GCS output directory provided, falling back to processing status`)
+        return NextResponse.json({
+          success: true,
+          status: 'processing',
+          message: 'Video generation in progress...'
+        })
+      }
+
+      console.log(`🗂️ [${requestId}] GCS POLL: Checking bucket for completed video...`)
 
     // Parse the GCS URI to get bucket name and prefix (folder)
     const gcsUri = gcsOutputDirectory.replace('gs://', '')
@@ -373,6 +525,7 @@ export async function POST(request: NextRequest) {
         message: 'Video generation in progress...'
       })
     }
+    } // Close Google Veo polling section
 
   } catch (error) {
     console.error(`❌ [${requestId}] GCS POLL: Critical error:`, error)

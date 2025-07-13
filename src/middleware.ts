@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   '/features',
   '/contact',
   '/demo',
+  // '/video', // Removed - should require authentication
   '/api/webhooks(.*)',
   '/api/health(.*)',
   '/api/auth(.*)',
@@ -26,13 +27,13 @@ const isProtectedApiRoute = createRouteMatcher([
   '/api/convert(.*)',
   '/api/user(.*)',
   '/api/ai-models(.*)',
-  '/api/enhance-prompt(.*)'
+  '/api/enhance-prompt(.*)',
+  '/api/generations(.*)'
 ])
 
-const isOnboardingRoute = createRouteMatcher(['/onboarding'])
-
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth()
+  // Check for test mode
+  const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 
   // Allow public routes
   if (isPublicRoute(req)) {
@@ -41,20 +42,15 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Handle protected API routes - require authentication but don't redirect
   if (isProtectedApiRoute(req)) {
-    if (!userId) {
-      // Check if this is a test mode request
-      if (req.method === 'POST') {
-        try {
-          const body = await req.clone().json()
-          if (body.testMode === true) {
-            console.log('🧪 MIDDLEWARE: Allowing test mode request to', req.nextUrl.pathname)
-            return NextResponse.next()
-          }
-        } catch (error) {
-          // If we can't parse the body, continue with normal auth check
-        }
-      }
+    // Allow test mode for development
+    if (isTestMode) {
+      console.log('🧪 MIDDLEWARE: Allowing test mode request to', req.nextUrl.pathname)
+      return NextResponse.next()
+    }
 
+    // For non-test mode, protect the route
+    const { userId } = await auth()
+    if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -63,23 +59,9 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
-  // Protect all other routes with redirect
-  await auth.protect()
-
-  // Handle authenticated user routing
-  if (userId) {
-    const url = req.nextUrl.clone()
-
-    // Redirect to onboarding if user is new and not already on onboarding
-    if (url.pathname === '/dashboard' && !isOnboardingRoute(req)) {
-      // Check if user needs onboarding (this will be handled by the dashboard page)
-      return NextResponse.next()
-    }
-
-    // Allow onboarding routes for authenticated users
-    if (isOnboardingRoute(req)) {
-      return NextResponse.next()
-    }
+  // Protect all other routes (unless in test mode)
+  if (!isTestMode) {
+    await auth.protect()
   }
 
   return NextResponse.next()

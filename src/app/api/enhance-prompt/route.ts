@@ -12,6 +12,7 @@ const enhancePromptSchema = z.object({
   prompt: z.string().min(3, 'Prompt must be at least 3 characters').max(1000, 'Prompt too long'),
   context: z.string().optional(), // Optional context to specify the type of generation
   type: z.enum(['image', 'video']).optional(), // Type of generation (image or video)
+  testMode: z.boolean().optional() // For testing without authentication
 })
 
 // Response types
@@ -30,24 +31,34 @@ export async function POST(request: NextRequest) {
   console.log(`📝 [${requestId}] Timestamp: ${new Date().toISOString()}`)
 
   try {
-    // Check authentication
-    console.log(`🔐 [${requestId}] Checking authentication...`)
-    const { userId } = await auth()
-    if (!userId) {
-      console.log(`❌ [${requestId}] Authentication failed - no userId`)
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
-
-    // Parse and validate request body
+    // Parse request body first to check for test mode
     console.log(`📥 [${requestId}] Parsing request body...`)
     const body = await request.json()
+    const isTestMode = body.testMode === true
+
+    let userId
+    if (isTestMode) {
+      console.log(`🧪 [${requestId}] Test mode enabled - bypassing authentication`)
+      userId = 'test-user'
+    } else {
+      // Check authentication
+      console.log(`🔐 [${requestId}] Checking authentication...`)
+      const { userId: authUserId } = await auth()
+      if (!authUserId) {
+        console.log(`❌ [${requestId}] Authentication failed - no userId`)
+        return NextResponse.json(
+          { success: false, error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      userId = authUserId
+      console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
+    }
+
     console.log(`📋 [${requestId}] Request body received:`, {
       prompt: body.prompt?.substring(0, 100) + (body.prompt?.length > 100 ? '...' : ''),
-      promptLength: body.prompt?.length
+      promptLength: body.prompt?.length,
+      testMode: isTestMode
     })
 
     const validationResult = enhancePromptSchema.safeParse(body)
