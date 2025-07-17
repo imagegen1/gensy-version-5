@@ -1,6 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 
 // Define the routes that are accessible to everyone, including non-logged-in users.
+// Updated: Final clean version with proper security
 const isPublicRoute = createRouteMatcher([
   '/',
   '/auth/sign-in(.*)',
