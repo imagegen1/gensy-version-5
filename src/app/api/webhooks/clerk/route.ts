@@ -182,7 +182,7 @@ async function handleSessionCreated(sessionData: any) {
     const supabase = createServiceRoleClient()
     
     await supabase
-      .from('profiles')
+      .from('users')
       .update({
         updated_at: new Date().toISOString()
       })

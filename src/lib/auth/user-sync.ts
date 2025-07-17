@@ -25,47 +25,24 @@ export async function syncUserProfile(clerkUser?: User | null): Promise<{
 
     const supabase = createServiceRoleClient()
 
-    // Prepare user data
+    // Prepare user data (matching the 'users' table schema)
     const userData = {
       clerk_user_id: user.id,
       email: user.emailAddresses[0]?.emailAddress || '',
-      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
+      full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
       avatar_url: user.imageUrl || null,
       updated_at: new Date().toISOString(),
     }
 
-    // Try to get existing user first
-    const { data: existingUser } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('clerk_user_id', user.id)
+    // Use upsert to safely create or update user profile
+    const { data: supabaseUser, error } = await supabase
+      .from('users')
+      .upsert(userData, {
+        onConflict: 'clerk_user_id',
+        ignoreDuplicates: false
+      })
+      .select()
       .single()
-
-    let supabaseUser
-    let error
-
-    if (existingUser) {
-      // Update existing user
-      const { data, error: updateError } = await supabase
-        .from('profiles')
-        .update(userData)
-        .eq('clerk_user_id', user.id)
-        .select()
-        .single()
-
-      supabaseUser = data
-      error = updateError
-    } else {
-      // Insert new user
-      const { data, error: insertError } = await supabase
-        .from('profiles')
-        .insert(userData)
-        .select()
-        .single()
-
-      supabaseUser = data
-      error = insertError
-    }
 
     if (error) {
       console.error('Error syncing user profile:', error)
@@ -151,7 +128,7 @@ export async function getCurrentUser(): Promise<{
     const supabase = createServiceRoleClient()
     
     const { data: user, error } = await supabase
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('clerk_user_id', userId)
       .single()
@@ -201,7 +178,7 @@ export async function updateUserProfile(updates: {
 
     // Update user profile
     const { data: user, error } = await supabase
-      .from('profiles')
+      .from('users')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -242,7 +219,7 @@ export async function deleteUserAccount(): Promise<{
 
     // Delete user (cascade will handle related data)
     const { error } = await supabase
-      .from('profiles')
+      .from('users')
       .delete()
       .eq('clerk_user_id', userId)
 

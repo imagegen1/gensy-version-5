@@ -4,7 +4,7 @@
  */
 
 // Configuration
-const PRODUCTION_URL = 'https://gensy-version-5.vercel.app' // Replace with your actual Vercel domain
+const PRODUCTION_URL = 'https://gensy-version-5.vercel.app' // Your actual Vercel domain
 const ADMIN_SECRET_KEY = 'gensy-admin-2024-secure-key' // Should match your environment variable
 const TARGET_EMAIL = 'insightdigitech@gmail.com'
 const NEW_CREDITS = 1000
