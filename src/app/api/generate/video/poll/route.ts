@@ -10,11 +10,33 @@ import { createServiceRoleClient } from '@/lib/supabase/server'
 import { BytedanceVideoService } from '@/lib/services/bytedance-video-service'
 import { z } from 'zod'
 
-// Initialize Google Cloud Storage with service account
-const storage = new Storage({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-})
+// Initialize Google Cloud Storage with proper authentication
+function createGoogleCloudStorage() {
+  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+  const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+
+  if (credentialsBase64) {
+    // Production: Use base64 encoded credentials
+    console.log('🔐 GCS POLL: Using base64 credentials for authentication')
+    const credentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString())
+
+    return new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      credentials
+    })
+  } else if (credentialsPath) {
+    // Development: Use credentials file path
+    console.log('🔐 GCS POLL: Using credentials file for authentication')
+    return new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      keyFilename: credentialsPath
+    })
+  } else {
+    throw new Error('Missing Google credentials: Set either GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+  }
+}
+
+const storage = createGoogleCloudStorage()
 
 // Request validation schema - supports both Google Veo and ByteDance
 const pollRequestSchema = z.object({
@@ -35,10 +57,28 @@ async function checkOperationStatus(operationName: string, requestId: string) {
 
     // Use Google Auth to get access token
     const { GoogleAuth } = require('google-auth-library')
-    const auth = new GoogleAuth({
-      keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      scopes: ['https://www.googleapis.com/auth/cloud-platform']
-    })
+
+    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+
+    let auth
+    if (credentialsBase64) {
+      // Production: Use base64 encoded credentials
+      const credentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString())
+      auth = new GoogleAuth({
+        projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+        credentials,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform']
+      })
+    } else if (credentialsPath) {
+      // Development: Use credentials file path
+      auth = new GoogleAuth({
+        keyFilename: credentialsPath,
+        scopes: ['https://www.googleapis.com/auth/cloud-platform']
+      })
+    } else {
+      throw new Error('Missing Google credentials: Set either GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+    }
 
     const authClient = await auth.getClient()
     const accessToken = await authClient.getAccessToken()
