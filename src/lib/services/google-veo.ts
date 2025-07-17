@@ -152,6 +152,14 @@ export class GoogleVeoService {
 
       if (!this.isConfigured()) {
         console.log(`🧪 [${requestId}] GOOGLE VEO: Not configured, using mock generation`)
+        console.log(`🧪 [${requestId}] GOOGLE VEO: Configuration check:`, {
+          hasProjectId: !!process.env.GOOGLE_CLOUD_PROJECT_ID,
+          hasCredentialsFile: !!process.env.GOOGLE_APPLICATION_CREDENTIALS,
+          hasCredentialsBase64: !!process.env.GOOGLE_CREDENTIALS_BASE64,
+          projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+          credentialsFileLength: process.env.GOOGLE_APPLICATION_CREDENTIALS?.length || 0,
+          credentialsBase64Length: process.env.GOOGLE_CREDENTIALS_BASE64?.length || 0
+        })
         return await this.generateMockVideo(options)
       }
 
