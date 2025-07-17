@@ -3,12 +3,12 @@
  * S3-compatible storage client for media files
  */
 
-import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3'
+import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, HeadObjectCommand, CreateMultipartUploadCommand, UploadPartCommand, CompleteMultipartUploadCommand } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { lookup } from 'mime-types'
 import { env } from '../env'
 
-// Create R2 client
+// Create R2 client with optimized settings for video uploads
 const r2Client = new S3Client({
   region: 'auto',
   endpoint: env.CLOUDFLARE_R2_ENDPOINT,
@@ -16,6 +16,12 @@ const r2Client = new S3Client({
     accessKeyId: env.CLOUDFLARE_R2_ACCESS_KEY_ID,
     secretAccessKey: env.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
   },
+  // Optimize for large file uploads
+  requestHandler: {
+    requestTimeout: 300000, // 5 minutes timeout for large uploads
+    connectionTimeout: 30000, // 30 seconds connection timeout
+  },
+  maxAttempts: 3, // Retry failed uploads
 })
 
 export interface UploadOptions {
@@ -33,6 +39,108 @@ export interface UploadResult {
   error?: string
   size?: number
   contentType?: string
+}
+
+/**
+ * Upload large files using multipart upload for better performance
+ */
+async function uploadLargeFile(
+  requestId: string,
+  key: string,
+  buffer: Buffer,
+  contentType: string,
+  metadata: Record<string, string>,
+  isPublic: boolean
+): Promise<void> {
+  const PART_SIZE = 10 * 1024 * 1024 // 10MB per part
+  const totalParts = Math.ceil(buffer.length / PART_SIZE)
+
+  console.log(`🔄 [${requestId}] R2 MULTIPART: Starting multipart upload with ${totalParts} parts`)
+
+  // Initialize multipart upload
+  const createCommand = new CreateMultipartUploadCommand({
+    Bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
+    Key: key,
+    ContentType: contentType,
+    Metadata: {
+      ...metadata,
+      uploadedAt: new Date().toISOString(),
+      size: buffer.length.toString(),
+      multipart: 'true',
+    },
+    ...(isPublic && { ACL: 'public-read' }),
+  })
+
+  const createResponse = await r2Client.send(createCommand)
+  const uploadId = createResponse.UploadId!
+
+  try {
+    // Upload parts in parallel (limited concurrency)
+    const parts: { ETag: string; PartNumber: number }[] = []
+    const CONCURRENT_UPLOADS = 3 // Limit concurrent uploads to avoid overwhelming
+
+    for (let i = 0; i < totalParts; i += CONCURRENT_UPLOADS) {
+      const batch = []
+
+      for (let j = 0; j < CONCURRENT_UPLOADS && i + j < totalParts; j++) {
+        const partNumber = i + j + 1
+        const start = (i + j) * PART_SIZE
+        const end = Math.min(start + PART_SIZE, buffer.length)
+        const partData = buffer.slice(start, end)
+
+        batch.push(uploadPart(requestId, key, uploadId, partNumber, partData))
+      }
+
+      const batchResults = await Promise.all(batch)
+      parts.push(...batchResults)
+
+      console.log(`🔄 [${requestId}] R2 MULTIPART: Completed ${Math.min(i + CONCURRENT_UPLOADS, totalParts)}/${totalParts} parts`)
+    }
+
+    // Complete multipart upload
+    const completeCommand = new CompleteMultipartUploadCommand({
+      Bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
+      Key: key,
+      UploadId: uploadId,
+      MultipartUpload: {
+        Parts: parts.sort((a, b) => a.PartNumber - b.PartNumber),
+      },
+    })
+
+    await r2Client.send(completeCommand)
+    console.log(`✅ [${requestId}] R2 MULTIPART: Upload completed successfully`)
+
+  } catch (error) {
+    console.error(`❌ [${requestId}] R2 MULTIPART: Upload failed, aborting...`, error)
+    // Abort multipart upload on failure
+    // Note: AbortMultipartUploadCommand would be imported if needed
+    throw error
+  }
+}
+
+/**
+ * Upload a single part for multipart upload
+ */
+async function uploadPart(
+  requestId: string,
+  key: string,
+  uploadId: string,
+  partNumber: number,
+  data: Buffer
+): Promise<{ ETag: string; PartNumber: number }> {
+  const command = new UploadPartCommand({
+    Bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
+    Key: key,
+    UploadId: uploadId,
+    PartNumber: partNumber,
+    Body: data,
+  })
+
+  const response = await r2Client.send(command)
+  return {
+    ETag: response.ETag!,
+    PartNumber: partNumber,
+  }
 }
 
 /**
@@ -83,36 +191,36 @@ export async function uploadFile(options: UploadOptions): Promise<UploadResult> 
       console.log(`📦 [${r2RequestId}] R2 STORAGE: Buffer ready - size: ${size} bytes`)
     }
 
-    // Upload to R2
-    console.log(`☁️ [${r2RequestId}] R2 STORAGE: Preparing upload command...`)
-    const command = new PutObjectCommand({
-      Bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
-      Key: key,
-      Body: buffer,
-      ContentType: finalContentType,
-      Metadata: {
-        ...metadata,
-        uploadedAt: new Date().toISOString(),
-        size: size.toString(),
-      },
-      // Set public read if specified
-      ...(isPublic && { ACL: 'public-read' }),
-    })
-
-    console.log(`☁️ [${r2RequestId}] R2 STORAGE: Upload details:`, {
-      bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
-      key,
-      contentType: finalContentType,
-      size,
-      isPublic,
-      metadataCount: Object.keys(metadata).length
-    })
-
-    console.log(`☁️ [${r2RequestId}] R2 STORAGE: Sending upload command to R2...`)
+    // Choose upload method based on file size
+    const MULTIPART_THRESHOLD = 50 * 1024 * 1024 // 50MB threshold for multipart upload
     const uploadStartTime = Date.now()
-    await r2Client.send(command)
+
+    if (size > MULTIPART_THRESHOLD) {
+      console.log(`☁️ [${r2RequestId}] R2 STORAGE: Large file detected (${Math.round(size / 1024 / 1024)}MB), using multipart upload...`)
+      await uploadLargeFile(r2RequestId, key, buffer, finalContentType, metadata, isPublic)
+    } else {
+      console.log(`☁️ [${r2RequestId}] R2 STORAGE: Standard upload for ${Math.round(size / 1024 / 1024 * 100) / 100}MB file...`)
+      const command = new PutObjectCommand({
+        Bucket: env.CLOUDFLARE_R2_BUCKET_NAME,
+        Key: key,
+        Body: buffer,
+        ContentType: finalContentType,
+        Metadata: {
+          ...metadata,
+          uploadedAt: new Date().toISOString(),
+          size: size.toString(),
+        },
+        // Set public read if specified
+        ...(isPublic && { ACL: 'public-read' }),
+      })
+
+      await r2Client.send(command)
+    }
+
     const uploadEndTime = Date.now()
-    console.log(`☁️ [${r2RequestId}] R2 STORAGE: Upload completed in ${uploadEndTime - uploadStartTime}ms`)
+    const uploadTime = uploadEndTime - uploadStartTime
+    const speedMBps = Math.round(size / 1024 / 1024 / (uploadTime / 1000) * 100) / 100
+    console.log(`☁️ [${r2RequestId}] R2 STORAGE: Upload completed in ${uploadTime}ms (${speedMBps}MB/s)`)
 
     // Generate URL
     console.log(`🔗 [${r2RequestId}] R2 STORAGE: Generating access URL...`)

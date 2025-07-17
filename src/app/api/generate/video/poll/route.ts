@@ -8,8 +8,6 @@ import { auth } from '@clerk/nextjs/server'
 import { Storage } from '@google-cloud/storage'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { BytedanceVideoService } from '@/lib/services/bytedance-video-service'
-// TODO: Re-enable thumbnail generation after fixing FFmpeg webpack issues
-// import { generateVideoThumbnail, updateMediaFileWithThumbnail } from '@/lib/video/thumbnail-generator'
 import { z } from 'zod'
 
 // Initialize Google Cloud Storage with service account

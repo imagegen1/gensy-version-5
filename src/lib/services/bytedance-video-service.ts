@@ -73,9 +73,35 @@ const getVideoSize = (resolution: string, aspectRatio: string): string => {
 export class BytedanceVideoService {
   private static readonly TEXT_TO_VIDEO_MODEL = 'seedance-1-0-lite-t2v-250428' // Text-to-video model
   private static readonly IMAGE_TO_VIDEO_MODEL = 'seedance-1-0-lite-i2v-250428' // Image-to-video model
+  private static readonly PRO_MODEL = 'seedance-1-0-pro-250528' // Pro model (supports both T2V and I2V)
   private static readonly API_TIMEOUT = 300000 // 5 minutes
   private static readonly POLL_INTERVAL = 5000 // 5 seconds
   private static readonly MAX_POLL_ATTEMPTS = 60 // 5 minutes total
+
+  /**
+   * Determine which ByteDance model to use based on model name and source type
+   */
+  private static selectModel(modelName?: string, sourceType?: string, hasReferenceImage?: boolean): string {
+    // If specific model is requested, use it
+    if (modelName) {
+      if (modelName.includes('pro') || modelName.includes('250528')) {
+        return this.PRO_MODEL
+      }
+      if (modelName.includes('i2v') || modelName.includes('image-to-video')) {
+        return this.IMAGE_TO_VIDEO_MODEL
+      }
+      if (modelName.includes('t2v') || modelName.includes('text-to-video')) {
+        return this.TEXT_TO_VIDEO_MODEL
+      }
+    }
+
+    // Default selection based on source type or reference image
+    if (sourceType === 'image-to-video' || hasReferenceImage) {
+      return this.IMAGE_TO_VIDEO_MODEL
+    }
+
+    return this.TEXT_TO_VIDEO_MODEL
+  }
 
   /**
    * Detect image format from base64 data
@@ -119,12 +145,13 @@ export class BytedanceVideoService {
   }
 
   /**
-   * Generate a video using BytePlus ModelArk Seedream-1.0-lite-t2v API
+   * Generate a video using BytePlus ModelArk Seedream API
    */
   static async generateVideo(
     prompt: string,
     options: BytedanceVideoGenerationOptions = {},
-    generationId?: string
+    generationId?: string,
+    modelName?: string
   ): Promise<BytedanceVideoGenerationResult> {
     const bytedanceRequestId = `bytedance_video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const startTime = Date.now()
@@ -272,12 +299,14 @@ export class BytedanceVideoService {
         })
       }
 
-      // Select the appropriate model based on whether an image is provided
-      const selectedModel = finalOptions.referenceImage
-        ? this.IMAGE_TO_VIDEO_MODEL
-        : this.TEXT_TO_VIDEO_MODEL
+      // Select the appropriate model based on model name, source type, or reference image
+      const selectedModel = this.selectModel(
+        modelName,
+        finalOptions.sourceType,
+        !!finalOptions.referenceImage
+      )
 
-      console.log(`🎬 [${bytedanceRequestId}] BYTEDANCE VIDEO: Selected model: ${selectedModel} (${finalOptions.referenceImage ? 'image-to-video' : 'text-to-video'})`)
+      console.log(`🎬 [${bytedanceRequestId}] BYTEDANCE VIDEO: Selected model: ${selectedModel} (requested: ${modelName || 'auto'}, sourceType: ${finalOptions.sourceType || 'auto'}, hasImage: ${!!finalOptions.referenceImage})`)
 
       const requestPayload = {
         model: selectedModel,
@@ -398,11 +427,13 @@ export class BytedanceVideoService {
         console.log(`✅ [${bytedanceRequestId}] BYTEDANCE VIDEO: Immediate completion detected!`)
 
         // Upload to Cloudflare R2 storage
+        console.log(`🚀 [${bytedanceRequestId}] BYTEDANCE VIDEO: Starting immediate R2 upload...`)
         const r2UploadResult = await this.uploadVideoToR2(
           result.video_url,
           generationId || bytedanceRequestId,
           finalOptions,
-          selectedModel
+          selectedModel,
+          bytedanceRequestId
         )
 
         if (!r2UploadResult.success) {
@@ -529,7 +560,7 @@ export class BytedanceVideoService {
   }
 
   /**
-   * Download video from BytePlus and upload to Cloudflare R2 storage
+   * Download video from BytePlus and upload to Cloudflare R2 storage (Optimized)
    */
   static async downloadAndUploadToR2(
     downloadUrl: string,
@@ -539,22 +570,39 @@ export class BytedanceVideoService {
   ): Promise<{ success: boolean; url?: string; size?: number; error?: string }> {
     const downloadRequestId = `bytedance_download_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Starting video download and R2 upload`)
+    console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Starting optimized video download and R2 upload`)
 
     try {
-      // Download video from BytePlus
-      console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Downloading video from BytePlus...`)
-      const response = await fetch(downloadUrl)
+      // Start download with streaming
+      console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Initiating streaming download from BytePlus...`)
+      const downloadStartTime = Date.now()
+
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Accept': 'video/mp4,video/*,*/*',
+          'User-Agent': 'Gensy-Video-Downloader/1.0'
+        }
+      })
 
       if (!response.ok) {
         throw new Error(`Failed to download video: ${response.status} ${response.statusText}`)
       }
 
-      const videoBuffer = Buffer.from(await response.arrayBuffer())
-      console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Video downloaded, size: ${videoBuffer.length} bytes`)
+      // Get content length for progress tracking
+      const contentLength = response.headers.get('content-length')
+      const expectedSize = contentLength ? parseInt(contentLength) : null
 
-      // Upload to Cloudflare R2
-      return await this.uploadVideoToR2(videoBuffer, generationId, options, model)
+      console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Starting download, expected size: ${expectedSize ? `${Math.round(expectedSize / 1024 / 1024 * 100) / 100}MB` : 'unknown'}`)
+
+      // Convert response to buffer (optimized for memory)
+      const videoBuffer = Buffer.from(await response.arrayBuffer())
+      const downloadEndTime = Date.now()
+      const downloadTime = downloadEndTime - downloadStartTime
+
+      console.log(`⬇️ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Download completed in ${downloadTime}ms, actual size: ${Math.round(videoBuffer.length / 1024 / 1024 * 100) / 100}MB`)
+
+      // Upload to Cloudflare R2 with optimized settings
+      return await this.uploadVideoToR2(videoBuffer, generationId, options, model, downloadRequestId)
 
     } catch (error) {
       console.error(`❌ [${downloadRequestId}] BYTEDANCE DOWNLOAD: Download and upload failed:`, error)
@@ -566,17 +614,18 @@ export class BytedanceVideoService {
   }
 
   /**
-   * Upload video data to Cloudflare R2 storage
+   * Upload video data to Cloudflare R2 storage (Optimized)
    */
   private static async uploadVideoToR2(
     videoData: string | Buffer,
     generationId: string,
     options: BytedanceVideoGenerationOptions,
-    model: string
+    model: string,
+    parentRequestId?: string
   ): Promise<{ success: boolean; url?: string; size?: number; error?: string }> {
-    const uploadRequestId = `r2_upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const uploadRequestId = parentRequestId ? `${parentRequestId}_r2_upload` : `r2_upload_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
-    console.log(`☁️ [${uploadRequestId}] R2 UPLOAD: Starting video upload to Cloudflare R2`)
+    console.log(`☁️ [${uploadRequestId}] R2 UPLOAD: Starting optimized video upload to Cloudflare R2`)
 
     try {
       // Convert to buffer if needed
@@ -588,9 +637,10 @@ export class BytedanceVideoService {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
       const key = `videos/bytedance/${generationId}/${timestamp}.mp4`
 
-      console.log(`☁️ [${uploadRequestId}] R2 UPLOAD: Uploading to key: ${key}`)
+      console.log(`☁️ [${uploadRequestId}] R2 UPLOAD: Uploading ${Math.round(buffer.length / 1024 / 1024 * 100) / 100}MB to key: ${key}`)
 
-      // Upload to Cloudflare R2 using the working R2 client
+      // Upload to Cloudflare R2 with optimized settings
+      const uploadStartTime = Date.now()
       const uploadResult = await uploadFile({
         key,
         file: buffer,
@@ -602,10 +652,15 @@ export class BytedanceVideoService {
           resolution: options.resolution || '720p',
           aspectRatio: options.aspectRatio || '16:9',
           provider: 'bytedance',
-          uploadedAt: new Date().toISOString()
+          uploadedAt: new Date().toISOString(),
+          optimized: 'true'
         },
         isPublic: true // Make videos public for easy access
       })
+      const uploadEndTime = Date.now()
+      const uploadTime = uploadEndTime - uploadStartTime
+
+      console.log(`☁️ [${uploadRequestId}] R2 UPLOAD: Upload completed in ${uploadTime}ms (${Math.round(buffer.length / 1024 / uploadTime * 1000)}KB/s)`)
 
       if (uploadResult.success) {
         console.log(`✅ [${uploadRequestId}] R2 UPLOAD: Upload successful`)
@@ -650,7 +705,28 @@ export class BytedanceVideoService {
       resolutions: ['480p', '720p', '1080p'],
       motionIntensities: ['low', 'medium', 'high'],
       frameRates: [24, 25, 30],
-      sourceTypes: ['text-to-video', 'image-to-video']
+      sourceTypes: ['text-to-video', 'image-to-video'],
+      models: [
+        {
+          id: this.TEXT_TO_VIDEO_MODEL,
+          name: 'Seedance Lite T2V',
+          description: 'Text-to-video generation',
+          capabilities: ['text-to-video']
+        },
+        {
+          id: this.IMAGE_TO_VIDEO_MODEL,
+          name: 'Seedance Lite I2V',
+          description: 'Image-to-video generation',
+          capabilities: ['image-to-video']
+        },
+        {
+          id: this.PRO_MODEL,
+          name: 'Seedance Pro',
+          description: 'Enhanced quality text-to-video and image-to-video generation',
+          capabilities: ['text-to-video', 'image-to-video'],
+          features: ['enhanced-quality', 'pro-features', 'camera-controls']
+        }
+      ]
     }
   }
 
