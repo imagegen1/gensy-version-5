@@ -4,8 +4,8 @@
  */
 
 import { VertexAI } from '@google-cloud/vertexai'
-import { GoogleAuth } from 'google-auth-library'
 import { env } from './env'
+import { createGoogleAuth, isGoogleCloudConfigured, getGoogleCloudAuthStatus } from './google-auth'
 
 // Initialize Vertex AI
 const projectId = env.GOOGLE_CLOUD_PROJECT_ID || 'gensy-development'
@@ -24,11 +24,8 @@ export const textModel = vertexAI.getGenerativeModel({
 
 // Note: Google Cloud Storage removed - using Cloudflare R2 instead
 
-// Initialize Google Auth
-export const auth = new GoogleAuth({
-  projectId: projectId,
-  scopes: ['https://www.googleapis.com/auth/cloud-platform'],
-})
+// Initialize Google Auth with enhanced credential handling
+export const auth = createGoogleAuth(['https://www.googleapis.com/auth/cloud-platform'])
 
 // Configuration constants
 export const GOOGLE_CLOUD_CONFIG = {
@@ -44,38 +41,29 @@ export const GOOGLE_CLOUD_CONFIG = {
   }
 } as const
 
-// Helper function to check if Google Cloud is properly configured
-export function isGoogleCloudConfigured(): boolean {
-  try {
-    return !!(
-      env.GOOGLE_CLOUD_PROJECT_ID &&
-      (env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_APPLICATION_CREDENTIALS)
-    )
-  } catch {
-    return false
-  }
-}
+// Re-export authentication functions from google-auth module
+export { isGoogleCloudConfigured } from './google-auth'
 
 // Helper function to get authentication status
 export async function getGoogleCloudStatus() {
   try {
-    if (!isGoogleCloudConfigured()) {
+    const authStatus = await getGoogleCloudAuthStatus()
+
+    if (!authStatus.configured) {
       return {
         configured: false,
-        error: 'Google Cloud credentials not configured',
+        error: authStatus.error,
+        method: authStatus.method,
       }
     }
 
-    // Test the connection by getting auth client
-    const authClient = await auth.getClient()
-    const accessToken = await authClient.getAccessToken()
-
     return {
       configured: true,
-      projectId,
+      method: authStatus.method,
+      projectId: authStatus.projectId,
+      serviceAccountEmail: authStatus.serviceAccountEmail,
       location,
       models: GOOGLE_CLOUD_CONFIG.models,
-      hasValidToken: !!accessToken.token,
     }
   } catch (error) {
     return {

@@ -29,6 +29,7 @@ const envSchema = z.object({
   // Google Cloud / Vertex AI Configuration
   GOOGLE_CLOUD_PROJECT_ID: z.string().min(1, 'Google Cloud project ID is required'),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
+  GOOGLE_CREDENTIALS_BASE64: z.string().optional(),
   GOOGLE_CLOUD_LOCATION: z.string().default('us-central1'),
   GOOGLE_CLOUD_STORAGE_BUCKET: z.string().default('gensy-final'),
 
