@@ -1,88 +1,81 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/auth/sign-in(.*)',
-  '/auth/sign-up(.*)',
-  '/pricing',
-  '/credits',
-  '/billing',
-  '/analytics',
-  '/generate(.*)',
-  '/payment(.*)',
-  '/features',
-  '/contact',
-  '/demo',
-  // '/video', // Removed - should require authentication
-  '/api/webhooks(.*)',
-  '/api/health(.*)',
-  '/api/auth(.*)',
-  '/api/test-video(.*)'
-])
+// Simple middleware with comprehensive error handling for debugging
+export async function middleware(request: NextRequest) {
+  try {
+    console.log('🔍 MIDDLEWARE: Starting middleware for', request.nextUrl.pathname)
 
-const isProtectedApiRoute = createRouteMatcher([
-  '/api/generate(.*)',
-  '/api/upscale(.*)',
-  '/api/convert(.*)',
-  '/api/user(.*)',
-  '/api/ai-models(.*)',
-  '/api/enhance-prompt(.*)',
-  '/api/generations(.*)'
-])
+    // Check environment variables
+    console.log('🔍 MIDDLEWARE: Environment check', {
+      hasClerkPublishable: !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+      hasClerkSecret: !!process.env.CLERK_SECRET_KEY,
+      nodeEnv: process.env.NODE_ENV,
+      vercel: process.env.VERCEL,
+    })
 
-export default clerkMiddleware(async (auth, req) => {
-  // Skip middleware during build time
-  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    // Define public routes that don't need authentication
+    const publicPaths = [
+      '/',
+      '/auth/sign-in',
+      '/auth/sign-up',
+      '/pricing',
+      '/credits',
+      '/billing',
+      '/analytics',
+      '/generate',
+      '/payment',
+      '/features',
+      '/contact',
+      '/demo',
+      '/api/webhooks',
+      '/api/health',
+      '/api/auth',
+      '/api/test-video',
+      '/api/test',
+      '/_next',
+      '/favicon.ico',
+      '/not-found'
+    ]
+
+    // Check if current path is public
+    const isPublicPath = publicPaths.some(path =>
+      request.nextUrl.pathname.startsWith(path)
+    )
+
+    console.log('🔍 MIDDLEWARE: Path check', {
+      pathname: request.nextUrl.pathname,
+      isPublicPath,
+    })
+
+    // For now, allow all requests to pass through
+    // We'll add authentication logic after confirming basic middleware works
+    console.log('✅ MIDDLEWARE: Allowing request to proceed')
     return NextResponse.next()
+
+  } catch (error: any) {
+    console.error('❌ MIDDLEWARE ERROR:', error)
+
+    // Return detailed error information for debugging
+    return new NextResponse(
+      JSON.stringify({
+        message: 'Middleware failed',
+        error: error.message,
+        stack: error.stack,
+        pathname: request.nextUrl.pathname,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    )
   }
-
-  // Skip middleware if essential environment variables are missing
-  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !process.env.CLERK_SECRET_KEY) {
-    console.warn('⚠️ MIDDLEWARE: Clerk environment variables missing, allowing request')
-    return NextResponse.next()
-  }
-
-  // Check for test mode
-  const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
-
-  // Allow public routes
-  if (isPublicRoute(req)) {
-    return NextResponse.next()
-  }
-
-  // Handle protected API routes - require authentication but don't redirect
-  if (isProtectedApiRoute(req)) {
-    // Allow test mode for development
-    if (isTestMode) {
-      console.log('🧪 MIDDLEWARE: Allowing test mode request to', req.nextUrl.pathname)
-      return NextResponse.next()
-    }
-
-    // For non-test mode, protect the route
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    return NextResponse.next()
-  }
-
-  // Protect all other routes (unless in test mode)
-  if (!isTestMode) {
-    await auth.protect()
-  }
-
-  return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    // Skip Next.js internals and static files
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
