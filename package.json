@@ -18,7 +18,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.839.0",
     "@aws-sdk/s3-request-presigner": "^3.658.1",
-    "@clerk/nextjs": "^6.3.1",
+    "@clerk/nextjs": "^6.25.3",
     "@google-cloud/storage": "^7.16.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@headlessui/react": "^2.2.4",
