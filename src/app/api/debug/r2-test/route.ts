@@ -48,14 +48,32 @@ export async function GET() {
       console.log('✅ Bucket exists and is accessible')
     } catch (bucketError: any) {
       console.error('❌ Bucket test failed:', bucketError.message)
+
+      // Try with different bucket names to help debug
+      const possibleBuckets = ['gensy', 'gensy-media', 'gensy-production']
+      let bucketTestResults = []
+
+      for (const testBucket of possibleBuckets) {
+        try {
+          await r2Client.send(new HeadBucketCommand({ Bucket: testBucket }))
+          bucketTestResults.push({ bucket: testBucket, exists: true })
+        } catch (e: any) {
+          bucketTestResults.push({ bucket: testBucket, exists: false, error: e.Code || e.name })
+        }
+      }
+
       return NextResponse.json({
         success: false,
         error: 'Bucket test failed',
         details: {
-          bucketName,
+          configuredBucket: bucketName,
           errorCode: bucketError.Code || 'Unknown',
           errorMessage: bucketError.message,
           endpoint: process.env.CLOUDFLARE_R2_ENDPOINT,
+          bucketTestResults,
+          suggestion: bucketTestResults.find(r => r.exists) ?
+            `Try using bucket: ${bucketTestResults.find(r => r.exists)?.bucket}` :
+            'None of the common bucket names exist'
         }
       }, { status: 400 })
     }
