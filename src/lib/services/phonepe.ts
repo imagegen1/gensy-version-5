@@ -4,6 +4,7 @@
  */
 
 import crypto from 'crypto'
+import { getBaseUrl } from '../utils'
 
 export interface PaymentRequest {
   amount: number
@@ -41,7 +42,7 @@ export class PhonePeService {
   private static readonly MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID || 'PGTESTPAYUAT'
   private static readonly SALT_KEY = process.env.PHONEPE_SALT_KEY || 'salt_key'
   private static readonly SALT_INDEX = process.env.PHONEPE_SALT_INDEX || '1'
-  private static readonly APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  private static readonly APP_URL = getBaseUrl()
 
   /**
    * Create a payment request with PhonePe

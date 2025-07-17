@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
+import { getBaseUrl } from '@/lib/utils'
 import { z } from 'zod'
 
 // Request validation schema
@@ -196,7 +197,7 @@ Original prompt: "${prompt}"`
       headers: {
         'Authorization': `Bearer ${openRouterApiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        'HTTP-Referer': getBaseUrl(),
         'X-Title': 'Gensy AI Creative Suite'
       },
       body: JSON.stringify(openRouterPayload)
