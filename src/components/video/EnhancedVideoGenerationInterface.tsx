@@ -160,6 +160,33 @@ export function EnhancedVideoGenerationInterface() {
     ]
   }
 
+  // Get available resolutions based on selected model
+  const getAvailableResolutions = () => {
+    const model = selectedModel.toLowerCase()
+
+    // ByteDance Seedance Pro model supports only 480p and 1080p
+    if (model.includes('pro') || model.includes('250528')) {
+      return [
+        { value: '480p', label: '480p (Standard)', description: 'Standard quality' },
+        { value: '1080p', label: '1080p (Full HD)', description: 'High quality' }
+      ]
+    }
+
+    // Other ByteDance models support 480p and 720p
+    if (model.includes('bytedance') || model.includes('seedream')) {
+      return [
+        { value: '480p', label: '480p (Standard)', description: 'Standard quality' },
+        { value: '720p', label: '720p (HD)', description: 'High definition' }
+      ]
+    }
+
+    // Google Veo and other models support 720p and 1080p
+    return [
+      { value: '720p', label: '720p (HD)', description: 'High definition' },
+      { value: '1080p', label: '1080p (Full HD)', description: 'Full high definition' }
+    ]
+  }
+
   // Style options
   const STYLES = [
     { value: 'realistic', label: 'Realistic', icon: '📷' },
@@ -221,6 +248,17 @@ export function EnhancedVideoGenerationInterface() {
       setDuration(availableDurations[0].value)
     }
   }, [selectedModel, duration])
+
+  // Update resolution when model changes to ensure it's valid for the selected model
+  useEffect(() => {
+    const availableResolutions = getAvailableResolutions()
+    const currentResolutionAvailable = availableResolutions.some(r => r.value === selectedResolution)
+
+    if (!currentResolutionAvailable) {
+      // Set to the first available resolution (default)
+      setSelectedResolution(availableResolutions[0].value)
+    }
+  }, [selectedModel, selectedResolution])
 
   // Load user's previous videos
   const loadUserVideos = useCallback(async () => {
@@ -1197,26 +1235,26 @@ export function EnhancedVideoGenerationInterface() {
                       className="px-3 py-1.5 text-sm bg-muted text-muted-foreground hover:bg-muted/80 rounded-md transition-colors flex items-center space-x-1 min-w-[120px] justify-between"
                       disabled={isGenerating}
                     >
-                      <span>{selectedResolution === '480p' ? '480p (Standard)' : '720p (HD)'}</span>
+                      <span>{getAvailableResolutions().find(r => r.value === selectedResolution)?.label || selectedResolution}</span>
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
                     </button>
                     {showResolutionDropdown && (
                       <div className="absolute top-full left-0 mt-1 w-full bg-background border border-border rounded-md shadow-lg z-50">
-                        {['480p', '720p'].map((resolution) => (
+                        {getAvailableResolutions().map((resolution) => (
                           <button
-                            key={resolution}
+                            key={resolution.value}
                             onClick={() => {
-                              setSelectedResolution(resolution)
+                              setSelectedResolution(resolution.value)
                               setShowResolutionDropdown(false)
                             }}
                             className={`w-full px-3 py-2 text-sm text-left hover:bg-muted transition-colors first:rounded-t-md last:rounded-b-md ${
-                              selectedResolution === resolution ? 'bg-muted text-foreground' : 'text-muted-foreground'
+                              selectedResolution === resolution.value ? 'bg-muted text-foreground' : 'text-muted-foreground'
                             }`}
                             disabled={isGenerating}
                           >
-                            {resolution === '480p' ? '480p (Standard)' : '720p (HD)'}
+                            {resolution.label}
                           </button>
                         ))}
                       </div>

@@ -21,7 +21,7 @@ const videoGenerationSchema = z.object({
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).default('16:9'), // Support for ByteDance 1:1 ratio
   style: z.enum(['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary']).default('realistic'),
   quality: z.enum(['standard', 'high', 'ultra']).default('standard'),
-  resolution: z.enum(['480p', '720p']).default('720p'),
+  resolution: z.enum(['480p', '720p', '1080p']).default('720p'),
   provider: z.enum(['google-veo', 'replicate-wan', 'bytedance']).default('google-veo'),
   motionIntensity: z.enum(['low', 'medium', 'high']).default('medium'),
   frameRate: z.number().min(24).max(60).default(24),
@@ -151,9 +151,22 @@ export async function POST(request: NextRequest) {
 
     // Map model names to providers
     if (model) {
-      if (model.includes('ByteDance') || model.includes('Seedream') || model === 'bytedance-seedream-1.0-lite-t2v') {
+      if (model.includes('ByteDance') || model.includes('Seedream') ||
+          model === 'bytedance-seedream-1.0-lite-t2v' ||
+          model.includes('seedance-1-0-pro-250528') ||
+          model.includes('Seedance Pro') ||
+          model.includes('seedance-1-0-lite')) {
         finalProvider = 'bytedance'
-        modelId = 'bytedance-seedream-1.0-lite-t2v'
+        // Map specific ByteDance models
+        if (model.includes('pro') || model.includes('250528') || model.includes('Pro')) {
+          modelId = 'seedance-1-0-pro-250528'
+        } else if (model.includes('i2v') || model.includes('I2V')) {
+          modelId = 'seedance-1-0-lite-i2v-250428'
+        } else if (model.includes('t2v') || model.includes('T2V')) {
+          modelId = 'seedance-1-0-lite-t2v-250428'
+        } else {
+          modelId = 'bytedance-seedream-1.0-lite-t2v' // Legacy fallback
+        }
       } else if (model.includes('veo') || model.includes('Veo') ||
                  model === 'veo-2.0-generate-001' ||
                  model === 'veo-3.0-generate-preview' ||
@@ -180,7 +193,7 @@ export async function POST(request: NextRequest) {
 
     // Fallback model ID
     if (!modelId) {
-      modelId = finalProvider === 'bytedance' ? 'bytedance-seedream-1.0-lite-t2v' :
+      modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
                 finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-2.0-generate-001'
     }
 
@@ -196,9 +209,13 @@ export async function POST(request: NextRequest) {
       creditCost = 0
       currentCredits = 999
     } else {
-      // Check credit cost (video generation costs 5 credits)
-      creditCost = CREDIT_COSTS.VIDEO_GENERATION
-      console.log(`💳 [${requestId}] VIDEO GENERATION: Credit cost: ${creditCost}`)
+      // Calculate credit cost based on model
+      if (modelId.includes('pro') || modelId.includes('250528')) {
+        creditCost = 15 // Pro model costs more (matches database pricing_credits)
+      } else {
+        creditCost = CREDIT_COSTS.VIDEO_GENERATION // Standard models cost 5 credits
+      }
+      console.log(`💳 [${requestId}] VIDEO GENERATION: Credit cost: ${creditCost} for model: ${modelId}`)
 
       // Check user credits
       console.log(`💳 [${requestId}] VIDEO GENERATION: Checking user credits...`)
@@ -401,7 +418,7 @@ export async function POST(request: NextRequest) {
             seed: options.seed,
             negativePrompt: options.negativePrompt
           }
-          result = await BytedanceVideoService.generateVideo(prompt, bytedanceOptions, generation.id)
+          result = await BytedanceVideoService.generateVideo(prompt, bytedanceOptions, generation.id, modelId)
         } else {
           // Create Replicate specific options (remove Veo-specific fields)
           const { model: _, negativePrompt: __, enhancePrompt: ___, sampleCount: ____, ...replicateOptions } = options
