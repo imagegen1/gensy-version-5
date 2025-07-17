@@ -136,6 +136,12 @@ export async function GET(request: NextRequest) {
     }
 
     console.log(`🔍 [${requestId}] VIDEO PROXY: Profile ID: ${profile.id}`)
+    console.log(`🔍 [${requestId}] VIDEO PROXY: Generation ID format check:`, {
+      generationId,
+      isUUID: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(generationId || ''),
+      length: generationId?.length || 0,
+      startsWithVideo: generationId?.startsWith('video_') || false
+    })
 
     let videoUrl: string
 
