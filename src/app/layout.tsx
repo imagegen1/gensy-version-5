@@ -75,9 +75,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Provide fallback for build time
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_build_time_key'
+
   return (
     <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      publishableKey={clerkPublishableKey}
     >
       <html lang="en" suppressHydrationWarning>
         <head>

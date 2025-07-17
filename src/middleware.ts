@@ -32,6 +32,11 @@ const isProtectedApiRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, req) => {
+  // Skip middleware during build time
+  if (process.env.NEXT_PHASE === 'phase-production-build') {
+    return NextResponse.next()
+  }
+
   // Check for test mode
   const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 
