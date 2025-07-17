@@ -57,16 +57,30 @@ export class GoogleVeoService {
    */
   private static async getAuth(): Promise<GoogleAuth> {
     if (!this.auth) {
-      const credentials = process.env.GOOGLE_APPLICATION_CREDENTIALS
-      if (!credentials) {
-        throw new Error('Missing environment variable: GOOGLE_APPLICATION_CREDENTIALS')
-      }
+      const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+      const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
 
-      this.auth = new GoogleAuth({
-        projectId: this.getProjectId(),
-        keyFilename: credentials,
-        scopes: ['https://www.googleapis.com/auth/cloud-platform']
-      })
+      if (credentialsBase64) {
+        // Production: Use base64 encoded credentials
+        console.log('🔐 GOOGLE VEO: Using base64 credentials for authentication')
+        const credentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString())
+
+        this.auth = new GoogleAuth({
+          projectId: this.getProjectId(),
+          credentials,
+          scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        })
+      } else if (credentialsPath) {
+        // Development: Use credentials file path
+        console.log('🔐 GOOGLE VEO: Using credentials file for authentication')
+        this.auth = new GoogleAuth({
+          projectId: this.getProjectId(),
+          keyFilename: credentialsPath,
+          scopes: ['https://www.googleapis.com/auth/cloud-platform']
+        })
+      } else {
+        throw new Error('Missing Google credentials: Set either GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+      }
     }
     return this.auth
   }
@@ -90,7 +104,8 @@ export class GoogleVeoService {
    * Check if Google Cloud is properly configured
    */
   static isConfigured(): boolean {
-    return !!(process.env.GOOGLE_CLOUD_PROJECT_ID && process.env.GOOGLE_APPLICATION_CREDENTIALS)
+    return !!(process.env.GOOGLE_CLOUD_PROJECT_ID &&
+             (process.env.GOOGLE_APPLICATION_CREDENTIALS || process.env.GOOGLE_CREDENTIALS_BASE64))
   }
 
   /**
