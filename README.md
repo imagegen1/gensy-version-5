@@ -1,5 +1,4 @@
 # 🎨 Gensy AI Creative Suite
-<!-- Force redeploy for R2 env vars -->
 
 A comprehensive AI-powered creative platform built with Next.js, featuring image generation, video creation, and image upscaling capabilities.
 
