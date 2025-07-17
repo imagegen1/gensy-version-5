@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui"
 import { Play, Pause, Volume2, Volume1, VolumeX, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import MasonryMediaGallery from "@/components/gallery/InteractiveMediaGallery"

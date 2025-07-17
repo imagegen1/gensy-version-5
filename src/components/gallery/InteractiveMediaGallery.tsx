@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Modal, Button } from "@/components/ui";
 import { Play, Pause, Volume2, Volume1, VolumeX, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
