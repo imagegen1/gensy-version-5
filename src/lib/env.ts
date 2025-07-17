@@ -36,7 +36,7 @@ const envSchema = z.object({
   // Cloudflare R2 Storage Configuration
   CLOUDFLARE_R2_ACCESS_KEY_ID: z.string().min(1, 'Cloudflare R2 access key ID is required'),
   CLOUDFLARE_R2_SECRET_ACCESS_KEY: z.string().min(1, 'Cloudflare R2 secret access key is required'),
-  CLOUDFLARE_R2_BUCKET_NAME: z.string().default('gensy-media'),
+  CLOUDFLARE_R2_BUCKET_NAME: z.string().default('gensy'),
   CLOUDFLARE_R2_ENDPOINT: z.string().url('Invalid Cloudflare R2 endpoint'),
   CLOUDFLARE_R2_PUBLIC_URL: z.string().url('Invalid Cloudflare R2 public URL').optional(),
 
@@ -153,7 +153,7 @@ function validateEnv() {
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
       NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/onboarding',
       GOOGLE_CLOUD_LOCATION: 'us-central1',
-      CLOUDFLARE_R2_BUCKET_NAME: 'gensy-media',
+      CLOUDFLARE_R2_BUCKET_NAME: 'gensy',
       PHONEPE_SALT_INDEX: '1',
       PHONEPE_ENVIRONMENT: 'sandbox',
       PHONEPE_CALLBACK_URL: '/api/payments/callback',
@@ -190,7 +190,7 @@ function validateEnv() {
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/onboarding',
           GOOGLE_CLOUD_LOCATION: 'us-central1',
-          CLOUDFLARE_R2_BUCKET_NAME: 'gensy-media',
+          CLOUDFLARE_R2_BUCKET_NAME: 'gensy',
           PHONEPE_SALT_INDEX: '1',
           PHONEPE_ENVIRONMENT: 'sandbox',
           PHONEPE_CALLBACK_URL: '/api/payments/callback',

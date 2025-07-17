@@ -149,6 +149,12 @@ async function uploadPart(
 export async function uploadFile(options: UploadOptions): Promise<UploadResult> {
   const r2RequestId = `r2_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   console.log(`☁️ [${r2RequestId}] R2 STORAGE: Starting file upload`)
+  console.log(`🔧 [${r2RequestId}] R2 STORAGE: Configuration check:`, {
+    bucketName: env.CLOUDFLARE_R2_BUCKET_NAME,
+    endpoint: env.CLOUDFLARE_R2_ENDPOINT,
+    accessKeyId: env.CLOUDFLARE_R2_ACCESS_KEY_ID?.substring(0, 8) + '...',
+    hasSecretKey: !!env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
+  })
   console.log(`📝 [${r2RequestId}] R2 STORAGE: Upload options:`, {
     key: options.key,
     fileType: options.file instanceof File ? 'File' : 'Buffer',
