@@ -139,7 +139,7 @@ function validateEnv() {
       NODE_ENV: process.env.NODE_ENV || 'production',
       NEXT_PUBLIC_APP_NAME: 'Gensy',
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://gensy.vercel.app',
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_build_time_key',
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA',
       CLERK_SECRET_KEY: 'sk_test_build_time_secret_key',
       CLERK_WEBHOOK_SECRET: 'whsec_build_time_webhook_secret',
       NEXTAUTH_SECRET: 'build_time_secret_32_chars_exactly',

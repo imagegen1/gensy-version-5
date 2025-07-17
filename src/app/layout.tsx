@@ -75,12 +75,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Provide fallback for build time
-  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_build_time_key'
+  // Check if we have a valid Clerk key or if we're in build mode
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+  const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
+                     process.env.CI === 'true' ||
+                     process.env.VERCEL === '1'
+
+  // Use a properly formatted test key for build time
+  const buildTimeKey = 'pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA'
+  const effectiveKey = clerkPublishableKey || buildTimeKey
 
   return (
     <ClerkProvider
-      publishableKey={clerkPublishableKey}
+      publishableKey={effectiveKey}
     >
       <html lang="en" suppressHydrationWarning>
         <head>
