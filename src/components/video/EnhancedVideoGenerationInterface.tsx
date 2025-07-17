@@ -610,7 +610,7 @@ export function EnhancedVideoGenerationInterface() {
         setGenerationProgress(100)
 
         const finalVideo: GeneratedVideo = {
-          id: result.generation?.id || `video_${Date.now()}`,
+          id: result.generationId || result.generation?.id || tempVideoId,
           url: result.videoUrl,
           prompt: prompt.trim(),
           aspectRatio: selectedAspectRatio,
