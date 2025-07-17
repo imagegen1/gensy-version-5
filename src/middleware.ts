@@ -37,6 +37,12 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next()
   }
 
+  // Skip middleware if essential environment variables are missing
+  if (!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !process.env.CLERK_SECRET_KEY) {
+    console.warn('⚠️ MIDDLEWARE: Clerk environment variables missing, allowing request')
+    return NextResponse.next()
+  }
+
   // Check for test mode
   const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
 

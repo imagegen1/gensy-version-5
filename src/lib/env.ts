@@ -127,13 +127,16 @@ const devEnvSchema = envSchema.extend({
 
 // Validate environment variables
 function validateEnv() {
-  // During build time, always use permissive validation
+  // During build time or when essential vars are missing, use permissive validation
   const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
                      process.env.CI === 'true' ||
                      process.env.VERCEL === '1'
 
-  if (isBuildTime) {
-    console.log('🔧 Build time detected: Using permissive environment validation')
+  const hasEssentialVars = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+                          process.env.GOOGLE_CLOUD_PROJECT_ID
+
+  if (isBuildTime || !hasEssentialVars) {
+    console.log('🔧 Build time or missing essential vars detected: Using permissive environment validation')
     return {
       ...process.env,
       NODE_ENV: process.env.NODE_ENV || 'production',
