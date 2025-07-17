@@ -3,11 +3,33 @@ import { auth } from '@clerk/nextjs/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { Storage } from '@google-cloud/storage'
 
-// Initialize Google Cloud Storage
-const storage = new Storage({
-  projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-})
+// Initialize Google Cloud Storage with proper authentication
+function createGoogleCloudStorage() {
+  const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+  const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+
+  if (credentialsBase64) {
+    // Production: Use base64 encoded credentials
+    console.log('🔐 VIDEO PROXY: Using base64 credentials for authentication')
+    const credentials = JSON.parse(Buffer.from(credentialsBase64, 'base64').toString())
+
+    return new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      credentials
+    })
+  } else if (credentialsPath) {
+    // Development: Use credentials file path
+    console.log('🔐 VIDEO PROXY: Using credentials file for authentication')
+    return new Storage({
+      projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
+      keyFilename: credentialsPath
+    })
+  } else {
+    throw new Error('Missing Google credentials: Set either GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+  }
+}
+
+const storage = createGoogleCloudStorage()
 
 // Helper function to generate fresh signed URL
 async function generateSignedUrl(bucketName: string, filePath: string): Promise<string> {
@@ -153,12 +175,9 @@ export async function GET(request: NextRequest) {
         // For test mode, try to find the video directly in GCS
         try {
           const { Storage } = require('@google-cloud/storage')
-          const storage = new Storage({
-            projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-            keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-          })
+          const testStorage = createGoogleCloudStorage()
 
-          const bucket = storage.bucket('gensy-final')
+          const bucket = testStorage.bucket('gensy-final')
           const prefix = `video-outputs/${generationId}/`
 
           console.log(`🗂️ [${requestId}] VIDEO PROXY: Checking GCS bucket for prefix: ${prefix}`)
