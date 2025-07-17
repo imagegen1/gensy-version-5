@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     // Find user by email
     const { data: user, error: userError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, clerk_user_id, email, credits')
       .eq('email', email)
       .single()
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     // Update user credits
     const { error: updateError } = await supabase
-      .from('users')
+      .from('profiles')
       .update({
         credits: credits,
         updated_at: new Date().toISOString()
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 
     // Find user by email
     const { data: user, error: userError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, clerk_user_id, email, credits, created_at, updated_at')
       .eq('email', email)
       .single()

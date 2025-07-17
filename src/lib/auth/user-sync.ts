@@ -25,18 +25,18 @@ export async function syncUserProfile(clerkUser?: User | null): Promise<{
 
     const supabase = createServiceRoleClient()
 
-    // Prepare user data (matching the 'users' table schema)
+    // Prepare user data (matching the 'profiles' table schema)
     const userData = {
       clerk_user_id: user.id,
       email: user.emailAddresses[0]?.emailAddress || '',
-      full_name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
+      name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
       avatar_url: user.imageUrl || null,
       updated_at: new Date().toISOString(),
     }
 
     // Use upsert to safely create or update user profile
     const { data: supabaseUser, error } = await supabase
-      .from('users')
+      .from('profiles')
       .upsert(userData, {
         onConflict: 'clerk_user_id',
         ignoreDuplicates: false
@@ -128,7 +128,7 @@ export async function getCurrentUser(): Promise<{
     const supabase = createServiceRoleClient()
     
     const { data: user, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('clerk_user_id', userId)
       .single()
@@ -178,7 +178,7 @@ export async function updateUserProfile(updates: {
 
     // Update user profile
     const { data: user, error } = await supabase
-      .from('users')
+      .from('profiles')
       .update({
         ...updates,
         updated_at: new Date().toISOString(),
@@ -219,7 +219,7 @@ export async function deleteUserAccount(): Promise<{
 
     // Delete user (cascade will handle related data)
     const { error } = await supabase
-      .from('users')
+      .from('profiles')
       .delete()
       .eq('clerk_user_id', userId)
 

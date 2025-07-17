@@ -80,7 +80,7 @@ export class CreditService {
 
       // Get transaction totals
       const { data: userRecord } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
         .eq('clerk_user_id', userId)
         .single()
@@ -134,7 +134,7 @@ export class CreditService {
 
       // Get user record
       const { data: user, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, credits')
         .eq('clerk_user_id', userId)
         .single()
@@ -156,7 +156,7 @@ export class CreditService {
 
       // Update user credits
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           credits: newBalance,
           updated_at: new Date().toISOString()
@@ -206,7 +206,7 @@ export class CreditService {
 
       // Get user record
       const { data: user, error: userError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id, credits')
         .eq('clerk_user_id', userId)
         .single()
@@ -218,7 +218,7 @@ export class CreditService {
 
       // Update user credits
       const { error: updateError } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           credits: newBalance,
           updated_at: new Date().toISOString()

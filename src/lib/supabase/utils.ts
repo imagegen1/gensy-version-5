@@ -74,11 +74,11 @@ export async function upsertUser(userData: {
   try {
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .upsert({
         clerk_user_id: userData.clerkUserId,
         email: userData.email,
-        full_name: userData.fullName || null,
+        name: userData.fullName || null,
         avatar_url: userData.avatarUrl || null,
         updated_at: new Date().toISOString(),
       }, {
