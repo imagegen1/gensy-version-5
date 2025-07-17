@@ -1,23 +1,17 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import { clerkMiddleware } from '@clerk/nextjs/server';
 
-// Define the routes that are accessible to everyone, including non-logged-in users.
-// Updated: Final clean version with proper security
-const isPublicRoute = createRouteMatcher([
-  '/',
-  '/auth/sign-in(.*)',
-  '/auth/sign-up(.*)',
-  '/pricing',
-  '/features',
-  '/contact',
-  '/api/webhooks(.*)', // Allow webhooks to be accessed publicly
-]);
-
-export default clerkMiddleware((auth, req) => {
-  // If the route is not public, then it is protected.
-  if (!isPublicRoute(req)) {
-    // For protected routes, enforce authentication.
-    auth().protect();
-  }
+export default clerkMiddleware({
+  // Add all routes that should be accessible to non-logged-in users.
+  // All other routes will be protected by default.
+  publicRoutes: [
+    '/',
+    '/auth/sign-in(.*)',
+    '/auth/sign-up(.*)',
+    '/pricing',
+    '/features',
+    '/contact',
+    '/api/webhooks(.*)',
+  ],
 });
 
 export const config = {
