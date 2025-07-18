@@ -3,6 +3,8 @@
  * Handles image downloads with proper naming and format support
  */
 
+import { Sanitizer } from '../security'
+
 export interface DownloadImageOptions {
   url: string
   filename?: string
@@ -23,7 +25,7 @@ export function generateImageFilename(options: DownloadImageOptions): string {
     format = 'png'
   } = options
 
-  // Clean and truncate prompt for filename
+  // Clean and truncate prompt for filename using secure sanitization
   const cleanPrompt = prompt
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
@@ -31,7 +33,7 @@ export function generateImageFilename(options: DownloadImageOptions): string {
     .substring(0, 50) // Limit length
     .replace(/-+$/, '') // Remove trailing hyphens
 
-  // Clean model name
+  // Clean model name using secure sanitization
   const cleanModel = model
     .toLowerCase()
     .replace(/[^a-z0-9-]/g, '-')
@@ -42,9 +44,16 @@ export function generateImageFilename(options: DownloadImageOptions): string {
   const date = timestamp ? new Date(timestamp) : new Date()
   const dateStr = date.toISOString().split('T')[0] // YYYY-MM-DD format
 
-  // Construct filename
+  // Construct filename and validate it securely
   const parts = [cleanModel, cleanPrompt, dateStr].filter(Boolean)
-  return `${parts.join('-')}.${format}`
+  const filename = `${parts.join('-')}.${format}`
+
+  try {
+    return Sanitizer.sanitizeFilename(filename)
+  } catch (error) {
+    // Fallback to a safe default filename if sanitization fails
+    return `generated-image-${dateStr}.${format}`
+  }
 }
 
 /**
@@ -56,21 +65,19 @@ export async function downloadImage(options: DownloadImageOptions): Promise<void
   try {
     console.log('🔽 Starting image download:', { url: url.substring(0, 100) + '...', filename })
 
+    // Validate URL security before proceeding
+    const validatedUrl = Sanitizer.validateUrl(url, 'storage')
+
     // Generate filename if not provided
     const finalFilename = filename || generateImageFilename(options)
 
-    // Check if the URL is from our R2 storage (signed URL)
-    const isR2Url = url.includes('r2.cloudflarestorage.com') || url.includes('X-Amz-Signature')
-    
-    if (isR2Url) {
-      // For R2 URLs, we can directly trigger download
-      await downloadFromUrl(url, finalFilename)
-    } else {
-      // For external URLs (like Bytedance), we might need to proxy through our API
-      await downloadFromUrl(url, finalFilename)
-    }
+    // Validate the final filename
+    const safeFinalFilename = Sanitizer.sanitizeFilename(finalFilename)
 
-    console.log('✅ Image download completed:', finalFilename)
+    // Download the file using the validated URL and filename
+    await downloadFromUrl(validatedUrl, safeFinalFilename)
+
+    console.log('✅ Image download completed:', safeFinalFilename)
   } catch (error) {
     console.error('❌ Image download failed:', error)
     throw new Error('Failed to download image. Please try again.')

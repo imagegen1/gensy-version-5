@@ -7,6 +7,28 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
+// Safely merge objects to prevent prototype pollution
+function safeMerge(target: any, source: any): any {
+  const result = { ...target }
+
+  for (const [key, value] of Object.entries(source)) {
+    // Block prototype pollution attempts
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue
+    }
+
+    // Recursively merge nested objects
+    if (value && typeof value === 'object' && !Array.isArray(value) &&
+        result[key] && typeof result[key] === 'object' && !Array.isArray(result[key])) {
+      result[key] = safeMerge(result[key], value)
+    } else {
+      result[key] = value
+    }
+  }
+
+  return result
+}
+
 export async function GET() {
   try {
     const { userId } = await auth()
@@ -133,11 +155,8 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Merge with existing preferences
-    const updatedPreferences = {
-      ...currentUser.preferences,
-      ...body,
-    }
+    // Safely merge with existing preferences to prevent prototype pollution
+    const updatedPreferences = safeMerge(currentUser.preferences || {}, body)
 
     // Update user preferences
     const { data: user, error } = await supabase

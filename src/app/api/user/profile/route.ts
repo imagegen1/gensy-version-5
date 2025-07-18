@@ -6,6 +6,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getCurrentUser, updateUserProfile } from '@/lib/auth'
+import { Sanitizer } from '@/lib/security'
+
+// Safely sanitize preferences object to prevent prototype pollution
+function sanitizePreferences(preferences: any): any {
+  if (!preferences || typeof preferences !== 'object') {
+    return {}
+  }
+
+  const sanitized: any = {}
+
+  for (const [key, value] of Object.entries(preferences)) {
+    // Block prototype pollution attempts
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+      continue
+    }
+
+    // Recursively sanitize nested objects
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      sanitized[key] = sanitizePreferences(value)
+    } else if (typeof value === 'string') {
+      sanitized[key] = Sanitizer.sanitizeString(value)
+    } else if (typeof value === 'boolean' || typeof value === 'number') {
+      sanitized[key] = value
+    }
+    // Skip other types (functions, symbols, etc.)
+  }
+
+  return sanitized
+}
 
 export async function GET() {
   try {
@@ -54,11 +83,18 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json()
     const { full_name, avatar_url, preferences } = body
 
-    // Validate input
+    // Validate and sanitize input to prevent prototype pollution
     const updates: any = {}
-    if (full_name !== undefined) updates.full_name = full_name
-    if (avatar_url !== undefined) updates.avatar_url = avatar_url
-    if (preferences !== undefined) updates.preferences = preferences
+    if (full_name !== undefined) {
+      updates.full_name = Sanitizer.sanitizeString(full_name)
+    }
+    if (avatar_url !== undefined && avatar_url !== '') {
+      updates.avatar_url = Sanitizer.validateUrl(avatar_url, 'trusted')
+    }
+    if (preferences !== undefined) {
+      // Sanitize preferences object to prevent prototype pollution
+      updates.preferences = sanitizePreferences(preferences)
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json(

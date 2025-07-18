@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { Storage } from '@google-cloud/storage'
+import { Sanitizer } from '@/lib/security'
 
 // Initialize Google Cloud Storage with proper authentication
 function createGoogleCloudStorage() {
@@ -268,16 +269,14 @@ export async function GET(request: NextRequest) {
         console.log(`📋 [${requestId}] VIDEO PROXY: Using stored URL directly (non-GCS)`)
       }
     } else {
-      // Use the provided URL directly (with basic security check)
-      videoUrl = directUrl!
-      
-      // Basic security check - ensure URL is from expected domains
-      const url = new URL(videoUrl)
-      const allowedDomains = ['storage.googleapis.com', 'storage.cloud.google.com']
-      if (!allowedDomains.includes(url.hostname)) {
-        console.log(`❌ [${requestId}] VIDEO PROXY: Invalid domain - ${url.hostname}`)
+      // Use the provided URL directly with robust security validation
+      try {
+        videoUrl = Sanitizer.validateUrl(directUrl!, 'storage')
+        console.log(`✅ [${requestId}] VIDEO PROXY: Direct URL validated successfully`)
+      } catch (error) {
+        console.log(`❌ [${requestId}] VIDEO PROXY: Invalid or unsafe URL - ${error}`)
         return NextResponse.json(
-          { error: 'Invalid video URL domain' },
+          { error: 'Invalid or unsafe video URL' },
           { status: 400 }
         )
       }

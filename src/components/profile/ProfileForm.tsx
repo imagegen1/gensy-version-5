@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth, useUser } from '@clerk/nextjs'
 import { z } from 'zod'
 import { PhotoIcon, UserIcon } from '@heroicons/react/24/outline'
+import { sanitizeObject } from '@/lib/client-security'
 
 // Profile validation schema
 const profileSchema = z.object({
@@ -154,15 +155,38 @@ export function ProfileForm({ onSave, className = '' }: ProfileFormProps) {
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
       const keys = field.split('.')
+
+      // Security: Block prototype pollution attempts
+      for (const key of keys) {
+        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+          console.warn('Blocked potential prototype pollution attempt:', field)
+          return prev
+        }
+      }
+
       if (keys.length === 1) {
-        return { ...prev, [field]: value }
+        // Single level property update
+        const sanitizedValue = typeof value === 'string' ? value.trim() : value
+        return { ...prev, [field]: sanitizedValue }
       } else {
+        // Nested property update with protection
         const newData = { ...prev }
         let current: any = newData
+
+        // Navigate to the parent object
         for (let i = 0; i < keys.length - 1; i++) {
-          current = current[keys[i]]
+          const key = keys[i]
+          if (!current[key] || typeof current[key] !== 'object') {
+            current[key] = {}
+          }
+          current = current[key]
         }
-        current[keys[keys.length - 1]] = value
+
+        // Set the final value with sanitization
+        const finalKey = keys[keys.length - 1]
+        const sanitizedValue = typeof value === 'string' ? value.trim() : value
+        current[finalKey] = sanitizedValue
+
         return newData
       }
     })

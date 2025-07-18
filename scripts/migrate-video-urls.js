@@ -6,6 +6,27 @@
 const { createClient } = require('@supabase/supabase-js')
 require('dotenv').config({ path: '.env.local' })
 
+// Security: Validate URLs to prevent SSRF attacks
+function isValidStorageUrl(url) {
+  if (!url || typeof url !== 'string') return false
+
+  try {
+    const urlObj = new URL(url)
+
+    // Only allow specific storage domains
+    const allowedDomains = [
+      'storage.googleapis.com',
+      'storage.cloud.google.com',
+      'r2.cloudflarestorage.com'
+    ]
+
+    return allowedDomains.includes(urlObj.hostname) &&
+           (urlObj.protocol === 'https:' || urlObj.protocol === 'gs:')
+  } catch {
+    return false
+  }
+}
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -67,13 +88,20 @@ async function migrateVideoUrls() {
     for (const generation of generations) {
       const { id, result_url, status } = generation
       
+      // Validate URL security first
+      if (!isValidStorageUrl(result_url)) {
+        console.log(`⏭️  Skipping ${id}: Invalid or unsafe URL`)
+        skippedCount++
+        continue
+      }
+
       // Skip if already a GCS path
       if (result_url.startsWith('gs://')) {
         console.log(`⏭️  Skipping ${id}: Already a GCS path`)
         skippedCount++
         continue
       }
-      
+
       // Skip if not a GCS signed URL
       if (!result_url.includes('storage.googleapis.com') && !result_url.includes('storage.cloud.google.com')) {
         console.log(`⏭️  Skipping ${id}: Not a GCS URL (${result_url.substring(0, 50)}...)`)

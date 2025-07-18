@@ -6,6 +6,7 @@
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { z } from 'zod'
 import { env } from './env'
 
 // Security headers configuration
@@ -113,30 +114,133 @@ export class Encryption {
   }
 }
 
-// Input sanitization
+// Validation schemas using Zod for robust security
+export const securitySchemas = {
+  // Safe string validation - prevents XSS and injection attacks
+  safeString: z.string()
+    .min(1, 'String cannot be empty')
+    .max(1000, 'String too long')
+    .refine(
+      (val) => !/<script|javascript:|on\w+=/i.test(val),
+      'String contains potentially dangerous content'
+    ),
+
+  // Prompt validation for AI generation
+  prompt: z.string()
+    .min(3, 'Prompt must be at least 3 characters')
+    .max(500, 'Prompt too long')
+    .refine(
+      (val) => !/<script|javascript:|on\w+=/i.test(val),
+      'Prompt contains potentially dangerous content'
+    ),
+
+  // Filename validation - prevents path traversal and injection
+  filename: z.string()
+    .min(1, 'Filename cannot be empty')
+    .max(255, 'Filename too long')
+    .refine(
+      (val) => !/[<>:"|?*\x00-\x1f]/.test(val),
+      'Filename contains invalid characters'
+    )
+    .refine(
+      (val) => !/(^\.\.?$|^\.|\.\.\/|\/\.\.|^\/|\\)/.test(val),
+      'Filename contains path traversal attempts'
+    ),
+
+  // URL validation - prevents SSRF and malicious redirects
+  trustedUrl: z.string()
+    .url('Invalid URL format')
+    .refine(
+      (val) => {
+        try {
+          const url = new URL(val)
+          // Only allow HTTPS (except localhost for development)
+          if (url.protocol !== 'https:' && !url.hostname.includes('localhost')) {
+            return false
+          }
+          // Block private IP ranges and localhost in production
+          if (env.NODE_ENV === 'production') {
+            const hostname = url.hostname
+            if (
+              hostname === 'localhost' ||
+              hostname === '127.0.0.1' ||
+              hostname.startsWith('192.168.') ||
+              hostname.startsWith('10.') ||
+              hostname.startsWith('172.')
+            ) {
+              return false
+            }
+          }
+          return true
+        } catch {
+          return false
+        }
+      },
+      'URL is not from a trusted source'
+    ),
+
+  // Specific validation for our storage domains
+  storageUrl: z.string()
+    .url('Invalid URL format')
+    .refine(
+      (val) => {
+        try {
+          const url = new URL(val)
+          const allowedDomains = [
+            'storage.googleapis.com',
+            'storage.cloud.google.com',
+            'r2.cloudflarestorage.com',
+            'pub-b73a86bd5ccf4cc7bba9daf3c7fb363e.r2.dev'
+          ]
+          return allowedDomains.includes(url.hostname)
+        } catch {
+          return false
+        }
+      },
+      'URL is not from an allowed storage domain'
+    )
+}
+
+// Input sanitization using Zod validation
 export class Sanitizer {
   static sanitizeString(input: string): string {
-    return input
-      .trim()
-      .replace(/[<>]/g, '') // Remove potential HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/on\w+=/gi, '') // Remove event handlers
-      .substring(0, 1000) // Limit length
+    try {
+      return securitySchemas.safeString.parse(input.trim())
+    } catch (error) {
+      throw new Error('Invalid string input: contains potentially dangerous content')
+    }
   }
 
   static sanitizePrompt(prompt: string): string {
-    return prompt
-      .trim()
-      .replace(/[<>]/g, '')
-      .replace(/\b(script|javascript|vbscript|onload|onerror)\b/gi, '')
-      .substring(0, 500) // Limit prompt length
+    try {
+      return securitySchemas.prompt.parse(prompt.trim())
+    } catch (error) {
+      throw new Error('Invalid prompt: contains potentially dangerous content or is too long')
+    }
   }
 
   static sanitizeFilename(filename: string): string {
-    return filename
-      .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars with underscore
-      .replace(/\.{2,}/g, '.') // Replace multiple dots with single dot
-      .substring(0, 255) // Limit filename length
+    try {
+      // First clean the filename by removing/replacing problematic characters
+      const cleaned = filename
+        .replace(/[<>:"|?*\x00-\x1f]/g, '_')
+        .replace(/\.{2,}/g, '.')
+        .replace(/^\.+|\.+$/g, '') // Remove leading/trailing dots
+        .substring(0, 255)
+
+      return securitySchemas.filename.parse(cleaned)
+    } catch (error) {
+      throw new Error('Invalid filename: contains dangerous characters or path traversal attempts')
+    }
+  }
+
+  static validateUrl(url: string, type: 'trusted' | 'storage' = 'trusted'): string {
+    try {
+      const schema = type === 'storage' ? securitySchemas.storageUrl : securitySchemas.trustedUrl
+      return schema.parse(url)
+    } catch (error) {
+      throw new Error(`Invalid ${type} URL: ${error instanceof z.ZodError ? error.errors[0]?.message : 'Unknown validation error'}`)
+    }
   }
 }
 
