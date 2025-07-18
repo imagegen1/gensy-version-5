@@ -3,6 +3,7 @@
  * Handles XSS prevention and input sanitization in the browser
  */
 
+import React from 'react'
 import DOMPurify from 'dompurify'
 
 /**
