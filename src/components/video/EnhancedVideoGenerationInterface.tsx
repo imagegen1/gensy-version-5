@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useSearchParams } from 'next/navigation'
 import {
   PlayIcon,
   Expand,
@@ -70,11 +69,24 @@ interface GenerationResult {
   error?: string
 }
 
-export function EnhancedVideoGenerationInterface() {
+interface PreloadedImageData {
+  url: string
+  prompt: string
+  style: string
+  aspectRatio: string
+  model: string
+  quality: string
+  createdAt: string
+}
+
+interface EnhancedVideoGenerationInterfaceProps {
+  preloadedImageData?: PreloadedImageData | null
+}
+
+export function EnhancedVideoGenerationInterface({ preloadedImageData }: EnhancedVideoGenerationInterfaceProps) {
   const { addToast } = useToast()
   const { isSignedIn, userId } = useAuth()
   const { user } = useUser()
-  const searchParams = useSearchParams()
 
   // Test mode for development - bypass authentication
   const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
@@ -365,53 +377,40 @@ export function EnhancedVideoGenerationInterface() {
 
   // Handle pre-loaded image data from image generator
   useEffect(() => {
-    const fromImage = searchParams.get('fromImage')
-    if (fromImage === 'true') {
-      const imageDataStr = localStorage.getItem('videoGenerationImageData')
-      if (imageDataStr) {
-        try {
-          const imageData = JSON.parse(imageDataStr)
+    if (preloadedImageData) {
+      // Set the prompt based on the image prompt
+      setPrompt(`Animate this image: ${preloadedImageData.prompt}`)
 
-          // Set the prompt based on the image prompt
-          setPrompt(`Animate this image: ${imageData.prompt}`)
+      // Convert the image URL to a File object and set it in the files state
+      fetch(preloadedImageData.url)
+        .then(response => response.blob())
+        .then(blob => {
+          // Create a File object from the blob
+          const file = new File([blob], 'generated-image.jpg', { type: blob.type })
+          setFiles([file])
 
-          // Convert the image URL to a File object and set it in the files state
-          fetch(imageData.url)
-            .then(response => response.blob())
-            .then(blob => {
-              // Create a File object from the blob
-              const file = new File([blob], 'generated-image.jpg', { type: blob.type })
-              setFiles([file])
+          // Create preview for the file
+          const reader = new FileReader()
+          reader.onload = (e) => {
+            setFilePreviews({ [file.name]: e.target?.result as string })
+          }
+          reader.readAsDataURL(file)
 
-              // Create preview for the file
-              const reader = new FileReader()
-              reader.onload = (e) => {
-                setFilePreviews({ [file.name]: e.target?.result as string })
-              }
-              reader.readAsDataURL(file)
-
-              // Set other options based on image data
-              if (imageData.aspectRatio) {
-                setSelectedAspectRatio(imageData.aspectRatio)
-              }
-              if (imageData.style) {
-                setSelectedStyle(imageData.style)
-              }
-            })
-            .catch(error => {
-              console.error('Failed to load image for video generation:', error)
-              // Fallback: just set the prompt
-              setPrompt(`Animate this image: ${imageData.prompt}`)
-            })
-
-          // Clear the localStorage data after using it
-          localStorage.removeItem('videoGenerationImageData')
-        } catch (error) {
-          console.error('Failed to parse image data:', error)
-        }
-      }
+          // Set other options based on image data
+          if (preloadedImageData.aspectRatio) {
+            setSelectedAspectRatio(preloadedImageData.aspectRatio)
+          }
+          if (preloadedImageData.style) {
+            setSelectedStyle(preloadedImageData.style)
+          }
+        })
+        .catch(error => {
+          console.error('Failed to load image for video generation:', error)
+          // Fallback: just set the prompt
+          setPrompt(`Animate this image: ${preloadedImageData.prompt}`)
+        })
     }
-  }, [searchParams])
+  }, [preloadedImageData])
 
   const hasContent = prompt.trim().length > 0 || files.length > 0 || startFrameFile || endFrameFile
 
