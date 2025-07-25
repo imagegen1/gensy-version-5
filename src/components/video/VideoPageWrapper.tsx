@@ -1,6 +1,6 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { EnhancedVideoGenerationInterface } from './EnhancedVideoGenerationInterface'
 
@@ -16,6 +16,7 @@ interface PreloadedImageData {
 
 export function VideoPageWrapper() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const [preloadedImageData, setPreloadedImageData] = useState<PreloadedImageData | null>(null)
 
   useEffect(() => {
@@ -33,8 +34,11 @@ export function VideoPageWrapper() {
           console.error('Failed to parse image data:', error)
         }
       }
+
+      // Clean up the URL parameter after processing
+      router.replace('/video', { scroll: false })
     }
-  }, [searchParams])
+  }, [searchParams, router])
 
   return <EnhancedVideoGenerationInterface preloadedImageData={preloadedImageData} />
 }

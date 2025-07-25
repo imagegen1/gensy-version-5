@@ -17,7 +17,7 @@ import { z } from 'zod'
 // Request validation schema - updated for proper Veo API support
 const videoGenerationSchema = z.object({
   prompt: z.string().min(3, 'Prompt must be at least 3 characters').max(1000, 'Prompt too long'),
-  duration: z.number().min(5).max(10).default(5), // Veo supports 5-8 seconds, ByteDance supports 5-10 seconds
+  duration: z.number().min(5).max(10).default(8), // Veo 3 supports 8 seconds, ByteDance supports 5-10 seconds
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).default('16:9'), // Support for ByteDance 1:1 ratio
   style: z.enum(['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary']).default('realistic'),
   quality: z.enum(['standard', 'high', 'ultra']).default('standard'),
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     // Fallback model ID
     if (!modelId) {
       modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
-                finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-2.0-generate-001'
+                finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-001-preview'
     }
 
     console.log(`🤖 [${requestId}] VIDEO GENERATION: Using model: ${modelId}, provider: ${finalProvider}`)
@@ -341,10 +341,10 @@ export async function POST(request: NextRequest) {
         sampleCount,
         seed,
         model: (modelId === 'veo-2.0-generate-001' ||
-                modelId === 'veo-3.0-generate-preview' ||
+                modelId === 'veo-3.0-generate-001-preview' ||
                 modelId === 'veo-3.0-fast-generate-preview')
           ? modelId
-          : (finalProvider === 'google-veo' ? 'veo-2.0-generate-001' : undefined)
+          : (finalProvider === 'google-veo' ? 'veo-3.0-generate-001-preview' : undefined)
       }
       console.log(`🔍 [${requestId}] VIDEO GENERATION: Final model in options: "${options.model}", modelId was: "${modelId}"`)
       console.log(`⚙️ [${requestId}] VIDEO GENERATION: Generation options prepared:`, {
@@ -364,7 +364,7 @@ export async function POST(request: NextRequest) {
           const veoOptions = {
             ...options,
             // Override the model with the correctly mapped modelId
-            model: modelId as 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
+            model: modelId as 'veo-2.0-generate-001' | 'veo-3.0-generate-001-preview' | 'veo-3.0-fast-generate-preview'
           }
 
           console.log(`🎬 [${requestId}] VIDEO GENERATION: Calling Google Veo service with model: ${veoOptions.model}`)

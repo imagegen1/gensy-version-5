@@ -13,6 +13,7 @@ export interface VideoGenerationOptions {
   aspectRatio?: '16:9' | '9:16'
   style?: 'realistic' | 'artistic' | 'cartoon' | 'cinematic' | 'documentary'
   quality?: 'standard' | 'high' | 'ultra'
+  resolution?: '720p' | '1080p' // Resolution support for Veo 3 models
   referenceImage?: string // base64 encoded image
   referenceVideo?: string // base64 encoded video
   motionIntensity?: 'low' | 'medium' | 'high'
@@ -27,7 +28,7 @@ export interface VideoGenerationOptions {
   personGeneration?: 'allow_adult' | 'dont_allow'
   sampleCount?: number // 1-4
   storageUri?: string // GCS bucket URI
-  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
+  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-001-preview' | 'veo-3.0-fast-generate-preview'
   generateAudio?: boolean // Required for Veo 3 models
 }
 
@@ -187,6 +188,7 @@ export class GoogleVeoService {
         // Duration handling: Both Veo 3.0 and Veo 3.0 Fast use 8 seconds as per Studio
         duration: isVeo3 ? 8 : (options.duration || 8),
         aspectRatio: isVeo3 ? '16:9' : (options.aspectRatio === '9:16' ? '9:16' : '16:9'), // Veo 3 only supports 16:9
+        resolution: options.resolution || (isVeo3 ? '1080p' : '720p'), // Veo 3 supports 1080p, Veo 2 only 720p
         model: modelId,
         sampleCount: Math.min(options.sampleCount || 1, isVeo3Fast ? 2 : 4), // Veo 3 Fast max 2, others max 4
         enhancePrompt: options.enhancePrompt !== false, // Default to true
@@ -243,6 +245,11 @@ export class GoogleVeoService {
           aspectRatio: finalOptions.aspectRatio,
           sampleCount: finalOptions.sampleCount,
           storageUri: gcsOutputDirectory,
+
+          // Resolution parameter - Veo 3 supports 1080p using the resolution parameter (as of July 17, 2025)
+          ...(isVeo3 && finalOptions.resolution === '1080p' && {
+            resolution: '1080p'
+          }),
 
           // Veo 3.0 specific parameters (required for Veo 3.0 models) - matching Studio exactly
           ...(isVeo3 && {
@@ -324,7 +331,7 @@ export class GoogleVeoService {
           jobId: result.name.split('/').pop(),
           metadata: {
             duration: finalOptions.duration || 8,
-            resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9'),
+            resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9', finalOptions.resolution),
             frameRate: 24,
             generationTime: Date.now() - startTime,
             fileSize: Math.round(immediatePrediction.bytesBase64Encoded.length * 0.75)
@@ -343,7 +350,7 @@ export class GoogleVeoService {
           jobId: result.name.split('/').pop(),
           metadata: {
             duration: finalOptions.duration || 8,
-            resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9'),
+            resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9', finalOptions.resolution),
             frameRate: 24,
             generationTime: Date.now() - startTime,
             fileSize: 0 // Unknown for GCS URIs
@@ -362,7 +369,7 @@ export class GoogleVeoService {
         gcsOutputDirectory, // Add the GCS output directory for bucket polling
         metadata: {
           duration: finalOptions.duration || 8,
-          resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9'),
+          resolution: this.getResolutionFromAspectRatio(finalOptions.aspectRatio || '16:9', finalOptions.resolution),
           frameRate: 24,
           generationTime: Date.now() - startTime,
           fileSize: 0
@@ -530,7 +537,7 @@ export class GoogleVeoService {
       // Simulate processing time
       await new Promise(resolve => setTimeout(resolve, 2000))
 
-      const resolution = this.getResolutionFromAspectRatio(options.aspectRatio || '16:9')
+      const resolution = this.getResolutionFromAspectRatio(options.aspectRatio || '16:9', options.resolution)
       const duration = options.duration || 8
       const frameRate = options.frameRate || 24
 
@@ -572,7 +579,7 @@ export class GoogleVeoService {
    */
   // FIX #3 & #4: Removed unused `prompt` and `resolution` parameters
   private static createMockVideoData(options: VideoGenerationOptions): string {
-    const resolution = this.getResolutionFromAspectRatio(options.aspectRatio || '16:9');
+    const resolution = this.getResolutionFromAspectRatio(options.aspectRatio || '16:9', options.resolution);
     const mp4Data = this.createMinimalMP4(resolution.width, resolution.height, options.duration || 5)
     return Buffer.from(mp4Data).toString('base64')
   }
@@ -595,16 +602,25 @@ export class GoogleVeoService {
   // FIX #6: Removed all unused helper methods for createAnimatedSVG
 
   /**
-   * Get resolution from aspect ratio (Veo 2 in Vertex AI is limited to 720p)
+   * Get resolution from aspect ratio and resolution setting
+   * Veo 2: 720p only, Veo 3: 720p and 1080p
    */
-  private static getResolutionFromAspectRatio(aspectRatio: string): { width: number; height: number } {
+  private static getResolutionFromAspectRatio(aspectRatio: string, resolution: string = '720p'): { width: number; height: number } {
+    const is1080p = resolution === '1080p'
+
     switch (aspectRatio) {
       case '16:9':
-        return { width: 1280, height: 720 } // 720p landscape
+        return is1080p
+          ? { width: 1920, height: 1080 } // 1080p landscape
+          : { width: 1280, height: 720 }  // 720p landscape
       case '9:16':
-        return { width: 720, height: 1280 } // 720p portrait
+        return is1080p
+          ? { width: 1080, height: 1920 } // 1080p portrait
+          : { width: 720, height: 1280 }  // 720p portrait
       default:
-        return { width: 1280, height: 720 } // Default to 720p landscape
+        return is1080p
+          ? { width: 1920, height: 1080 } // Default to 1080p landscape
+          : { width: 1280, height: 720 }  // Default to 720p landscape
     }
   }
 
@@ -616,18 +632,20 @@ export class GoogleVeoService {
   static getSupportedOptions(): {
     durations: number[]
     aspectRatios: string[]
+    resolutions: string[]
     styles: string[]
     qualities: string[]
     motionIntensities: string[]
     models: string[]
   } {
     return {
-      durations: [5, 8], // Veo 2.0 and 3.0 support 5 and 8 seconds
+      durations: [8], // Veo 3.0 models support 8 seconds (Veo 2.0 supports 5-8, but we focus on Veo 3)
       aspectRatios: ['16:9', '9:16'], // Veo only supports these two aspect ratios
+      resolutions: ['720p', '1080p'], // Veo 3 supports both 720p and 1080p
       styles: ['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary'],
       qualities: ['standard', 'high', 'ultra'],
       motionIntensities: ['low', 'medium', 'high'],
-      models: ['veo-2.0-generate-001', 'veo-3.0-generate-preview']
+      models: ['veo-3.0-generate-001-preview', 'veo-3.0-fast-generate-preview']
     }
   }
 }

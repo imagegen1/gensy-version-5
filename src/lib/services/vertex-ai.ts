@@ -303,13 +303,13 @@ export class VertexAIService {
               pricing_credits: 15
             },
             {
-              id: 'veo-3.0-generate-preview',
+              id: 'veo-3.0-generate-001-preview',
               name: 'Google Veo 3.0',
               type: 'video-generation',
               capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'ultra-high-quality'],
               maxDuration: 8,
               supportedAspectRatios: ['16:9'], // Veo 3 only supports 16:9
-              supportedResolutions: ['720p'],
+              supportedResolutions: ['720p', '1080p'], // Veo 3 supports both 720p and 1080p
               provider: 'google-vertex-ai',
               pricing_credits: 20
             },
@@ -320,7 +320,7 @@ export class VertexAIService {
               capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'fast-generation'],
               maxDuration: 8,
               supportedAspectRatios: ['16:9'], // Veo 3 only supports 16:9
-              supportedResolutions: ['720p'],
+              supportedResolutions: ['720p', '1080p'], // Veo 3 Fast also supports both resolutions
               provider: 'google-vertex-ai',
               pricing_credits: 15
             }
