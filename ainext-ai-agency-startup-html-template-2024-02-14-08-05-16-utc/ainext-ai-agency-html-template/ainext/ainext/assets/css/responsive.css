@@ -1,0 +1,634 @@
+/* Max width 767px */
+@media only screen and (max-width: 767px) {
+    .container-fluid {
+        padding-left: calc(1.5rem * .5);
+        padding-right: calc(1.5rem * .5);
+   }
+   .ptb-100{
+        padding: 60px 0px;
+   }
+   .pt-100{
+        padding-top: 60px;
+   }
+   .pb-100{
+        padding-bottom: 60px;
+   }
+   .pt-70 { 
+        padding-top: 60px;
+    }
+    .pb-70 {
+        padding-bottom: 60px;
+    }
+   .main-btn {
+        font-size: 16px;
+        padding-left: 40px;
+        padding-right: 20px;
+        padding-top: 10px;
+        padding-bottom: 12px;;
+        font-weight: 500;
+    }
+    .main-btn i {
+        left: 16px;
+        top: 9px;
+        font-size: 18px;
+    }
+    .default-btn {
+        padding: 13px 42px 13px 20px;
+        font-size: 16px;   
+    }
+    .default-btn i {
+        right: 15px;
+        top: 10px;
+        font-size: 20px;
+    }
+    .section-title-center h2 {
+        font-size: 28px;
+    }
+    .section-title-center .width {
+        margin-bottom: 40px;
+    }
+    .sub-t {
+        font-size: 14px;
+    }
+    .section-title h2 {
+        font-size: 28px;
+    }
+    /* nav area*/
+    .navbar{
+        top: 0;
+        padding: 20px 15px;
+    }
+    .navbar .navbar-brand h2 {
+        font-size: 28px;
+        font-weight: 600;
+    }
+    .navbar .container-fluid {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+   /* banner area */
+   .banner-area {
+        padding-top: 100px;
+    }
+    .banner-area span.banner-top-title {
+        font-size: 14px;
+    }
+    .banner-area .content {
+        padding-left: 0;
+        padding-right: 12px;
+    }
+   .banner-area .popular-tag {
+        display: inline-block;
+    }
+    .banner-area .popular-tag p {
+        margin-right: 0px;
+        margin-bottom: 15px;
+    }
+    .banner-area .popular-tag a {
+        padding: 6px 8px;
+        font-size: 16px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    .banner-area .scroll-down {
+        left: -270px;
+        right: 0;
+        bottom: 50px;
+    }
+    .banner-area .content h1 {
+        font-size: 31px;
+        margin-bottom: 15px;
+    }
+    .banner-area .content p {
+        font-size: 15px;
+    }
+    .banner-area .searchbox {
+        padding: 10px 25px 10px 25px;
+    }
+    .banner-area .searchbox .form-control {
+        padding: 14px 10px;
+        font-size: 15px;
+        border: 1px solid #f1f1f1;
+        margin-bottom: 7px;
+    }
+    .banner-area .searchbox .btn {
+        padding: 10px 15px;
+        font-size: 16px;
+    }
+    .banner-area .image {
+        padding-top: 30px;
+    }
+    /* fetuses area */
+    .fetuses-area .single-fetuses-box .icon i {
+        font-size: 50px;
+        margin-bottom: 15px;
+        background-image: linear-gradient(315deg, #7F00FF 35%, #E100FF 50%);
+        background-size: 100%;
+        background-repeat: repeat;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        -moz-background-clip: text;
+        -moz-text-fill-color: transparent;
+    }
+    .fetuses-area .single-fetuses-box h3 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    .fetuses-area .single-fetuses-box p {
+        font-size: 16px;
+    }
+    .fetuses-area .single-fetuses-box a {
+        font-size: 16px;
+    }
+    .fetuses-area .single-fetuses-box {
+        padding: 0 20px;
+        margin-bottom: 40px;
+    }
+    /* team area  */
+    .team-area .owl-theme .owl-nav {
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    .team-area .owl-carousel .owl-nav button.owl-next, .team-area .owl-carousel .owl-nav button.owl-prev, .team-area .owl-carousel button.owl-dot {
+        font-size: 40px !important;
+    }
+    /* about area */
+    .about-area .image {
+        margin-bottom: 30px;
+    }
+    .about-area .content {
+        padding-left: 0px;
+    }
+    .about-area .content h2 {
+        font-size: 28px;
+        margin-bottom: 20px;
+    }
+    .about-area .sub-counter h3 {
+        font-size: 36px;
+    }
+    .about-area .content p {
+        font-size: 16px;
+    }
+    /* gallery area */
+    .gallery-area{
+        padding-top: 100px;
+    }
+    .gallery-area .gallery-table ul {
+        bottom: -62%;
+        width: 100%;
+    }
+    .gallery-area .gallery-table ul li {
+        margin-right: 17px;
+        font-size: 16px;
+    }
+    .gallery-area .gallery {
+        -moz-column-count: 1;
+        column-count: 1;
+        --webkit-column-count: 1;
+        --moz-column-count: 1;
+    }
+    /* testimonial area */
+    .testimonial-area .user img {
+        height: 60px;
+        width: 60px;
+    }
+    .testimonial-area .testimonial-item p {
+        font-size: 18px;
+    }
+    .testimonial-area .testimonial-item h4 {
+        font-size: 16px;
+    }
+    .testimonial-area .testimonial-item span {
+        font-size: 15px;
+    }
+    .testimonial-area .user:nth-child(2) {
+        top: -6%;
+    }
+    .testimonial-area .user:nth-child(3) {
+        top: -3%;
+    }
+    .testimonial-area .user:nth-child(4) {
+        bottom: 6%;
+    }
+    .testimonial-area .user:nth-child(5) {
+        bottom: 70px;
+        left: 9%;
+    }
+    /* brands area */
+    .brands-area img {
+        margin-bottom: 25px;
+    }
+    .brands-area .row .col-lg-2:last-child .image img{
+        margin-bottom: 0;
+    }
+    .brands-area .row{
+        justify-content: center !important;
+    }
+    /* pricing area */
+    .pricing-area {
+        background-image: none;
+    }
+    .pricing-area .pricing {
+        font-size: 40px;
+    }
+    .pricing-area .card_title {
+        font-size: 18px;
+    }
+    .pricing-area .features li {
+        font-size: 16px;
+    }
+    .pricing-area .cta_btn {
+        padding: 14px 0;
+        font-size: 16px;
+    }
+    .pricing-area .card {
+        border: 1px solid #4b4a50;
+        margin-bottom: 30px;
+    }
+    .pricing-area .row .col-lg-4:last-child .card{
+        margin-bottom: 0;
+    }
+    /* blog details */
+    .single-blog-post .content .meta li i {
+        top: 3px;
+        font-size: 15px;
+    }
+    .single-blog-post .content h3 {
+        font-size: 17px;
+    }
+    .single-blog-post .content .link-btn {
+        position: relative;
+        left: 0;
+        bottom: 0 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        margin-top: 10px;
+    }
+    .blog-details-desc .blog-content .entry-meta {
+        margin-bottom: 10px;
+    }
+    .blog-details-desc .blog-content .entry-meta ul li {
+        font-size: 14px;
+        margin-right: 15px;
+        margin-bottom: 5px;
+    }
+    .blog-details-desc .blog-content .entry-meta ul li::before {
+        right: -10px;
+        top: 4px;
+    }
+    .blog-details-desc .blog-content h3 {
+        font-size: 17px;
+        margin-bottom: 15px;
+    }
+    .blog-details-desc .blog-content .features-list {
+        margin-top: 20px;
+    }
+    .blog-details-desc .blog-content .features-list li {
+        font-size: 14px;
+    }
+    .blog-details-desc .article-footer {
+        text-align: center;
+        padding-top: 25px;
+        margin-top: 25px;
+    }
+    .blog-details-desc .article-footer .article-tags {
+        -webkit-box-flex: 0;
+            -ms-flex: 0 0 100%;
+                flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .blog-details-desc .article-footer .article-share {
+        -webkit-box-flex: 0;
+            -ms-flex: 0 0 100%;
+                flex: 0 0 100%;
+        max-width: 100%;
+        margin-top: 15px;
+    }
+    .blog-details-desc .article-footer .article-share .social {
+        text-align: center;
+    }
+    .blog-details-desc .article-author .author-profile {
+        padding: 0 15px 15px;
+    }
+    .blog-details-desc .article-author .author-profile .author-profile-title h4 {
+        font-size: 16px;
+    }
+    blockquote, .blockquote {
+        padding: 20px !important;
+    }
+    blockquote p, .blockquote p {
+        font-size: 15px !important;
+    }
+    blockquote::before, .blockquote::before {
+        left: 25px;
+        top: -10px;
+        font-size: 60px;
+    }
+    .comments-area .comments-title {
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    .comments-area .comment-body {
+        padding-left: 0;
+    }
+    .comments-area .comment-author {
+        font-size: 15px;
+    }
+    .comments-area .comment-author .avatar {
+        height: 50px;
+        left: 0;
+        position: relative;
+        width: 50px;
+        display: block;
+        margin-bottom: 12px;
+    }
+    .comments-area .comment-respond .comment-reply-title {
+        font-size: 18px;
+    }
+    .comments-area .comment-respond .comment-form-author {
+        width: 100%;
+        padding-right: 0;
+    }
+    .comments-area .comment-respond .comment-form-email {
+        width: 100%;
+        padding-left: 0;
+    }
+    .comments-area .comment-respond .form-submit input {
+        padding: 10px 25px;
+        font-size: 14px;
+    }
+    .comments-area .comment-respond input[type="date"], .comments-area .comment-respond input[type="time"], .comments-area .comment-respond input[type="datetime-local"], .comments-area .comment-respond input[type="week"], .comments-area .comment-respond input[type="month"], .comments-area .comment-respond input[type="text"], .comments-area .comment-respond input[type="email"], .comments-area .comment-respond input[type="url"], .comments-area .comment-respond input[type="password"], .comments-area .comment-respond input[type="search"], .comments-area .comment-respond input[type="tel"], .comments-area .comment-respond input[type="number"], .comments-area .comment-respond textarea {
+        font-size: 14px;
+    }
+
+
+
+    /* article area */
+    .article-area .section-title{
+        margin-bottom: 60px;
+    }
+    .article-area .item .pop-content ul li {
+        font-size: 15px;
+    }
+    .article-area .item .pop-content h3 a {
+        font-size: 25px;
+    }
+    
+    /* footer area */
+    .footer-area .single-footer-widget p {
+        color: var(--paragraphColor);
+        font-size: 16px;
+    }
+    .footer-area .single-footer-widget .social-links li a {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+    .footer-area .single-footer-widget h3 {
+        font-size: 20px;
+    }
+    .footer-area .single-footer-widget .links-list li a {
+        font-size: 16px;
+    }
+    .footer-area .single-footer-widget {
+        text-align: center;
+    }
+    .footer-area .footer-bottom-area p {
+        font-size: 15px;
+    }
+    .footer-area .footer-newsletter-info form .default-btn {
+        padding-left: 20px !important;
+    }
+    .footer-area .footer-newsletter-info form .default-btn i {
+        left: -130px;
+    }
+    .footer-top-area{
+        padding-bottom: 0;
+    }
+    /* Top to Bottom Button css */
+    #progress {
+        bottom: 20px;
+        right: 20px;
+        height: 45px;
+        width: 45px;
+    }
+    #progress-value {
+        font-size: 25px;
+    }
+}
+/* Min width 576px to Max width 767px */
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+    .container-fluid {
+        max-width: 540px;
+   }
+}
+/* Min width 768px to Max width 991px */
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+    .container-fluid {
+        padding-left: calc(1.5rem * .5);
+        padding-right: calc(1.5rem * .5);
+   }
+   .ptb-100{
+        padding: 80px 0px;
+    }
+    .pt-100{
+        padding-top: 80px;
+    }
+    .pb-100{
+        padding-bottom: 80px;
+    }
+   .section-title .width {
+        margin: auto;
+        text-align: center;
+    }
+    .section-title h2 {
+        font-size: 37px;
+    }
+    .navbar .navbar-brand h2 {
+        font-size: 25px;
+    }
+   /* nav area */
+    .navbar .container-fluid {
+        padding-left: 20px;
+        padding-right: 20px;
+    }
+   /* banner area */
+   .banner-area {
+        padding-top: 50px;
+    }
+    .banner-area .content {
+        padding-top: 60px;
+        padding-left: 0;
+        padding-right: 12px;
+        text-align: center;
+    }
+    .banner-area .popular-tag {
+        justify-content: center;
+    }
+    .banner-area .popular-tag p {
+        margin-bottom: 15px;
+    }
+    .banner-area .popular-tag a {
+        padding: 7px 16px;
+        font-size: 16px;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    .banner-area .content h1 {
+        font-size: 52px;
+        margin-bottom: 15px;
+    }
+    .banner-area .searchbox .form-control {
+        padding: 20px 10px;
+        font-size: 16px;
+    }
+    .banner-area .image {
+        padding-top: 30px;
+    }
+    .banner-area .scroll-down {
+        left: -87%;
+    }
+    /* fetuses area */
+    .fetuses-area .single-fetuses-box .icon i {
+        font-size: 50px;
+        margin-bottom: 15px;
+    }
+    .fetuses-area .single-fetuses-box h3 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    .fetuses-area .single-fetuses-box p {
+        font-size: 16px;
+    }
+    .fetuses-area .single-fetuses-box a {
+        font-size: 16px;
+    }
+    .fetuses-area .single-fetuses-box {
+        padding: 0 20px;
+        margin-bottom: 40px;
+    }
+    /* team area  */
+    .team-area .owl-theme .owl-nav {
+        top: 100%;
+        left: 0;
+        right: 0;
+    }
+    .team-area .owl-carousel .owl-nav button.owl-next, .team-area .owl-carousel .owl-nav button.owl-prev, .team-area .owl-carousel button.owl-dot {
+        font-size: 50px !important;
+    }
+    /* about area */
+    .about-area .image {
+        margin-bottom: 30px;
+    }
+    .about-area .content {
+        padding-left: 0px;
+    }
+    .about-area .sub-counter h3 {
+        font-size: 36px;
+    }
+    .about-area .content h2 {
+        font-size: 38px;;
+    }
+    .about-area .content p {
+        font-size: 16px;
+    }
+    /* gallery area */
+    .gallery-area {
+        padding-top: 120px;
+    }
+    .gallery-area .gallery-table ul {
+        bottom: -55%;
+        left: 0;
+        justify-content: center;
+    }
+    .gallery-area .gallery {
+        -moz-column-count: 2;
+        column-count: 2;
+        --webkit-column-count: 2;
+        --moz-column-count: 2;
+    }
+    /* testimonial area */
+    .testimonial-area .user img {
+        height: 70px;
+        width: 70px;
+    }
+    .testimonial-area .user:nth-child(5) {
+        bottom: 80px;
+        left: 9%;
+    }
+    /* pricing area */
+    .pricing-area .pricing {
+        font-size: 65px;
+    }
+    .pricing-area .card_title {
+        font-size: 20px;
+    }
+    .pricing-area .features li {
+        font-size: 16px;
+    }
+    .pricing-area .cta_btn {
+        padding: 14px 0;
+        font-size: 16px;
+    }
+    .pricing-area .card {
+        margin-bottom: 30px;
+    }
+    .pricing-area .row .col-lg-4:last-child .card{
+        margin-bottom: 0;
+    }
+
+    /* article area */
+    .article-area .item .pop-content h3 {
+        font-size: 25px;
+    }
+    .article-area .item .pop-content ul li {
+        font-size: 15px;
+    }
+    /* footer area */
+    .footer-area .single-footer-widget p {
+        color: var(--paragraphColor);
+        font-size: 16px;
+    }
+    .footer-area .single-footer-widget .social-links li a {
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+    }
+    .footer-area .single-footer-widget h3 {
+        font-size: 20px;
+    }
+    .footer-area .single-footer-widget .links-list li a {
+        font-size: 16px;
+    }
+    /* Top to Bottom Button css */
+    #progress {
+        bottom: 20px;
+        right: 20px;
+        height: 45px;
+        width: 45px;
+    }
+    #progress-value {
+        font-size: 25px;
+    }
+}
+/* Min width 992px to Max width 1199px */
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+    .container-fluid {
+        max-width: 960px;
+        padding-left: calc(1.5rem * .5);
+        padding-right: calc(1.5rem * .5);
+   }
+}
+/* Min width 1750px */
+@media only screen and (min-width: 1750px) {
+    .container {
+        padding-left: 0;
+        padding-right: 0;
+   }
+    .container-fluid {
+        max-width: 1920px;
+        padding-left: 100px;
+        padding-right: 100px;
+   }
+}

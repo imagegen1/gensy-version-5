@@ -434,7 +434,8 @@ export function ImageGeneratorInterface() {
           // Create the final image object
           const finalImage: GeneratedImage = {
             id: result.generation?.id || `img_${Date.now()}`,
-            url: result.imageUrl,
+            // Use proxy URL format for consistency with gallery images and to avoid CORS/expiration issues
+            url: result.generation?.id ? `/api/images/proxy?id=${result.generation.id}` : result.imageUrl,
             prompt: prompt.trim(),
             aspectRatio: selectedAspectRatio,
             model: selectedModel,

@@ -383,7 +383,12 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
 
       // Convert the image URL to a File object and set it in the files state
       fetch(preloadedImageData.url)
-        .then(response => response.blob())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          return response.blob()
+        })
         .then(blob => {
           // Create a File object from the blob
           const file = new File([blob], 'generated-image.jpg', { type: blob.type })

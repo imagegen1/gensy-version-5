@@ -26,7 +26,7 @@ export function VideoPageWrapper() {
         try {
           const imageData = JSON.parse(imageDataStr)
           setPreloadedImageData(imageData)
-          
+
           // Clear the localStorage data after using it
           localStorage.removeItem('videoGenerationImageData')
         } catch (error) {
