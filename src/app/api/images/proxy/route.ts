@@ -58,19 +58,34 @@ export async function GET(request: NextRequest) {
     let fileKey: string
 
     if (imageId) {
-      // Look up the image by ID
-      const { data: mediaFile, error } = await supabase
+      // First try to look up by media file ID
+      let { data: mediaFile, error } = await supabase
         .from('media_files')
         .select('file_path, user_id')
         .eq('id', imageId)
         .single()
 
+      // If not found by media file ID, try looking up by generation ID
       if (error || !mediaFile) {
-        console.log(`❌ [${requestId}] IMAGE PROXY: Image not found - ID: ${imageId}`)
-        return NextResponse.json(
-          { error: 'Image not found' },
-          { status: 404 }
-        )
+        console.log(`🔍 [${requestId}] IMAGE PROXY: Media file not found by ID, trying generation ID...`)
+        const { data: mediaFileByGeneration, error: generationError } = await supabase
+          .from('media_files')
+          .select('file_path, user_id')
+          .eq('generation_id', imageId)
+          .single()
+
+        if (generationError || !mediaFileByGeneration) {
+          console.log(`❌ [${requestId}] IMAGE PROXY: Image not found - ID: ${imageId} (tried both media file ID and generation ID)`)
+          return NextResponse.json(
+            { error: 'Image not found' },
+            { status: 404 }
+          )
+        }
+
+        mediaFile = mediaFileByGeneration
+        console.log(`✅ [${requestId}] IMAGE PROXY: Found media file by generation ID`)
+      } else {
+        console.log(`✅ [${requestId}] IMAGE PROXY: Found media file by media file ID`)
       }
 
       // Check if user owns the image
