@@ -16,6 +16,7 @@ import {
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useToast } from '@/components/ui/Toast'
 import { StyleSelector, DEFAULT_STYLES } from '@/components/ui/StyleSelector'
+import { RainbowButton } from '@/components/magicui/rainbow-button'
 
 
 interface StyleOption {
@@ -1077,13 +1078,14 @@ export function ImageGeneratorInterface() {
                           </p>
 
                           {/* Generate Video Button */}
-                          <button
+                          <RainbowButton
                             onClick={() => handleGenerateVideoFromImage(currentImage)}
-                            className="mt-3 flex items-center space-x-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors mx-auto"
+                            className="mt-3 flex items-center space-x-2 mx-auto"
+                            size="default"
                           >
                             <PlayIcon className="w-4 h-4" />
                             <span>Generate Video</span>
-                          </button>
+                          </RainbowButton>
                         </div>
                       </div>
                     )}
