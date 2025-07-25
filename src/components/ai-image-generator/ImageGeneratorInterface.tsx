@@ -14,8 +14,6 @@ import {
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useToast } from '@/components/ui/Toast'
 import { StyleSelector, DEFAULT_STYLES } from '@/components/ui/StyleSelector'
-import { StyleAnalysisDisplay } from '@/components/ui/StyleAnalysisDisplay'
-import { StyleAnalysisService, StyleAnalysisResult } from '@/services/StyleAnalysisService'
 import { ImageToVideoConverter } from '@/components/video/ImageToVideoConverter'
 
 interface StyleOption {
@@ -74,10 +72,13 @@ export function ImageGeneratorInterface() {
   const [aiModels, setAiModels] = useState<AIModel[]>([])
   const [isLoadingModels, setIsLoadingModels] = useState(true)
 
-  // Style analysis state
-  const [styleAnalysisResult, setStyleAnalysisResult] = useState<StyleAnalysisResult | null>(null)
-  const [isAnalyzingStyle, setIsAnalyzingStyle] = useState(false)
-  const [showStyleAnalysis, setShowStyleAnalysis] = useState(false)
+  // Image editing state
+  const [isEditingMode, setIsEditingMode] = useState(false)
+  const [editingImage, setEditingImage] = useState<File | null>(null)
+  const [editingImagePreview, setEditingImagePreview] = useState<string | null>(null)
+  const [editInstructions, setEditInstructions] = useState('')
+
+
 
   // Video generation state
   const [showVideoConverter, setShowVideoConverter] = useState(false)
@@ -281,13 +282,22 @@ export function ImageGeneratorInterface() {
     setCurrentImage(tempImage)
     setGeneratedImages(prev => [tempImage, ...prev])
 
-    // Simulate progress during generation
+    // Simulate progress during generation with different timing for image editing
+    const isImageEditing = files.length > 0 && selectedModel.includes('Flux Kontext Pro')
     const progressInterval = setInterval(() => {
       setGenerationProgress(prev => {
         if (prev >= 90) return prev
-        return prev + Math.random() * 10
+        // Slower progress for image editing (can take 3+ minutes)
+        const increment = isImageEditing
+          ? Math.random() * 5 + 2  // Slower: 2-7% increments for editing
+          : Math.random() * 10     // Normal: 0-10% increments for generation
+        return prev + increment
       })
-    }, 1000)
+    }, isImageEditing ? 2000 : 1000) // Slower updates for editing
+
+    if (isImageEditing) {
+      console.log(`🎨 [${requestId}] FRONTEND: Image editing mode detected - using extended timeout and slower progress`)
+    }
 
     try {
       // Find the selected model data
@@ -359,8 +369,13 @@ export function ImageGeneratorInterface() {
       const startTime = Date.now()
 
       // Create AbortController for timeout handling
+      // Use longer timeout for image editing operations (BFL can take 3+ minutes)
+      const isImageEditing = files.length > 0 && selectedModel.includes('Flux Kontext Pro')
+      const timeoutDuration = isImageEditing ? 300000 : 60000 // 5 minutes for editing, 1 minute for generation
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), timeoutDuration)
+
+      console.log(`⏱️ [${requestId}] FRONTEND: Using ${timeoutDuration/1000}s timeout (${isImageEditing ? 'image editing' : 'generation'} mode)`)
 
       const response = await fetch('/api/generate/image', {
         method: 'POST',
@@ -463,7 +478,23 @@ export function ImageGeneratorInterface() {
       let errorMessage = 'Unknown error occurred'
       if (error instanceof Error) {
         if (error.name === 'AbortError') {
-          errorMessage = 'Request timed out. Please try again.'
+          const isImageEditing = files.length > 0 && selectedModel.includes('Flux Kontext Pro')
+          if (isImageEditing) {
+            errorMessage = 'Image editing is taking longer than expected. Please check your gallery in a few minutes as the process may still be completing in the background.'
+
+            // Set up a delayed gallery refresh for image editing timeouts
+            setTimeout(() => {
+              console.log(`🔄 [${requestId}] FRONTEND: Delayed gallery refresh after image editing timeout`)
+              loadUserImages(false)
+            }, 60000) // Check again in 1 minute
+
+            setTimeout(() => {
+              console.log(`🔄 [${requestId}] FRONTEND: Final gallery refresh after image editing timeout`)
+              loadUserImages(false)
+            }, 180000) // Check again in 3 minutes
+          } else {
+            errorMessage = 'Request timed out. Please try again.'
+          }
         } else if (error.message === 'Failed to fetch') {
           errorMessage = 'Network error. Please check your connection and try again.'
         } else {
@@ -518,54 +549,11 @@ export function ImageGeneratorInterface() {
     const reader = new FileReader()
     reader.onload = (e) => {
       setFilePreviews({ [file.name]: e.target?.result as string })
-      // Automatically trigger style analysis when image is uploaded
-      analyzeImageStyle(file)
     }
     reader.readAsDataURL(file)
   }
 
-  const analyzeImageStyle = async (file: File) => {
-    console.log('🎨 Starting style analysis for uploaded image...')
-    setIsAnalyzingStyle(true)
-    setStyleAnalysisResult(null)
-    setShowStyleAnalysis(true)
 
-    try {
-      const styleService = StyleAnalysisService.getInstance()
-      const result = await styleService.analyzeImage(file)
-
-      console.log('✅ Style analysis completed:', result)
-      setStyleAnalysisResult(result)
-
-      // Show success toast
-      addToast({
-        type: 'success',
-        title: 'Style Analysis Complete',
-        description: `Found ${result.suggestedStyles.length} style suggestions with ${Math.round(result.confidence * 100)}% confidence`,
-        duration: 4000
-      })
-    } catch (error) {
-      console.error('❌ Style analysis failed:', error)
-      addToast({
-        type: 'error',
-        title: 'Style Analysis Failed',
-        description: 'Unable to analyze image style. You can still select styles manually.',
-        duration: 5000
-      })
-    } finally {
-      setIsAnalyzingStyle(false)
-    }
-  }
-
-  const handleStyleAnalysisSelect = (style: string) => {
-    setSelectedStyle(style)
-    addToast({
-      type: 'success',
-      title: 'Style Applied',
-      description: `Selected ${DEFAULT_STYLES.find(s => s.value === style)?.label || style} style from analysis`,
-      duration: 3000
-    })
-  }
 
   const handleGenerateVideoFromImage = (image: GeneratedImage) => {
     setSelectedImageForVideo(image)
@@ -609,10 +597,6 @@ export function ImageGeneratorInterface() {
   const handleRemoveFile = () => {
     setFiles([])
     setFilePreviews({})
-    // Clear style analysis when image is removed
-    setStyleAnalysisResult(null)
-    setShowStyleAnalysis(false)
-    setIsAnalyzingStyle(false)
   }
 
 
@@ -1041,18 +1025,7 @@ export function ImageGeneratorInterface() {
                 </div>
               </div>
 
-              {/* Style Analysis Display */}
-              {showStyleAnalysis && (
-                <div className="mb-6">
-                  <StyleAnalysisDisplay
-                    analysisResult={styleAnalysisResult}
-                    isAnalyzing={isAnalyzingStyle}
-                    onStyleSelect={handleStyleAnalysisSelect}
-                    selectedStyle={selectedStyle}
-                    className="max-w-2xl mx-auto"
-                  />
-                </div>
-              )}
+
 
               {/* Generated Image Display Area */}
               {(currentImage || isGenerating || imageError) && (
@@ -1061,7 +1034,16 @@ export function ImageGeneratorInterface() {
                     {isGenerating && (
                       <div className="w-80 h-80 bg-muted rounded-lg flex flex-col items-center justify-center border border-border">
                         <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="text-sm text-muted-foreground mb-2">Generating your image...</p>
+                        <p className="text-sm text-muted-foreground mb-2">
+                          {files.length > 0 && selectedModel.includes('Flux Kontext Pro')
+                            ? 'Editing your image...'
+                            : 'Generating your image...'}
+                        </p>
+                        {files.length > 0 && selectedModel.includes('Flux Kontext Pro') && (
+                          <p className="text-xs text-muted-foreground/70 text-center px-4">
+                            Image editing may take 2-5 minutes to complete
+                          </p>
+                        )}
                         <div className="w-64 bg-muted-foreground/20 rounded-full h-2 mb-2">
                           <div
                             className="bg-primary h-2 rounded-full transition-all duration-500"

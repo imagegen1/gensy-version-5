@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { VertexAIService, ImageGenerationOptions } from '@/lib/services/vertex-ai'
 import { BytedanceService, BytedanceImageGenerationOptions } from '@/lib/services/bytedance-service'
+import { BFLService, BFLImageGenerationOptions, BFLImageEditingOptions, BFLModel } from '@/lib/services/bfl-service'
 import { MockImageGenerationService } from '@/lib/services/mock-image-generation'
 import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
@@ -27,7 +28,7 @@ const generateImageSchema = z.object({
 })
 
 // Map display names to actual model IDs and service types
-const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance' }> = {
+const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance' | 'bfl' }> = {
   // Imagen 4.0 models (latest generation)
   'Imagen 4.0': { id: 'imagen-4.0-generate-preview-06-06', service: 'vertex' },
   'Imagen 4.0 Ultra': { id: 'imagen-4.0-ultra-generate-preview-06-06', service: 'vertex' },
@@ -40,6 +41,14 @@ const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance
 
   // Third-party models
   'Bytedance Seedream 3.0': { id: 'seedream-3-0-t2i-250415', service: 'bytedance' },
+
+  // Black Forest Labs (BFL) Flux models
+  'Flux Kontext Pro': { id: 'flux-kontext-pro', service: 'bfl' },
+  'Flux Kontext Max': { id: 'flux-kontext-max', service: 'bfl' },
+  'Flux Pro 1.1 Ultra': { id: 'flux-pro-1.1-ultra', service: 'bfl' },
+  'Flux Pro 1.1': { id: 'flux-pro-1.1', service: 'bfl' },
+  'Flux Pro': { id: 'flux-pro', service: 'bfl' },
+  'Flux Dev': { id: 'flux-dev', service: 'bfl' },
 }
 
 export async function POST(request: NextRequest) {
@@ -219,6 +228,32 @@ export async function POST(request: NextRequest) {
             seed
           }
           result = await BytedanceService.generateImage(prompt, bytedanceOptions)
+        } else if (serviceType === 'bfl') {
+          // Use BFL service - check if this is image editing or generation
+          const isFluxKontextPro = modelId === 'flux-kontext-pro'
+          const hasReferenceImage = !!referenceImage
+
+          if (isFluxKontextPro && hasReferenceImage) {
+            // Image editing mode: prompt becomes edit instructions, referenceImage becomes input_image
+            console.log(`🎨 [${requestId}] BFL: Using image editing mode with Flux Kontext Pro`)
+            const bflEditOptions: BFLImageEditingOptions = {
+              aspectRatio,
+              seed,
+              outputFormat: 'jpeg'
+            }
+            result = await BFLService.editImage(prompt, referenceImage, bflEditOptions)
+          } else {
+            // Normal text-to-image generation
+            console.log(`🎨 [${requestId}] BFL: Using text-to-image generation mode`)
+            const bflOptions: BFLImageGenerationOptions = {
+              aspectRatio,
+              style,
+              quality,
+              guidanceScale,
+              seed
+            }
+            result = await BFLService.generateImage(prompt, bflOptions, modelId as BFLModel)
+          }
         } else {
           // Use Vertex AI service (default)
           result = await VertexAIService.generateImage(prompt, options)

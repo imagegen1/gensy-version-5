@@ -175,6 +175,117 @@ export async function GET(request: NextRequest) {
                 fastGeneration: true,
                 maxResolution: '1920x1080'
               }
+            },
+            // Black Forest Labs (BFL) Flux models
+            {
+              id: 'flux-kontext-pro',
+              name: 'flux-kontext-pro',
+              display_name: 'Flux Kontext Pro',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Professional image generation and editing model with advanced context understanding',
+              pricing_credits: 8,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                imageEditing: true,
+                highQuality: true,
+                maxResolution: '1920x1080'
+              }
+            },
+            {
+              id: 'flux-kontext-max',
+              name: 'flux-kontext-max',
+              display_name: 'Flux Kontext Max',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Maximum quality image generation with advanced editing capabilities',
+              pricing_credits: 12,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                imageEditing: true,
+                ultraHighQuality: true,
+                maxResolution: '1920x1080'
+              }
+            },
+            {
+              id: 'flux-pro-1.1-ultra',
+              name: 'flux-pro-1.1-ultra',
+              display_name: 'Flux Pro 1.1 Ultra',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Ultra-high quality image generation with exceptional detail and realism',
+              pricing_credits: 10,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                ultraHighQuality: true,
+                maxResolution: '1920x1080'
+              }
+            },
+            {
+              id: 'flux-pro-1.1',
+              name: 'flux-pro-1.1',
+              display_name: 'Flux Pro 1.1',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Professional-grade image generation with excellent prompt following',
+              pricing_credits: 6,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: false,
+              capabilities: {
+                textToImage: true,
+                highQuality: true,
+                maxResolution: '1920x1080'
+              }
+            },
+            {
+              id: 'flux-pro',
+              name: 'flux-pro',
+              display_name: 'Flux Pro',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Professional image generation model with high quality output',
+              pricing_credits: 4,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: false,
+              capabilities: {
+                textToImage: true,
+                highQuality: true,
+                maxResolution: '1920x1080'
+              }
+            },
+            {
+              id: 'flux-dev',
+              name: 'flux-dev',
+              display_name: 'Flux Dev',
+              type: 'image',
+              provider: 'black-forest-labs',
+              status: 'active',
+              description: 'Development version of Flux model for experimentation and testing',
+              pricing_credits: 2,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: false,
+              capabilities: {
+                textToImage: true,
+                fastGeneration: true,
+                maxResolution: '1920x1080'
+              }
             }
           ]
 

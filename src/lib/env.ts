@@ -57,6 +57,10 @@ const envSchema = z.object({
   // OpenRouter API Configuration (for prompt enhancement)
   OPENROUTER_API_KEY: z.string().min(1, 'OpenRouter API key is required'),
 
+  // Black Forest Labs (BFL) Flux API Configuration
+  BFL_API_KEY: z.string().min(1, 'BFL API key is required'),
+  BFL_API_ENDPOINT: z.string().url('Invalid BFL API endpoint').default('https://api.bfl.ai/v1'),
+
   // PhonePe Payment Gateway Configuration
   PHONEPE_MERCHANT_ID: z.string().min(1, 'PhonePe merchant ID is required'),
   PHONEPE_SALT_KEY: z.string().min(1, 'PhonePe salt key is required'),
@@ -121,6 +125,8 @@ const devEnvSchema = envSchema.extend({
   TOS_ENDPOINT: z.string().optional(),
   TOS_REGION: z.string().optional(),
   OPENROUTER_API_KEY: z.string().optional(),
+  BFL_API_KEY: z.string().optional(),
+  BFL_API_ENDPOINT: z.string().optional(),
   PHONEPE_MERCHANT_ID: z.string().optional(),
   PHONEPE_SALT_KEY: z.string().optional(),
 })
@@ -274,6 +280,10 @@ export const config = {
   },
   openrouter: {
     apiKey: env.OPENROUTER_API_KEY,
+  },
+  bfl: {
+    apiKey: env.BFL_API_KEY,
+    apiEndpoint: env.BFL_API_ENDPOINT,
   },
   phonepe: {
     merchantId: env.PHONEPE_MERCHANT_ID,
