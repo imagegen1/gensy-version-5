@@ -25,6 +25,7 @@ const generateImageSchema = z.object({
   seed: z.number().optional(),
   guidanceScale: z.number().min(1).max(20).default(7),
   model: z.string().optional(), // Model name from frontend
+  testMode: z.boolean().optional() // For testing without authentication
 })
 
 // Map display names to actual model IDs and service types
@@ -57,21 +58,32 @@ export async function POST(request: NextRequest) {
   console.log(`📝 [${requestId}] Timestamp: ${new Date().toISOString()}`)
 
   try {
-    // Check authentication
-    console.log(`🔐 [${requestId}] Checking authentication...`)
-    const { userId } = await auth()
-    if (!userId) {
-      console.log(`❌ [${requestId}] Authentication failed - no userId`)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-    console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
-
-    // Parse and validate request body
+    // Parse request body first to check for test mode
     console.log(`📥 [${requestId}] Parsing request body...`)
     const body = await request.json()
+    const isTestMode = body.testMode === true
+
+    let userId
+    let profile
+
+    if (isTestMode) {
+      console.log(`🧪 [${requestId}] Test mode enabled - bypassing authentication`)
+      userId = 'test-user'
+      profile = { id: 'test-profile' }
+    } else {
+      // Check authentication
+      console.log(`🔐 [${requestId}] Checking authentication...`)
+      const authResult = await auth()
+      userId = authResult.userId
+      if (!userId) {
+        console.log(`❌ [${requestId}] Authentication failed - no userId`)
+        return NextResponse.json(
+          { error: 'Unauthorized' },
+          { status: 401 }
+        )
+      }
+      console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
+    }
     console.log(`📋 [${requestId}] Request body received:`, {
       prompt: body.prompt?.substring(0, 100) + (body.prompt?.length > 100 ? '...' : ''),
       aspectRatio: body.aspectRatio,
@@ -120,80 +132,104 @@ export async function POST(request: NextRequest) {
       serviceType
     })
 
-    // Get credit cost based on quality
+    // Get credit cost based on quality (skip for test mode)
     const creditCost = quality === 'ultra' ? CREDIT_COSTS.PREMIUM_MODEL : CREDIT_COSTS.IMAGE_GENERATION
     console.log(`💰 [${requestId}] Credit cost calculated: ${creditCost} credits for quality: ${quality}`)
 
-    // Check user credits
-    console.log(`💳 [${requestId}] Checking user credits...`)
-    const { hasCredits, currentCredits } = await CreditService.hasCredits(creditCost, userId)
-    console.log(`💳 [${requestId}] Credit check result: hasCredits=${hasCredits}, currentCredits=${currentCredits}, required=${creditCost}`)
+    let currentCredits = 0
+    if (!isTestMode) {
+      // Check user credits
+      console.log(`💳 [${requestId}] Checking user credits...`)
+      const { hasCredits, currentCredits: userCredits } = await CreditService.hasCredits(creditCost, userId)
+      currentCredits = userCredits
+      console.log(`💳 [${requestId}] Credit check result: hasCredits=${hasCredits}, currentCredits=${currentCredits}, required=${creditCost}`)
 
-    if (!hasCredits) {
-      console.log(`❌ [${requestId}] Insufficient credits - blocking request`)
-      return NextResponse.json(
-        {
-          error: 'Insufficient credits',
-          required: creditCost,
-          available: currentCredits
-        },
-        { status: 402 }
-      )
+      if (!hasCredits) {
+        console.log(`❌ [${requestId}] Insufficient credits - blocking request`)
+        return NextResponse.json(
+          {
+            error: 'Insufficient credits',
+            required: creditCost,
+            available: currentCredits
+          },
+          { status: 402 }
+        )
+      }
+      console.log(`✅ [${requestId}] Credit check passed`)
+    } else {
+      console.log(`🧪 [${requestId}] Test mode - skipping credit check`)
     }
-    console.log(`✅ [${requestId}] Credit check passed`)
 
     console.log(`🗄️ [${requestId}] Initializing database connection...`)
     const supabase = createServiceRoleClient()
 
-    // Get user profile
-    console.log(`👤 [${requestId}] Fetching user profile for userId: ${userId}`)
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('clerk_user_id', userId)
-      .single()
+    // Get user profile (skip for test mode)
+    if (!isTestMode) {
+      console.log(`👤 [${requestId}] Fetching user profile for userId: ${userId}`)
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .single()
 
-    if (!profile) {
-      console.log(`❌ [${requestId}] User profile not found for userId: ${userId}`)
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      )
+      if (!profileData) {
+        console.log(`❌ [${requestId}] User profile not found for userId: ${userId}`)
+        return NextResponse.json(
+          { error: 'User profile not found' },
+          { status: 404 }
+        )
+      }
+      profile = profileData
+      console.log(`✅ [${requestId}] User profile found - profileId: ${profile.id}`)
     }
-    console.log(`✅ [${requestId}] User profile found - profileId: ${profile.id}`)
 
-    // Create generation record
-    console.log(`📝 [${requestId}] Creating generation record in database...`)
-    const { data: generation, error: generationError } = await supabase
-      .from('generations')
-      .insert({
-        user_id: profile.id,
+    // Create generation record (skip for test mode)
+    let generation
+    if (!isTestMode) {
+      console.log(`📝 [${requestId}] Creating generation record in database...`)
+      const { data: generationData, error: generationError } = await supabase
+        .from('generations')
+        .insert({
+          user_id: profile.id,
+          type: 'image',
+          prompt,
+          negative_prompt: negativePrompt,
+          model: modelId,
+          status: 'processing',
+          credits_used: creditCost,
+          parameters: {
+            aspectRatio,
+            style,
+            quality,
+            seed,
+            guidanceScale,
+            hasReferenceImage: !!referenceImage
+          }
+        })
+        .select()
+        .single()
+
+      if (generationError || !generationData) {
+        console.error(`❌ [${requestId}] Failed to create generation record:`, generationError)
+        return NextResponse.json(
+          { error: 'Failed to create generation record' },
+          { status: 500 }
+        )
+      }
+      generation = generationData
+      console.log(`✅ [${requestId}] Generation record created - generationId: ${generation.id}`)
+    } else {
+      // Create mock generation for test mode
+      generation = {
+        id: `test-generation-${Date.now()}`,
+        user_id: 'test-profile',
         type: 'image',
         prompt,
-        negative_prompt: negativePrompt,
         model: modelId,
-        status: 'processing',
-        credits_used: creditCost,
-        parameters: {
-          aspectRatio,
-          style,
-          quality,
-          seed,
-          guidanceScale,
-          hasReferenceImage: !!referenceImage
-        }
-      })
-      .select()
-      .single()
-
-    if (generationError || !generation) {
-      console.error(`❌ [${requestId}] Failed to create generation record:`, generationError)
-      return NextResponse.json(
-        { error: 'Failed to create generation record' },
-        { status: 500 }
-      )
+        status: 'processing'
+      }
+      console.log(`🧪 [${requestId}] Test mode - using mock generation record`)
     }
-    console.log(`✅ [${requestId}] Generation record created - generationId: ${generation.id}`)
 
     try {
       // Prepare generation options

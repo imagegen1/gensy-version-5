@@ -363,7 +363,9 @@ export function ImageGeneratorInterface() {
         quality: 'standard',
         guidanceScale: 7,
         model: selectedModel,
-        ...(referenceImageBase64 && { referenceImage: referenceImageBase64 })
+        ...(referenceImageBase64 && { referenceImage: referenceImageBase64 }),
+        // Enable test mode when user is not authenticated
+        ...((!userId) && { testMode: true })
       }
 
       console.log(`📤 [${requestId}] FRONTEND: Sending request to /api/generate/image`)
@@ -422,6 +424,8 @@ export function ImageGeneratorInterface() {
       if (result.success) {
         console.log(`✅ [${requestId}] FRONTEND: Image generated successfully!`)
         console.log(`🖼️ [${requestId}] FRONTEND: Image URL:`, result.imageUrl)
+        console.log(`🔐 [${requestId}] FRONTEND: User authenticated:`, !!userId)
+        console.log(`🆔 [${requestId}] FRONTEND: Generation ID:`, result.generation?.id)
         console.log(`💰 [${requestId}] FRONTEND: Credits used:`, result.creditsUsed)
         console.log(`💳 [${requestId}] FRONTEND: Remaining credits:`, result.remainingCredits)
 
@@ -431,18 +435,28 @@ export function ImageGeneratorInterface() {
         if (result.imageUrl) {
           console.log(`🎨 [${requestId}] FRONTEND: Image ready for display at: ${result.imageUrl}`)
 
-          // Create the final image object
+          // Create the final image object with smart URL strategy
+          // Use proxy URLs when authenticated (for consistency and reliability)
+          // Use direct URLs when not authenticated (for guest users)
+          const shouldUseProxy = userId && result.generation?.id
+          const imageUrl = shouldUseProxy
+            ? `/api/images/proxy?id=${result.generation.id}`
+            : result.imageUrl
+
+          console.log(`🔗 [${requestId}] FRONTEND: URL Strategy - shouldUseProxy: ${shouldUseProxy}`)
+          console.log(`🔗 [${requestId}] FRONTEND: Final image URL: ${imageUrl}`)
+
           const finalImage: GeneratedImage = {
             id: result.generation?.id || `img_${Date.now()}`,
-            // Use proxy URL format for consistency with gallery images and to avoid CORS/expiration issues
-            url: result.generation?.id ? `/api/images/proxy?id=${result.generation.id}` : result.imageUrl,
+            url: imageUrl,
             prompt: prompt.trim(),
             aspectRatio: selectedAspectRatio,
             model: selectedModel,
             style: selectedStyle,
             quality: 'standard',
             createdAt: new Date().toISOString(),
-            isLoading: false
+            isLoading: false,
+            usingProxy: shouldUseProxy
           }
 
           // Update the current image and replace the temp image in the list
