@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
 import {
   ImageIcon,
   PaintbrushIcon,
@@ -14,7 +16,7 @@ import {
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useToast } from '@/components/ui/Toast'
 import { StyleSelector, DEFAULT_STYLES } from '@/components/ui/StyleSelector'
-import { ImageToVideoConverter } from '@/components/video/ImageToVideoConverter'
+
 
 interface StyleOption {
   id: string
@@ -55,6 +57,8 @@ interface GeneratedImage {
 
 export function ImageGeneratorInterface() {
   const { addToast } = useToast()
+  const router = useRouter()
+  const { userId } = useAuth()
 
   const [prompt, setPrompt] = useState('')
   const [showStyleModal, setShowStyleModal] = useState(false)
@@ -80,9 +84,7 @@ export function ImageGeneratorInterface() {
 
 
 
-  // Video generation state
-  const [showVideoConverter, setShowVideoConverter] = useState(false)
-  const [selectedImageForVideo, setSelectedImageForVideo] = useState<GeneratedImage | null>(null)
+
 
   // New state for image display and management
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([])
@@ -556,25 +558,24 @@ export function ImageGeneratorInterface() {
 
 
   const handleGenerateVideoFromImage = (image: GeneratedImage) => {
-    setSelectedImageForVideo(image)
-    setShowVideoConverter(true)
+    // Store image data in localStorage for the video page to access
+    const imageData = {
+      url: image.url,
+      prompt: image.prompt,
+      style: image.style,
+      aspectRatio: image.aspectRatio,
+      model: image.model,
+      quality: image.quality,
+      createdAt: image.createdAt
+    }
+
+    localStorage.setItem('videoGenerationImageData', JSON.stringify(imageData))
+
+    // Navigate to video generation page
+    router.push('/video?fromImage=true')
   }
 
-  const handleVideoGenerated = (video: any) => {
-    setShowVideoConverter(false)
-    setSelectedImageForVideo(null)
-    addToast({
-      type: 'success',
-      title: 'Video Generated!',
-      description: 'Your video has been created successfully from the image',
-      duration: 4000
-    })
-  }
 
-  const handleCloseVideoConverter = () => {
-    setShowVideoConverter(false)
-    setSelectedImageForVideo(null)
-  }
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
@@ -1467,21 +1468,7 @@ export function ImageGeneratorInterface() {
         </div>
       )}
 
-      {/* Video Converter Modal */}
-      {showVideoConverter && selectedImageForVideo && (
-        <ImageToVideoConverter
-          imageUrl={selectedImageForVideo.url}
-          imagePrompt={selectedImageForVideo.prompt}
-          imageMetadata={{
-            style: selectedImageForVideo.style,
-            aspectRatio: selectedImageForVideo.aspectRatio,
-            model: selectedImageForVideo.model,
-            quality: selectedImageForVideo.quality
-          }}
-          onClose={handleCloseVideoConverter}
-          onVideoGenerated={handleVideoGenerated}
-        />
-      )}
+
     </div>
   )
 }

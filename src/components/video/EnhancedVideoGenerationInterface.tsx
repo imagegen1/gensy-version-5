@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   PlayIcon,
   Expand,
@@ -73,6 +74,7 @@ export function EnhancedVideoGenerationInterface() {
   const { addToast } = useToast()
   const { isSignedIn, userId } = useAuth()
   const { user } = useUser()
+  const searchParams = useSearchParams()
 
   // Test mode for development - bypass authentication
   const isTestMode = process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_TEST_MODE === 'true'
@@ -360,6 +362,56 @@ export function EnhancedVideoGenerationInterface() {
       document.removeEventListener('keydown', handleKeyDown)
     }
   }, [])
+
+  // Handle pre-loaded image data from image generator
+  useEffect(() => {
+    const fromImage = searchParams.get('fromImage')
+    if (fromImage === 'true') {
+      const imageDataStr = localStorage.getItem('videoGenerationImageData')
+      if (imageDataStr) {
+        try {
+          const imageData = JSON.parse(imageDataStr)
+
+          // Set the prompt based on the image prompt
+          setPrompt(`Animate this image: ${imageData.prompt}`)
+
+          // Convert the image URL to a File object and set it in the files state
+          fetch(imageData.url)
+            .then(response => response.blob())
+            .then(blob => {
+              // Create a File object from the blob
+              const file = new File([blob], 'generated-image.jpg', { type: blob.type })
+              setFiles([file])
+
+              // Create preview for the file
+              const reader = new FileReader()
+              reader.onload = (e) => {
+                setFilePreviews({ [file.name]: e.target?.result as string })
+              }
+              reader.readAsDataURL(file)
+
+              // Set other options based on image data
+              if (imageData.aspectRatio) {
+                setSelectedAspectRatio(imageData.aspectRatio)
+              }
+              if (imageData.style) {
+                setSelectedStyle(imageData.style)
+              }
+            })
+            .catch(error => {
+              console.error('Failed to load image for video generation:', error)
+              // Fallback: just set the prompt
+              setPrompt(`Animate this image: ${imageData.prompt}`)
+            })
+
+          // Clear the localStorage data after using it
+          localStorage.removeItem('videoGenerationImageData')
+        } catch (error) {
+          console.error('Failed to parse image data:', error)
+        }
+      }
+    }
+  }, [searchParams])
 
   const hasContent = prompt.trim().length > 0 || files.length > 0 || startFrameFile || endFrameFile
 
