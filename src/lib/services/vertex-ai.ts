@@ -228,7 +228,7 @@ export class VertexAIService {
         metadata: {
           prompt,
           options,
-          model: 'imagen-3.0-generate-001',
+          model: 'imagen-4.0-generate-preview-06-06',
           generationTime,
         }
       }
@@ -331,6 +331,30 @@ export class VertexAIService {
       return {
         success: true,
         models: [
+          {
+            id: 'imagen-4.0-generate-preview-06-06',
+            name: 'Imagen 4',
+            type: 'image-generation',
+            capabilities: ['text-to-image', 'style-transfer', 'high-quality-generation'],
+            maxResolution: '1536x1536',
+            supportedAspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+          },
+          {
+            id: 'imagen-4.0-fast-generate-preview-06-06',
+            name: 'Imagen 4 Fast',
+            type: 'image-generation',
+            capabilities: ['text-to-image', 'style-transfer', 'fast-generation'],
+            maxResolution: '1536x1536',
+            supportedAspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+          },
+          {
+            id: 'imagen-4.0-ultra-generate-preview-06-06',
+            name: 'Imagen 4 Ultra',
+            type: 'image-generation',
+            capabilities: ['text-to-image', 'style-transfer', 'ultra-quality-generation'],
+            maxResolution: '2048x2048',
+            supportedAspectRatios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+          },
           {
             id: 'imagen-3.0-generate-001',
             name: 'Imagen 3.0',

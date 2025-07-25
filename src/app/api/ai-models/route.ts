@@ -102,6 +102,66 @@ export async function GET(request: NextRequest) {
         if (vertexModels.success) {
           // Transform Vertex AI models to match expected format
           const imagenModels = [
+            // Imagen 4.0 models (latest generation)
+            {
+              id: 'imagen-4.0-generate-preview-06-06',
+              name: 'imagen-4.0-generate-preview-06-06',
+              display_name: 'Imagen 4',
+              type: 'image',
+              provider: 'google-vertex-ai',
+              status: 'active',
+              description: 'Google\'s latest Imagen 4.0 model with enhanced quality and detail',
+              pricing_credits: 2,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                styleTransfer: true,
+                highQuality: true,
+                maxResolution: '1536x1536'
+              }
+            },
+            {
+              id: 'imagen-4.0-fast-generate-preview-06-06',
+              name: 'imagen-4.0-fast-generate-preview-06-06',
+              display_name: 'Imagen 4 Fast',
+              type: 'image',
+              provider: 'google-vertex-ai',
+              status: 'active',
+              description: 'Faster version of Imagen 4.0 with optimized speed and good quality',
+              pricing_credits: 2,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: false,
+              capabilities: {
+                textToImage: true,
+                styleTransfer: true,
+                fastGeneration: true,
+                maxResolution: '1536x1536'
+              }
+            },
+            {
+              id: 'imagen-4.0-ultra-generate-preview-06-06',
+              name: 'imagen-4.0-ultra-generate-preview-06-06',
+              display_name: 'Imagen 4 Ultra',
+              type: 'image',
+              provider: 'google-vertex-ai',
+              status: 'active',
+              description: 'Ultra-high quality version of Imagen 4.0 with maximum detail and precision',
+              pricing_credits: 3,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                styleTransfer: true,
+                ultraQuality: true,
+                maxResolution: '2048x2048'
+              }
+            },
+
+            // Imagen 3.0 models (previous generation)
             {
               id: 'imagen-3.0-generate-001',
               name: 'imagen-3.0-generate-001',
@@ -109,11 +169,11 @@ export async function GET(request: NextRequest) {
               type: 'image',
               provider: 'google-vertex-ai',
               status: 'active',
-              description: 'Latest Imagen model with highest quality image generation',
-              pricing_credits: 10,
+              description: 'Previous generation Imagen model with proven quality',
+              pricing_credits: 2,
               max_duration: null,
               supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
-              is_featured: true,
+              is_featured: false,
               capabilities: {
                 textToImage: true,
                 styleTransfer: true,
@@ -129,7 +189,7 @@ export async function GET(request: NextRequest) {
               provider: 'google-vertex-ai',
               status: 'active',
               description: 'Faster version of Imagen 3.0 with good quality',
-              pricing_credits: 5,
+              pricing_credits: 2,
               max_duration: null,
               supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
               is_featured: false,

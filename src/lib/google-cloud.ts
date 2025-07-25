@@ -33,11 +33,11 @@ export const GOOGLE_CLOUD_CONFIG = {
   location,
   models: {
     textGeneration: 'gemini-1.5-flash',
-    imageGeneration: 'imagen-3.0-generate-001', // Updated to use Imagen 3
+    imageGeneration: 'imagen-4.0-generate-preview-06-06', // Updated to use Imagen 4
   },
   // Note: Storage configuration removed - using Cloudflare R2 instead
   endpoints: {
-    imageGeneration: `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-generate-001:predict`,
+    imageGeneration: `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-4.0-generate-preview-06-06:predict`,
   }
 } as const
 

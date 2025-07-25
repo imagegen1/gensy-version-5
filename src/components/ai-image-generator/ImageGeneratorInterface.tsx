@@ -67,7 +67,7 @@ export function ImageGeneratorInterface() {
   const [showModelSelector, setShowModelSelector] = useState(false)
   const [showStyleTooltip, setShowStyleTooltip] = useState(false)
   const [selectedAspectRatio, setSelectedAspectRatio] = useState('1:1')
-  const [selectedModel, setSelectedModel] = useState('Imagen 4.0')
+  const [selectedModel, setSelectedModel] = useState('Imagen 4')
   const [selectedStyle, setSelectedStyle] = useState('realistic')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
@@ -132,17 +132,17 @@ export function ImageGeneratorInterface() {
           console.error('Failed to load AI models')
           // Fallback to default models if API fails
           setAiModels([
-            { id: 'imagen-4.0-generate-preview-06-06', name: 'Imagen 4.0', description: 'Google\'s latest Imagen 4.0 model with enhanced quality', isNew: true, tags: ['Image'] }
+            { id: 'imagen-4.0-generate-preview-06-06', name: 'Imagen 4', description: 'Google\'s latest Imagen 4.0 model with enhanced quality', isNew: true, tags: ['Image'] }
           ])
-          setSelectedModel('Imagen 4.0')
+          setSelectedModel('Imagen 4')
         }
       } catch (error) {
         console.error('Error loading AI models:', error)
         // Fallback to default models if API fails
         setAiModels([
-          { id: 'imagen-4.0-generate-preview-06-06', name: 'Imagen 4.0', description: 'Google\'s latest Imagen 4.0 model with enhanced quality', isNew: true, tags: ['Image'] }
+          { id: 'imagen-4.0-generate-preview-06-06', name: 'Imagen 4', description: 'Google\'s latest Imagen 4.0 model with enhanced quality', isNew: true, tags: ['Image'] }
         ])
-        setSelectedModel('Imagen 4.0')
+        setSelectedModel('Imagen 4')
       } finally {
         setIsLoadingModels(false)
       }

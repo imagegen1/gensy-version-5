@@ -31,9 +31,9 @@ const generateImageSchema = z.object({
 // Map display names to actual model IDs and service types
 const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance' | 'bfl' }> = {
   // Imagen 4.0 models (latest generation)
-  'Imagen 4.0': { id: 'imagen-4.0-generate-preview-06-06', service: 'vertex' },
-  'Imagen 4.0 Ultra': { id: 'imagen-4.0-ultra-generate-preview-06-06', service: 'vertex' },
-  'Imagen 4.0 Fast': { id: 'imagen-4.0-fast-generate-preview-06-06', service: 'vertex' },
+  'Imagen 4': { id: 'imagen-4.0-generate-preview-06-06', service: 'vertex' },
+  'Imagen 4 Ultra': { id: 'imagen-4.0-ultra-generate-preview-06-06', service: 'vertex' },
+  'Imagen 4 Fast': { id: 'imagen-4.0-fast-generate-preview-06-06', service: 'vertex' },
 
   // Imagen 3.0 models (previous generation)
   'Imagen 3.0': { id: 'imagen-3.0-generate-001', service: 'vertex' },

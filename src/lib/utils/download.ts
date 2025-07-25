@@ -175,13 +175,24 @@ export function isDownloadSupported(): boolean {
  */
 export function getModelDisplayName(model: string): string {
   const modelMap: Record<string, string> = {
+    // Imagen 4.0 models
+    'imagen-4.0-generate-preview-06-06': 'imagen-4',
+    'imagen-4.0-fast-generate-preview-06-06': 'imagen-4-fast',
+    'imagen-4.0-ultra-generate-preview-06-06': 'imagen-4-ultra',
+    'Imagen 4': 'imagen-4',
+    'Imagen 4 Fast': 'imagen-4-fast',
+    'Imagen 4 Ultra': 'imagen-4-ultra',
+
+    // Imagen 3.0 models
     'imagen-3.0-generate-001': 'imagen-3',
     'imagen-3.0-fast-generate-001': 'imagen-3-fast',
-    'imagegeneration@006': 'imagen-2',
-    'seedream-3-0-t2i-250415': 'bytedance-seedream-3',
     'Imagen 3.0': 'imagen-3',
     'Imagen 3.0 Fast': 'imagen-3-fast',
+
+    // Other models
+    'imagegeneration@006': 'imagen-2',
     'Imagen 2.0': 'imagen-2',
+    'seedream-3-0-t2i-250415': 'bytedance-seedream-3',
     'Bytedance Seedream 3.0': 'bytedance-seedream-3'
   }
 
