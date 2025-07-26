@@ -14,6 +14,7 @@ import {
 import { EnhancedImageCard } from './EnhancedImageCard'
 import { VideoCard } from './VideoCard'
 import MasonryMediaGallery from './InteractiveMediaGallery'
+import { downloadImageWithFeedback, downloadVideoWithFeedback } from '@/lib/utils/download'
 
 // Helper function to get proxied video URL
 const getProxiedVideoUrl = (generationId: string): string => {
@@ -176,13 +177,49 @@ export function UnifiedGallery({
     alert('Link copied to clipboard!')
   }
 
-  const handleDownload = (item: MediaItem) => {
-    const link = document.createElement('a')
-    link.href = item.url
-    link.download = `gensy-${item.type}-${item.id}`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  const handleDownload = async (item: MediaItem) => {
+    try {
+      console.log(`🔽 UNIFIED GALLERY: Starting ${item.type} download with dynamic naming`)
+
+      if (item.type === 'video') {
+        // Use dynamic video naming system
+        await downloadVideoWithFeedback(
+          {
+            url: item.url,
+            prompt: item.prompt || 'Generated video',
+            model: item.metadata?.model || item.metadata?.provider || 'ai-model',
+            timestamp: item.created_at ? new Date(item.created_at) : new Date(),
+            generationId: item.id,
+            format: 'mp4'
+          },
+          (filename) => {
+            console.log('✅ UNIFIED GALLERY: Video download completed:', filename)
+          },
+          (error) => {
+            console.error('❌ UNIFIED GALLERY: Video download failed:', error)
+          }
+        )
+      } else {
+        // Use dynamic image naming system
+        await downloadImageWithFeedback(
+          {
+            url: item.url,
+            prompt: item.prompt || 'Generated image',
+            model: item.metadata?.model || item.metadata?.provider || 'ai-model',
+            timestamp: item.created_at ? new Date(item.created_at) : new Date(),
+            format: 'png'
+          },
+          (filename) => {
+            console.log('✅ UNIFIED GALLERY: Image download completed:', filename)
+          },
+          (error) => {
+            console.error('❌ UNIFIED GALLERY: Image download failed:', error)
+          }
+        )
+      }
+    } catch (error) {
+      console.error(`❌ UNIFIED GALLERY: ${item.type} download failed:`, error)
+    }
   }
 
   const toggleItemSelection = (itemId: string) => {

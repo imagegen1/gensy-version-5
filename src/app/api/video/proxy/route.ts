@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { Storage } from '@google-cloud/storage'
 import { Sanitizer } from '@/lib/security'
+import { generateVideoFilename } from '@/lib/utils/download'
 
 // Initialize Google Cloud Storage with proper authentication
 function createGoogleCloudStorage() {
@@ -167,9 +168,9 @@ export async function GET(request: NextRequest) {
     })
 
     let videoUrl: string
+    let generation: any = null // Declare generation variable at function scope
 
     if (generationId) {
-      let generation
 
       if (isTestMode && generationId.startsWith('test-generation-')) {
         console.log(`🧪 [${requestId}] VIDEO PROXY: Test mode - looking up video in GCS directly`)
@@ -205,12 +206,27 @@ export async function GET(request: NextRequest) {
         }
       } else {
         // Look up the video by generation ID in database
-        const { data: generationData, error } = await supabase
+        // First try with all fields for dynamic naming, fallback to basic fields if needed
+        let { data: generationData, error } = await supabase
           .from('generations')
-          .select('result_url, user_id')
+          .select('result_url, user_id, prompt, model_used, created_at')
           .eq('id', generationId)
           .eq('type', 'video')
           .single()
+
+        // If the query with additional fields fails, try with just the essential fields
+        if (error) {
+          console.log(`⚠️ [${requestId}] VIDEO PROXY: Extended query failed, trying basic query - Error: ${error?.message}`)
+          const basicQuery = await supabase
+            .from('generations')
+            .select('result_url, user_id')
+            .eq('id', generationId)
+            .eq('type', 'video')
+            .single()
+
+          generationData = basicQuery.data
+          error = basicQuery.error
+        }
 
         if (error || !generationData) {
           console.log(`❌ [${requestId}] VIDEO PROXY: Generation not found - ID: ${generationId}, Error: ${error?.message}`)
@@ -306,23 +322,55 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ [${requestId}] VIDEO PROXY: Video fetched successfully - Size: ${videoBuffer.byteLength} bytes`)
 
-    // Return the video with proper CORS headers
+    // 🎬 Generate dynamic filename for download (optional, with fallback)
+    let dynamicFilename = 'gensy-video.mp4' // Default fallback
+
+    if (generationId && generation) {
+      try {
+        // Only use dynamic naming if we have the required fields
+        if (generation.prompt || generation.model_used) {
+          dynamicFilename = generateVideoFilename({
+            url: videoUrl,
+            prompt: generation.prompt || 'Generated video',
+            model: generation.model_used || 'ai-model',
+            timestamp: generation.created_at ? new Date(generation.created_at) : new Date(),
+            generationId: generationId,
+            format: 'mp4'
+          })
+          console.log(`🎬 [${requestId}] VIDEO PROXY: Generated dynamic filename: ${dynamicFilename}`)
+        } else {
+          // Fallback to simple naming with generation ID
+          const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+          dynamicFilename = `gensy-video-${generationId.slice(0, 8)}-${timestamp}.mp4`
+          console.log(`🎬 [${requestId}] VIDEO PROXY: Using fallback filename: ${dynamicFilename}`)
+        }
+      } catch (error) {
+        console.error(`❌ [${requestId}] VIDEO PROXY: Failed to generate dynamic filename:`, error)
+        dynamicFilename = `gensy-video-${Date.now()}.mp4`
+      }
+    }
+
+    // Return the video with proper CORS headers and dynamic filename
     return new NextResponse(videoBuffer, {
       status: 200,
       headers: {
         'Content-Type': contentType,
         'Content-Length': contentLength || videoBuffer.byteLength.toString(),
+        'Content-Disposition': `inline; filename="${dynamicFilename}"`, // 🎬 Dynamic filename for downloads
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Access-Control-Expose-Headers': 'Content-Length, Content-Type',
+        'Access-Control-Expose-Headers': 'Content-Length, Content-Type, Content-Disposition', // Expose filename header
         'Accept-Ranges': 'bytes',
       },
     })
 
   } catch (error) {
-    console.error(`❌ [${requestId}] VIDEO PROXY: Error:`, error)
+    console.error(`❌ [${requestId}] VIDEO PROXY: Unexpected error:`, {
+      error: error instanceof Error ? error.message : error,
+      stack: error instanceof Error ? error.stack : undefined
+    })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

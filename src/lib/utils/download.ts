@@ -14,6 +14,16 @@ export interface DownloadImageOptions {
   format?: 'png' | 'jpeg' | 'jpg'
 }
 
+export interface DownloadVideoOptions {
+  url: string
+  filename?: string
+  prompt?: string
+  model?: string
+  timestamp?: string | Date
+  generationId?: string
+  format?: 'mp4' | 'webm' | 'mov'
+}
+
 /**
  * Generate a descriptive filename for downloaded images
  */
@@ -57,6 +67,99 @@ export function generateImageFilename(options: DownloadImageOptions): string {
 }
 
 /**
+ * 🎬 Generate a descriptive filename for downloaded videos based on user prompt
+ *
+ * This function creates user-friendly video filenames that:
+ * 1. Use the user's prompt as the primary source for the filename
+ * 2. Apply proper filename sanitization for cross-platform compatibility
+ * 3. Add appropriate metadata (timestamp, generation ID) for uniqueness
+ * 4. Handle edge cases with fallback naming
+ *
+ * Examples:
+ * - "A flying car in the city" → "flying_car_in_city_20250126.mp4"
+ * - "Beautiful sunset!!!" → "beautiful_sunset_20250126.mp4"
+ * - "" → "generated_video_20250126.mp4"
+ */
+export function generateVideoFilename(options: DownloadVideoOptions): string {
+  const {
+    prompt = '',
+    model = 'ai-model',
+    timestamp,
+    generationId,
+    format = 'mp4'
+  } = options
+
+  console.log('🎬 FILENAME: Generating video filename with options:', {
+    prompt: prompt.substring(0, 50) + '...',
+    model,
+    generationId,
+    format
+  })
+
+  // Step 1: Handle edge cases - empty or too short prompt
+  let baseName = prompt.trim()
+
+  if (baseName.length < 3) {
+    baseName = 'generated_video'
+    console.log('🎬 FILENAME: Using fallback name for short/empty prompt')
+  } else {
+    // Step 2: Clean and format the prompt
+    // Take first 50 characters to keep filename manageable
+    baseName = baseName.substring(0, 50)
+
+    // Convert to lowercase for consistency
+    baseName = baseName.toLowerCase()
+
+    // Remove invalid filename characters (/, \, :, *, ?, ", <, >, |)
+    baseName = baseName.replace(/[\/\\:*?"<>|]/g, '')
+
+    // Remove other special characters, keep only alphanumeric, spaces, and hyphens
+    baseName = baseName.replace(/[^a-z0-9\s-]/g, '')
+
+    // Replace multiple spaces with single underscore
+    baseName = baseName.replace(/\s+/g, '_')
+
+    // Remove leading/trailing underscores
+    baseName = baseName.replace(/^_+|_+$/g, '')
+
+    // Step 3: Handle edge case - prompt with only special characters
+    if (baseName.length === 0) {
+      baseName = 'custom_video'
+      console.log('🎬 FILENAME: Using fallback name for special-characters-only prompt')
+    }
+  }
+
+  // Step 4: Add timestamp for uniqueness
+  const date = timestamp ? new Date(timestamp) : new Date()
+  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '') // YYYYMMDD format
+  const timeStr = date.toISOString().slice(11, 19).replace(/:/g, '') // HHMMSS format
+
+  // Step 5: Construct final filename
+  let finalName = `${baseName}_${dateStr}`
+
+  // Add time if we have a generation ID for extra uniqueness
+  if (generationId) {
+    finalName = `${baseName}_${dateStr}_${timeStr}`
+  }
+
+  // Step 6: Enforce maximum length (100 chars before extension)
+  finalName = finalName.substring(0, 100)
+
+  // Step 7: Add file extension
+  const filename = `${finalName}.${format}`
+
+  console.log('🎬 FILENAME: Generated video filename:', filename)
+
+  try {
+    return Sanitizer.sanitizeFilename(filename)
+  } catch (error) {
+    console.error('🎬 FILENAME: Sanitization failed, using fallback:', error)
+    // Fallback to a safe default filename if sanitization fails
+    return `generated_video_${dateStr}.${format}`
+  }
+}
+
+/**
  * Download an image from a URL with proper browser download handling
  */
 export async function downloadImage(options: DownloadImageOptions): Promise<void> {
@@ -81,6 +184,46 @@ export async function downloadImage(options: DownloadImageOptions): Promise<void
   } catch (error) {
     console.error('❌ Image download failed:', error)
     throw new Error('Failed to download image. Please try again.')
+  }
+}
+
+/**
+ * 🎬 Download a video from a URL with proper browser download handling and dynamic naming
+ *
+ * This function provides a comprehensive video download experience with:
+ * - Dynamic filename generation based on user prompt
+ * - Proper security validation
+ * - Cross-platform filename compatibility
+ * - Error handling and user feedback
+ */
+export async function downloadVideo(options: DownloadVideoOptions): Promise<void> {
+  const { url, filename } = options
+
+  try {
+    console.log('🎬 Starting video download:', {
+      url: url.substring(0, 100) + '...',
+      filename,
+      prompt: options.prompt?.substring(0, 50) + '...'
+    })
+
+    // Validate URL security before proceeding
+    const validatedUrl = Sanitizer.validateUrl(url, 'storage')
+
+    // Generate filename if not provided
+    const finalFilename = filename || generateVideoFilename(options)
+
+    // Validate the final filename
+    const safeFinalFilename = Sanitizer.sanitizeFilename(finalFilename)
+
+    console.log('🎬 Using final filename:', safeFinalFilename)
+
+    // Download the file using the validated URL and filename
+    await downloadFromUrl(validatedUrl, safeFinalFilename)
+
+    console.log('✅ Video download completed:', safeFinalFilename)
+  } catch (error) {
+    console.error('❌ Video download failed:', error)
+    throw new Error('Failed to download video. Please try again.')
   }
 }
 
@@ -156,6 +299,24 @@ export async function downloadImageWithFeedback(
   try {
     await downloadImage(options)
     const filename = options.filename || generateImageFilename(options)
+    onSuccess?.(filename)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Download failed'
+    onError?.(errorMessage)
+  }
+}
+
+/**
+ * 🎬 Download video with error handling and user feedback
+ */
+export async function downloadVideoWithFeedback(
+  options: DownloadVideoOptions,
+  onSuccess?: (filename: string) => void,
+  onError?: (error: string) => void
+): Promise<void> {
+  try {
+    await downloadVideo(options)
+    const filename = options.filename || generateVideoFilename(options)
     onSuccess?.(filename)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Download failed'

@@ -21,6 +21,7 @@ import {
   getMetadataGridClasses,
   getActionButtonsClasses
 } from '@/lib/utils/aspect-ratio'
+import { downloadVideoWithFeedback } from '@/lib/utils/download'
 
 interface VideoPlayerProps {
   videoUrl?: string
@@ -111,18 +112,27 @@ export function VideoPlayer({ videoUrl, generationId, metadata, prompt }: VideoP
   const handleDownload = async () => {
     setIsDownloading(true)
     try {
-      const response = await fetch(videoUrl)
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `gensy-video-${Date.now()}.mp4`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      console.log('🎬 VIDEO PLAYER DOWNLOAD: Starting download with dynamic naming')
+
+      // Use the new dynamic video naming system
+      await downloadVideoWithFeedback(
+        {
+          url: actualVideoUrl,
+          prompt: prompt || 'Generated video',
+          model: metadata?.model || metadata?.provider || 'ai-model',
+          timestamp: new Date(),
+          generationId: generationId,
+          format: 'mp4'
+        },
+        (filename) => {
+          console.log('✅ VIDEO PLAYER DOWNLOAD: Successfully downloaded:', filename)
+        },
+        (error) => {
+          console.error('❌ VIDEO PLAYER DOWNLOAD: Failed:', error)
+        }
+      )
     } catch (error) {
-      console.error('Download failed:', error)
+      console.error('❌ VIDEO PLAYER DOWNLOAD: Unexpected error:', error)
     } finally {
       setIsDownloading(false)
     }
