@@ -26,6 +26,7 @@ const videoGenerationSchema = z.object({
   motionIntensity: z.enum(['low', 'medium', 'high']).default('medium'),
   frameRate: z.number().min(24).max(60).default(24),
   referenceImage: z.string().optional(), // Base64 encoded
+  referenceImageMimeType: z.string().optional(), // MIME type of the reference image
   startFrameImage: z.string().optional(), // Base64 encoded start frame
   endFrameImage: z.string().optional(), // Base64 encoded end frame
   seed: z.number().optional(),
@@ -117,6 +118,7 @@ export async function POST(request: NextRequest) {
       motionIntensity,
       frameRate,
       referenceImage,
+      referenceImageMimeType,
       startFrameImage,
       endFrameImage,
       seed,
@@ -194,7 +196,7 @@ export async function POST(request: NextRequest) {
     // Fallback model ID
     if (!modelId) {
       modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
-                finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-001-preview'
+                finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-preview'
     }
 
     console.log(`🤖 [${requestId}] VIDEO GENERATION: Using model: ${modelId}, provider: ${finalProvider}`)
@@ -204,9 +206,18 @@ export async function POST(request: NextRequest) {
     if (finalProvider === 'google-veo' && sourceType === 'image-to-video' && modelId === 'veo-3.0-fast-generate-preview') {
       console.error(`❌ [${requestId}] VIDEO GENERATION: Model ${modelId} does not support image-to-video generation`)
       return NextResponse.json(
-        { error: `Model ${modelId} does not support image-to-video generation. Please use veo-3.0-generate-001-preview or veo-2.0-generate-001 for image-to-video.` },
+        {
+          error: `Model ${modelId} does not support image-to-video generation. Please use veo-3.0-generate-preview or veo-2.0-generate-001 for image-to-video.`,
+          supportedModels: ['veo-3.0-generate-preview', 'veo-2.0-generate-001'],
+          recommendedFallback: 'veo-2.0-generate-001'
+        },
         { status: 400 }
       )
+    }
+
+    // Log image-to-video attempt for Veo 3.0 (requires allowlist access)
+    if (finalProvider === 'google-veo' && sourceType === 'image-to-video' && modelId === 'veo-3.0-generate-preview') {
+      console.log(`🎬 [${requestId}] VIDEO GENERATION: Attempting Veo 3.0 image-to-video generation (requires allowlist access)`)
     }
 
     let profile, creditCost, currentCredits
@@ -340,6 +351,7 @@ export async function POST(request: NextRequest) {
         motionIntensity,
         frameRate,
         referenceImage,
+        referenceImageMimeType,
         startFrameImage,
         endFrameImage,
         sourceType,
@@ -350,10 +362,10 @@ export async function POST(request: NextRequest) {
         sampleCount,
         seed,
         model: (modelId === 'veo-2.0-generate-001' ||
-                modelId === 'veo-3.0-generate-001-preview' ||
+                modelId === 'veo-3.0-generate-preview' ||
                 modelId === 'veo-3.0-fast-generate-preview')
           ? modelId
-          : (finalProvider === 'google-veo' ? 'veo-3.0-generate-001-preview' : undefined)
+          : (finalProvider === 'google-veo' ? 'veo-3.0-generate-preview' : undefined)
       }
       console.log(`🔍 [${requestId}] VIDEO GENERATION: Final model in options: "${options.model}", modelId was: "${modelId}"`)
       console.log(`⚙️ [${requestId}] VIDEO GENERATION: Generation options prepared:`, {
@@ -373,7 +385,7 @@ export async function POST(request: NextRequest) {
           const veoOptions = {
             ...options,
             // Override the model with the correctly mapped modelId
-            model: modelId as 'veo-2.0-generate-001' | 'veo-3.0-generate-001-preview' | 'veo-3.0-fast-generate-preview'
+            model: modelId as 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
           }
 
           console.log(`🎬 [${requestId}] VIDEO GENERATION: Calling Google Veo service with model: ${veoOptions.model}`)

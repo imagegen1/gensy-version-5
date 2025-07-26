@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ToastProvider } from '@/components/ui'
+import { NotificationProvider } from '@/components/ui/notification-system'
 import { getBaseUrl } from '@/lib/utils'
 import './globals.css'
 
@@ -98,14 +99,16 @@ export default function RootLayout({
           <link rel="manifest" href="/site.webmanifest" />
         </head>
         <body className={inter.className}>
-          <ToastProvider>
-            <div id="root">
-              {children}
-            </div>
-            <div id="modal-root" />
-            <div id="toast-root" />
-            <div id="clerk-captcha" />
-          </ToastProvider>
+          <NotificationProvider>
+            <ToastProvider>
+              <div id="root">
+                {children}
+              </div>
+              <div id="modal-root" />
+              <div id="toast-root" />
+              <div id="clerk-captcha" />
+            </ToastProvider>
+          </NotificationProvider>
         </body>
       </html>
     </ClerkProvider>

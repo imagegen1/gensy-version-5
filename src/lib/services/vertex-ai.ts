@@ -303,7 +303,7 @@ export class VertexAIService {
               pricing_credits: 15
             },
             {
-              id: 'veo-3.0-generate-001-preview',
+              id: 'veo-3.0-generate-preview',
               name: 'Google Veo 3.0',
               type: 'video-generation',
               capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'ultra-high-quality'],

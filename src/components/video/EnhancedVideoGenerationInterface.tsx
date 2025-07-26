@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useNotifications } from '@/components/ui/notification-system'
 import {
   PlayIcon,
   Expand,
@@ -85,6 +86,7 @@ interface EnhancedVideoGenerationInterfaceProps {
 
 export function EnhancedVideoGenerationInterface({ preloadedImageData }: EnhancedVideoGenerationInterfaceProps) {
   const { addToast } = useToast()
+  const { addNotification, clearAllNotifications } = useNotifications()
   const { isSignedIn, userId } = useAuth()
   const { user } = useUser()
 
@@ -297,6 +299,53 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
       console.log(`🚫 Cleared uploaded files - ${selectedModel} does not support image-to-video generation`)
     }
   }, [selectedModel, files.length, startFrameFile, endFrameFile])
+
+  // Helper function to detect image format from file
+  const detectImageFormat = (file: File): string => {
+    const extension = file.name.toLowerCase().split('.').pop() || ''
+    if (extension === 'png') return 'png'
+    if (extension === 'jpg' || extension === 'jpeg') return 'jpeg'
+    if (extension === 'webp') return 'webp'
+    if (extension === 'gif') return 'gif'
+    if (extension === 'bmp') return 'bmp'
+    if (extension === 'tiff' || extension === 'tif') return 'tiff'
+    return 'unknown'
+  }
+
+  // Show notifications for model limitations
+  useEffect(() => {
+    // Clear all notifications first
+    clearAllNotifications()
+
+    // Check for VEO 3.0 image-to-video limitation
+    if (selectedModel === 'Google Veo 3.0' && files.length > 0) {
+      addNotification({
+        type: 'warning',
+        title: 'VEO 3 Image-to-Video Unavailable',
+        message: 'VEO 3 image-to-video generation is currently unavailable. Please try using text-to-video or VEO 2 for image-to-video generation instead.',
+        duration: 0, // Persistent notification
+        dismissible: true,
+        uniqueKey: 'veo3-image-to-video-warning' // Unique key to prevent duplicates
+      })
+    }
+
+    // Check for ByteDance Seedance Pro PNG limitation
+    else if (selectedModel === 'ByteDance Seedance Pro' && files.length > 0) {
+      const file = files[0]
+      const imageFormat = detectImageFormat(file)
+
+      if (imageFormat === 'png') {
+        addNotification({
+          type: 'warning',
+          title: 'PNG Format Not Supported',
+          message: 'ByteDance Seedance Pro does not support PNG images. Please try uploading a JPG/JPEG image instead for better compatibility.',
+          duration: 0, // Persistent notification
+          dismissible: true,
+          uniqueKey: 'seedance-pro-png-warning' // Unique key to prevent duplicates
+        })
+      }
+    }
+  }, [selectedModel, files, addNotification, clearAllNotifications])
 
   // Load user's previous videos
   const loadUserVideos = useCallback(async () => {
@@ -606,12 +655,14 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
     try {
       // Process uploaded files to base64 if any
       let referenceImageBase64: string | undefined = undefined
+      let referenceImageMimeType: string | undefined = undefined
       let startFrameBase64: string | undefined = undefined
       let endFrameBase64: string | undefined = undefined
 
       if (files.length > 0) {
         const file = files[0]
         referenceImageBase64 = await fileToBase64(file)
+        referenceImageMimeType = file.type // Capture the MIME type
       }
 
       if (startFrameFile) {
@@ -643,7 +694,10 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
         model: selectedModel,
         sourceType,
         testMode: isTestMode,
-        ...(referenceImageBase64 && { referenceImage: referenceImageBase64 }),
+        ...(referenceImageBase64 && {
+          referenceImage: referenceImageBase64,
+          referenceImageMimeType: referenceImageMimeType
+        }),
         ...(startFrameBase64 && { startFrameImage: startFrameBase64 }),
         ...(endFrameBase64 && { endFrameImage: endFrameBase64 })
       }
@@ -669,7 +723,18 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
       }
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate video')
+        const errorMessage = result.error || 'Failed to generate video'
+
+        // Enhanced error handling for Veo 3.0 allowlist issues
+        if (errorMessage.includes('image-to-video generation requires allowlist access')) {
+          throw new Error(`🚫 Veo 3.0 Image-to-Video Not Available\n\nYour Google Cloud project needs allowlist access for Veo 3.0 image-to-video generation.\n\n✅ Solutions:\n• Switch to "Google Veo 2.0" model (supports image-to-video)\n• Apply for Veo 3.0 allowlist access in Google Cloud Console\n• Use text-to-video with Veo 3.0 instead`)
+        }
+
+        if (errorMessage.includes('Veo 3.0 access not available')) {
+          throw new Error(`🚫 Veo 3.0 Access Required\n\n${errorMessage}\n\n💡 Try switching to "Google Veo 2.0" which is available without allowlist access.`)
+        }
+
+        throw new Error(errorMessage)
       }
 
       // Handle async processing response
@@ -728,13 +793,33 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
 
       console.error(`❌ [${requestId}] FRONTEND: Video generation error:`, error)
 
-      // Check if this is a Veo 3.0 access issue
-      if (errorMessage.includes('allowlist access')) {
-        setVideoError('Veo 3.0 access not available. The system automatically fell back to Veo 2.0. To access Veo 3.0, please apply for allowlist access through the Google Cloud Console.')
+      // Enhanced error handling for Veo 3.0 access issues
+      if (errorMessage.includes('image-to-video generation requires allowlist access')) {
+        setVideoError(`🚫 Veo 3.0 Image-to-Video Not Available
+
+Your Google Cloud project needs allowlist access for Veo 3.0 image-to-video generation.
+
+✅ Quick Solutions:
+• Switch to "Google Veo 2.0" - Supports image-to-video without allowlist
+• Use text-to-video with Veo 3.0 instead (remove the uploaded image)
+• Apply for allowlist access in Google Cloud Console
+
+💡 Tip: Veo 2.0 produces excellent image-to-video results and is immediately available!`)
+        addToast({
+          type: 'warning',
+          title: 'Veo 3.0 Image-to-Video Requires Allowlist',
+          description: 'Switch to Veo 2.0 for immediate access'
+        })
+      } else if (errorMessage.includes('allowlist access') || errorMessage.includes('Veo 3.0 access not available')) {
+        setVideoError(`🚫 Veo 3.0 Access Required
+
+${errorMessage}
+
+💡 Quick Fix: Switch to "Google Veo 2.0" which is available without allowlist access.`)
         addToast({
           type: 'warning',
           title: 'Veo 3.0 not available',
-          description: 'Using Veo 2.0 instead'
+          description: 'Try Veo 2.0 instead'
         })
       } else {
         setVideoError(errorMessage)
@@ -1522,6 +1607,8 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
           </div>
         </div>
       </div>
+
+
 
       {/* Hidden File Inputs */}
       <input

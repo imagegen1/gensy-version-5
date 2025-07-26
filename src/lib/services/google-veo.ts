@@ -15,6 +15,7 @@ export interface VideoGenerationOptions {
   quality?: 'standard' | 'high' | 'ultra'
   resolution?: '720p' | '1080p' // Resolution support for Veo 3 models
   referenceImage?: string // base64 encoded image
+  referenceImageMimeType?: string // MIME type of the reference image
   referenceVideo?: string // base64 encoded video
   motionIntensity?: 'low' | 'medium' | 'high'
   frameRate?: number // fps (24, 30, 60)
@@ -28,7 +29,7 @@ export interface VideoGenerationOptions {
   personGeneration?: 'allow_adult' | 'dont_allow'
   sampleCount?: number // 1-4
   storageUri?: string // GCS bucket URI
-  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-001-preview' | 'veo-3.0-fast-generate-preview'
+  model?: 'veo-2.0-generate-001' | 'veo-3.0-generate-preview' | 'veo-3.0-fast-generate-preview'
   generateAudio?: boolean // Required for Veo 3 models
 }
 
@@ -192,7 +193,7 @@ export class GoogleVeoService {
         model: modelId,
         sampleCount: Math.min(options.sampleCount || 1, isVeo3Fast ? 2 : 4), // Veo 3 Fast max 2, others max 4
         enhancePrompt: options.enhancePrompt !== false, // Default to true
-        personGeneration: isVeo3 ? 'allow_all' : (options.personGeneration || 'allow_adult'), // Studio uses 'allow_all' for Veo 3
+        personGeneration: isVeo3 ? 'allow_adult' : (options.personGeneration || 'allow_adult'), // Use allow_adult for all models
         generateAudio: isVeo3 ? (options.generateAudio !== false) : undefined, // Required for Veo 3, not supported by Veo 2
         seed: options.seed,
         negativePrompt: options.negativePrompt,
@@ -235,7 +236,7 @@ export class GoogleVeoService {
           ...(finalOptions.referenceImage && {
             image: {
               bytesBase64Encoded: finalOptions.referenceImage,
-              mimeType: 'image/jpeg'
+              mimeType: finalOptions.referenceImageMimeType || 'image/jpeg'
             }
           })
         }],
@@ -251,12 +252,11 @@ export class GoogleVeoService {
             resolution: '1080p'
           }),
 
-          // Veo 3.0 specific parameters (required for Veo 3.0 models) - matching Studio exactly
+          // Veo 3.0 specific parameters (required for Veo 3.0 models)
           ...(isVeo3 && {
-            generateAudio: true, // Studio always uses true
-            personGeneration: finalOptions.personGeneration, // Use the value from finalOptions (now 'allow_all')
-            addWatermark: true, // Studio uses true
-            includeRaiReason: true // Studio includes this parameter
+            generateAudio: true, // Required for Veo 3.0
+            personGeneration: finalOptions.personGeneration, // Use allow_adult
+            includeRaiReason: true // Include RAI reason for content filtering
           }),
 
           // Veo 2.0 specific parameters
@@ -298,9 +298,23 @@ export class GoogleVeoService {
           error: errorText
         })
 
-        // Check if this is a Veo 3.0 access issue
-        if (isVeo3 && (response.status === 403 || response.status === 404 || errorText.includes('not found') || errorText.includes('permission'))) {
+        // Enhanced error handling for Veo 3.0 access issues
+        if (isVeo3 && (
+          response.status === 403 ||
+          response.status === 404 ||
+          response.status === 400 ||
+          errorText.includes('not found') ||
+          errorText.includes('permission') ||
+          errorText.includes('not allowlisted') ||
+          errorText.includes('FAILED_PRECONDITION')
+        )) {
           console.warn(`🚫 [${requestId}] GOOGLE VEO: Veo 3.0 access not available. This model requires allowlist access.`)
+
+          // Check if this is specifically an image-to-video allowlist issue
+          if (errorText.includes('Image to video is not allowlisted') || errorText.includes('image-to-video')) {
+            throw new Error(`Veo 3.0 image-to-video generation requires allowlist access for your Google Cloud project. Please use Veo 2.0 for image-to-video generation, or apply for Veo 3.0 allowlist access through the Google Cloud Console.`)
+          }
+
           throw new Error(`Veo 3.0 access not available. This model requires allowlist access. Please apply for access through the Google Cloud Console or use Veo 2.0 instead.`)
         }
 
@@ -645,7 +659,7 @@ export class GoogleVeoService {
       styles: ['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary'],
       qualities: ['standard', 'high', 'ultra'],
       motionIntensities: ['low', 'medium', 'high'],
-      models: ['veo-3.0-generate-001-preview', 'veo-3.0-fast-generate-preview']
+      models: ['veo-3.0-generate-preview', 'veo-3.0-fast-generate-preview']
     }
   }
 }
