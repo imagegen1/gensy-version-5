@@ -201,6 +201,19 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
     ]
   }
 
+  // Check if the selected model supports image-to-video generation
+  const supportsImageToVideo = () => {
+    const model = selectedModel.toLowerCase()
+
+    // Veo 3.0 Fast does NOT support image-to-video
+    if (model.includes('veo 3.0 fast')) {
+      return false
+    }
+
+    // All other models support image-to-video
+    return true
+  }
+
   // Style options
   const STYLES = [
     { value: 'realistic', label: 'Realistic', icon: '📷' },
@@ -273,6 +286,17 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
       setSelectedResolution(availableResolutions[0].value)
     }
   }, [selectedModel, selectedResolution])
+
+  // Clear uploaded files when switching to a model that doesn't support image-to-video
+  useEffect(() => {
+    if (!supportsImageToVideo() && (files.length > 0 || startFrameFile || endFrameFile)) {
+      setFiles([])
+      setFilePreviews({})
+      setStartFrameFile(null)
+      setEndFrameFile(null)
+      console.log(`🚫 Cleared uploaded files - ${selectedModel} does not support image-to-video generation`)
+    }
+  }, [selectedModel, files.length, startFrameFile, endFrameFile])
 
   // Load user's previous videos
   const loadUserVideos = useCallback(async () => {
@@ -1170,8 +1194,13 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
                     <div className={`flex items-center gap-1 transition-opacity duration-300 ${isRecording ? "opacity-0 invisible h-0" : "opacity-100 visible"}`}>
                       <button
                         onClick={handleImageUpload}
-                        className="flex h-8 w-8 text-muted-foreground cursor-pointer items-center justify-center rounded-full transition-colors hover:bg-accent hover:text-accent-foreground"
-                        disabled={isRecording}
+                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                          isRecording || !supportsImageToVideo()
+                            ? 'text-muted-foreground/50 cursor-not-allowed'
+                            : 'text-muted-foreground cursor-pointer hover:bg-accent hover:text-accent-foreground'
+                        }`}
+                        disabled={isRecording || !supportsImageToVideo()}
+                        title={!supportsImageToVideo() ? `${selectedModel} does not support image-to-video generation` : 'Upload image or video'}
                       >
                         <Paperclip className="h-5 w-5 transition-colors" />
                         <input

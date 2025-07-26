@@ -200,6 +200,15 @@ export async function POST(request: NextRequest) {
     console.log(`🤖 [${requestId}] VIDEO GENERATION: Using model: ${modelId}, provider: ${finalProvider}`)
     console.log(`🔍 [${requestId}] VIDEO GENERATION: Model mapping debug - original model: "${model}", mapped modelId: "${modelId}"`)
 
+    // Validate model capabilities for specific generation types
+    if (finalProvider === 'google-veo' && sourceType === 'image-to-video' && modelId === 'veo-3.0-fast-generate-preview') {
+      console.error(`❌ [${requestId}] VIDEO GENERATION: Model ${modelId} does not support image-to-video generation`)
+      return NextResponse.json(
+        { error: `Model ${modelId} does not support image-to-video generation. Please use veo-3.0-generate-001-preview or veo-2.0-generate-001 for image-to-video.` },
+        { status: 400 }
+      )
+    }
+
     let profile, creditCost, currentCredits
 
     if (isTestMode) {

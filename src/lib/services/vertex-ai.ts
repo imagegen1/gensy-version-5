@@ -317,7 +317,7 @@ export class VertexAIService {
               id: 'veo-3.0-fast-generate-preview',
               name: 'Google Veo 3.0 Fast',
               type: 'video-generation',
-              capabilities: ['text-to-video', 'image-to-video', 'audio-generation', 'fast-generation'],
+              capabilities: ['text-to-video', 'audio-generation', 'fast-generation'], // Removed image-to-video as per requirements
               maxDuration: 8,
               supportedAspectRatios: ['16:9'], // Veo 3 only supports 16:9
               supportedResolutions: ['720p', '1080p'], // Veo 3 Fast also supports both resolutions
