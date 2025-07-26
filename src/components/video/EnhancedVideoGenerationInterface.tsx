@@ -347,6 +347,28 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
     }
   }, [selectedModel, files, addNotification, clearAllNotifications])
 
+  // 🧹 Automatic cleanup utility function
+  const cleanupFailedGenerations = useCallback(async () => {
+    try {
+      console.log('🧹 AUTO-CLEANUP: Starting automatic cleanup of failed generations...')
+
+      // Clean up failed generations older than 1 hour
+      const response = await fetch('/api/generations/cleanup?olderThanHours=1', {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        console.log('🧹 AUTO-CLEANUP: Cleanup completed:', result.message)
+        console.log('🧹 AUTO-CLEANUP: Statistics:', result.statistics)
+      } else {
+        console.log('🧹 AUTO-CLEANUP: Cleanup failed:', response.status, response.statusText)
+      }
+    } catch (error) {
+      console.error('🧹 AUTO-CLEANUP: Error during cleanup:', error)
+    }
+  }, [])
+
   // Load user's previous videos
   const loadUserVideos = useCallback(async () => {
 
@@ -405,7 +427,9 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
 
   useEffect(() => {
     loadUserVideos()
-  }, [loadUserVideos])
+    // 🧹 Run automatic cleanup when component loads
+    cleanupFailedGenerations()
+  }, [loadUserVideos, cleanupFailedGenerations])
 
   // Auto-resize textarea
   useEffect(() => {
@@ -944,23 +968,40 @@ ${errorMessage}
           }, 1000)
 
         } else if (result.status === 'failed') {
-          // Video generation failed
+          // Video generation failed - clean up automatically
           clearInterval(progressInterval)
           setGenerationProgress(0)
 
           const errorMessage = result.error || 'Video generation failed'
           setVideoError(errorMessage)
 
+          // 🧹 AUTOMATIC CLEANUP: Remove failed generation from UI instead of showing red error box
           setGeneratedVideos(prev =>
-            prev.map(video =>
-              video.id === tempVideoId
-                ? { ...video, isLoading: false, error: errorMessage }
-                : video
-            )
+            prev.filter(video => video.id !== tempVideoId)
           )
           setIsGenerating(false)
 
-          console.error(`❌ [${pollRequestId}] FRONTEND: Video generation failed:`, errorMessage)
+          // 📝 Log error for debugging purposes (not shown to user in UI)
+          console.error(`❌ [${pollRequestId}] FRONTEND: Video generation failed (auto-cleaned):`, {
+            tempVideoId,
+            error: errorMessage,
+            timestamp: new Date().toISOString()
+          })
+
+          // 🔔 Show user-friendly notification instead of red error box
+          addNotification({
+            type: 'error',
+            title: 'Video Generation Failed',
+            message: 'The video generation was unsuccessful and has been automatically removed. Please try again with different settings.',
+            duration: 5000,
+            dismissible: true,
+            uniqueKey: 'video-generation-failed'
+          })
+
+          // 🧹 Run cleanup after a short delay to clean up the failed generation from database
+          setTimeout(() => {
+            cleanupFailedGenerations()
+          }, 2000)
 
         } else if (result.status === 'processing') {
           // Still processing, continue polling
@@ -1027,19 +1068,22 @@ ${errorMessage}
         <button
           onClick={() => window.location.href = '/video/gallery'}
           className="w-12 h-12 border-2 border-dashed rounded-lg flex items-center justify-center transition-all duration-200 relative border-muted hover:border-muted-foreground text-muted-foreground hover:text-foreground"
-          title={`Open gallery (${generatedVideos.length} videos)`}
+          title={`Open gallery (${generatedVideos.filter(v => !v.error && !v.isLoading).length} videos)`}
         >
           <Plus className="w-5 h-5" />
-          {generatedVideos.length > 0 && (
+          {generatedVideos.filter(v => !v.error && !v.isLoading).length > 0 && (
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
-              {generatedVideos.length > 99 ? '99+' : generatedVideos.length}
+              {generatedVideos.filter(v => !v.error && !v.isLoading).length > 99 ? '99+' : generatedVideos.filter(v => !v.error && !v.isLoading).length}
             </div>
           )}
         </button>
 
         {/* Show more videos in sidebar */}
         <div className="flex flex-col space-y-2 w-full items-center">
-          {generatedVideos.slice(0, 12).map((video, index) => (
+          {generatedVideos
+            .filter(video => !video.error && !video.isLoading) // 🧹 Only show successful videos
+            .slice(0, 12)
+            .map((video, index) => (
             <div
               key={video.id}
               className={`w-12 h-12 rounded-lg overflow-hidden border transition-all duration-200 cursor-pointer relative group ${
@@ -1047,47 +1091,36 @@ ${errorMessage}
                   ? 'border-primary shadow-md'
                   : 'border-border hover:border-primary/50 hover:shadow-sm'
               }`}
-              onClick={() => !video.isLoading && !video.error && setCurrentVideo(video)}
+              onClick={() => setCurrentVideo(video)} // 🧹 Simplified since we only show successful videos
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              {video.isLoading ? (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              ) : video.error ? (
-                <div className="w-full h-full bg-destructive/20 flex items-center justify-center">
-                  <svg className="w-3 h-3 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-              ) : (
-                <div className="w-full h-full relative overflow-hidden group-hover:scale-105 transition-transform duration-200">
-                  <video
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
-                    preload="auto"
-                    onError={() => {
-                      console.error('🎬 SIDEBAR: Error loading video preview:', video.id)
-                      handleVideoError(video.id)
-                    }}
-                    onLoadedData={() => {
-                      console.log('🎬 SIDEBAR: Video preview loaded:', video.id)
-                      handleVideoLoad(video.id)
-                    }}
-                  >
-                    <source src={getProxiedVideoUrl(video.id)} type="video/mp4" />
-                  </video>
-                  {/* Subtle overlay to indicate it's clickable */}
-                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                    <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                      <PlayIcon className="w-2 h-2 text-white" />
-                    </div>
+              {/* 🧹 Removed error state rendering since failed videos are filtered out */}
+              <div className="w-full h-full relative overflow-hidden group-hover:scale-105 transition-transform duration-200">
+                <video
+                  className="w-full h-full object-cover"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="auto"
+                  onError={() => {
+                    console.error('🎬 SIDEBAR: Error loading video preview:', video.id)
+                    handleVideoError(video.id)
+                  }}
+                  onLoadedData={() => {
+                    console.log('🎬 SIDEBAR: Video preview loaded:', video.id)
+                    handleVideoLoad(video.id)
+                  }}
+                >
+                  <source src={getProxiedVideoUrl(video.id)} type="video/mp4" />
+                </video>
+                {/* Subtle overlay to indicate it's clickable */}
+                <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                  <div className="w-4 h-4 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                    <PlayIcon className="w-2 h-2 text-white" />
                   </div>
                 </div>
-              )}
+              </div>
 
               {currentVideo?.id === video.id && (
                 <div className="absolute inset-0 border-2 border-primary rounded-lg bg-primary/10"></div>
