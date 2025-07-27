@@ -4,26 +4,53 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getGoogleCloudStatus } from '@/lib/google-cloud'
-import { validateGoogleCredentials, getServiceAccountEmail } from '@/lib/google-auth'
 
 export async function GET(request: NextRequest) {
   const testRequestId = `google_auth_test_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-  
+
   console.log(`🧪 [${testRequestId}] GOOGLE AUTH TEST: Starting authentication test`)
 
   try {
+    // Check if Google Cloud is configured first
+    const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+    if (!isGoogleCloudConfigured()) {
+      console.log(`🧪 [${testRequestId}] GOOGLE AUTH TEST: Google Cloud not configured`)
+      return NextResponse.json({
+        success: false,
+        message: 'Google Cloud credentials not configured',
+        status: {
+          configured: false,
+          hasCredentials: false,
+          hasProjectId: false
+        },
+        validation: {
+          valid: false,
+          error: 'No credentials configured'
+        },
+        serviceAccountEmail: null,
+        testResults: {
+          configurationTest: { passed: false, message: 'No credentials configured' },
+          validationTest: { passed: false, message: 'No credentials to validate' },
+          serviceAccountTest: { passed: false, message: 'No service account available' }
+        }
+      })
+    }
+
     // Test 1: Check configuration status
     console.log(`🧪 [${testRequestId}] GOOGLE AUTH TEST: Checking configuration...`)
+    const { getGoogleCloudStatus } = await import('@/lib/google-cloud')
     const status = await getGoogleCloudStatus()
 
     // Test 2: Validate credentials
     console.log(`🧪 [${testRequestId}] GOOGLE AUTH TEST: Validating credentials...`)
+    const { validateGoogleCredentials } = await import('@/lib/google-auth')
     const validation = await validateGoogleCredentials()
 
     // Test 3: Get service account email
     let serviceAccountEmail = null
     try {
+      const { getServiceAccountEmail } = await import('@/lib/google-auth')
       serviceAccountEmail = getServiceAccountEmail()
       console.log(`🧪 [${testRequestId}] GOOGLE AUTH TEST: Service account email: ${serviceAccountEmail}`)
     } catch (error) {

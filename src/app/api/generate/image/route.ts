@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { VertexAIService, ImageGenerationOptions } from '@/lib/services/vertex-ai'
 import { BytedanceService, BytedanceImageGenerationOptions } from '@/lib/services/bytedance-service'
 import { BFLService, BFLImageGenerationOptions, BFLImageEditingOptions, BFLModel } from '@/lib/services/bfl-service'
 import { MockImageGenerationService } from '@/lib/services/mock-image-generation'
@@ -234,7 +233,7 @@ export async function POST(request: NextRequest) {
     try {
       // Prepare generation options
       console.log(`⚙️ [${requestId}] Preparing generation options...`)
-      const options: ImageGenerationOptions = {
+      const options = {
         aspectRatio,
         style,
         quality,
@@ -291,8 +290,21 @@ export async function POST(request: NextRequest) {
             result = await BFLService.generateImage(prompt, bflOptions, modelId as BFLModel)
           }
         } else {
-          // Use Vertex AI service (default)
-          result = await VertexAIService.generateImage(prompt, options)
+          // Check if Google Cloud is configured before using VertexAI
+          const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+          if (!isGoogleCloudConfigured()) {
+            console.log(`❌ [${requestId}] Google Cloud not configured, using mock service`)
+            result = await MockImageGenerationService.generateMockImage(prompt, {
+              aspectRatio,
+              style,
+              quality
+            })
+          } else {
+            // Use Vertex AI service (default)
+            const { VertexAIService } = await import('@/lib/services/vertex-ai')
+            result = await VertexAIService.generateImage(prompt, options)
+          }
         }
 
         const endTime = Date.now()

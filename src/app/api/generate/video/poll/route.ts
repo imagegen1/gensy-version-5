@@ -36,7 +36,23 @@ function createGoogleCloudStorage() {
   }
 }
 
-const storage = createGoogleCloudStorage()
+// Lazy initialization of storage instance
+let storage: any = null
+
+function getStorageInstance() {
+  if (!storage) {
+    // Check if credentials are available before initializing
+    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+
+    if (!credentialsPath && !credentialsBase64) {
+      throw new Error('Missing Google credentials: Set either GOOGLE_APPLICATION_CREDENTIALS or GOOGLE_CREDENTIALS_BASE64')
+    }
+
+    storage = createGoogleCloudStorage()
+  }
+  return storage
+}
 
 // Request validation schema - supports both Google Veo and ByteDance
 const pollRequestSchema = z.object({
@@ -428,7 +444,7 @@ export async function POST(request: NextRequest) {
     // Check for video files in the directory
     let files
     try {
-      [files] = await storage.bucket(bucketName).getFiles({ prefix })
+      [files] = await getStorageInstance().bucket(bucketName).getFiles({ prefix })
       console.log(`🗂️ [${requestId}] GCS POLL: Found ${files.length} files in directory`)
     } catch (bucketError) {
       if (bucketError.code === 404) {

@@ -26,8 +26,8 @@ const envSchema = z.object({
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, 'Supabase anon key is required'),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'Supabase service role key is required'),
 
-  // Google Cloud / Vertex AI Configuration
-  GOOGLE_CLOUD_PROJECT_ID: z.string().min(1, 'Google Cloud project ID is required'),
+  // Google Cloud / Vertex AI Configuration (Optional for build)
+  GOOGLE_CLOUD_PROJECT_ID: z.string().optional(),
   GOOGLE_APPLICATION_CREDENTIALS: z.string().optional(),
   GOOGLE_CREDENTIALS_BASE64: z.string().optional(),
   GOOGLE_CLOUD_LOCATION: z.string().default('us-central1'),

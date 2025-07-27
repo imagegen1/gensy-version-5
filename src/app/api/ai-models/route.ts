@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceRoleClient } from '@/lib/supabase/server'
-import { VertexAIService } from '@/lib/services/vertex-ai'
 
 export async function GET(request: NextRequest) {
   console.log('🤖 AI Models API: Request received')
@@ -22,7 +21,15 @@ export async function GET(request: NextRequest) {
       let vertexVideoModels = []
 
       try {
-        const vertexModels = await VertexAIService.getAvailableModels('video')
+        // Check if Google Cloud is configured before using VertexAI
+        const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+        if (!isGoogleCloudConfigured()) {
+          console.log('🤖 AI Models API: Google Cloud not configured, skipping Vertex AI video models')
+          vertexVideoModels = []
+        } else {
+          const { VertexAIService } = await import('@/lib/services/vertex-ai')
+          const vertexModels = await VertexAIService.getAvailableModels('video')
         if (vertexModels.success) {
           // Transform Vertex AI video models to match expected format
           vertexVideoModels = vertexModels.models.map(model => ({
@@ -47,6 +54,7 @@ export async function GET(request: NextRequest) {
             }
           }))
           console.log('🤖 AI Models API: Fetched Vertex AI video models:', vertexVideoModels.length)
+        }
         }
       } catch (error) {
         console.error('Error fetching Vertex AI video models:', error)
@@ -98,6 +106,37 @@ export async function GET(request: NextRequest) {
     // If requesting image models, return Vertex AI Imagen models
     if (type === 'image') {
       try {
+        // Check if Google Cloud is configured before trying to use Vertex AI
+        const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+        if (!isGoogleCloudConfigured()) {
+          console.log('🤖 AI Models API: Google Cloud not configured, returning static image models')
+          // Return static image models when Google Cloud is not configured
+          const staticImageModels = [
+            {
+              id: 'mock-imagen-4.0',
+              name: 'mock-imagen-4.0',
+              display_name: 'Imagen 4 (Mock)',
+              type: 'image',
+              provider: 'mock',
+              status: 'active',
+              description: 'Mock image generation model for development',
+              pricing_credits: 2,
+              max_duration: null,
+              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
+              is_featured: true,
+              capabilities: {
+                textToImage: true,
+                styleTransfer: true,
+                highQuality: true,
+                maxResolution: '1920x1080'
+              }
+            }
+          ]
+          return NextResponse.json(staticImageModels)
+        }
+
+        const { VertexAIService } = await import('@/lib/services/vertex-ai')
         const vertexModels = await VertexAIService.getAvailableModels('image')
         if (vertexModels.success) {
           // Transform Vertex AI models to match expected format

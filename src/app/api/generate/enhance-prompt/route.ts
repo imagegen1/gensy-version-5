@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { VertexAIService } from '@/lib/services/vertex-ai'
 import { z } from 'zod'
 
 // Request validation schema
@@ -40,7 +39,18 @@ export async function POST(request: NextRequest) {
 
     const { prompt } = validationResult.data
 
-    // Enhance the prompt
+    // Check if Google Cloud is configured before using VertexAI
+    const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+    if (!isGoogleCloudConfigured()) {
+      return NextResponse.json(
+        { error: 'Google Cloud Vertex AI is not configured' },
+        { status: 503 }
+      )
+    }
+
+    // Dynamically import and enhance the prompt
+    const { VertexAIService } = await import('@/lib/services/vertex-ai')
     const result = await VertexAIService.enhancePrompt(prompt)
 
     if (!result.success) {

@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { ImageUpscalingService } from '@/lib/services/image-upscaling'
 import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadToR2 } from '@/lib/storage/r2-client'
@@ -172,7 +171,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Check if Google Cloud is configured before using ImageUpscalingService
+    const { isGoogleCloudConfigured: isGoogleConfigured } = await import('@/lib/google-auth')
+
+    if (!isGoogleConfigured()) {
+      return NextResponse.json(
+        { error: 'Image upscaling service is not available. Google Cloud Vertex AI is not configured.' },
+        { status: 503 }
+      )
+    }
+
     // Validate image
+    const { ImageUpscalingService } = await import('@/lib/services/image-upscaling')
     const validation = await ImageUpscalingService.validateImage(imageBuffer)
     if (!validation.isValid) {
       return NextResponse.json(

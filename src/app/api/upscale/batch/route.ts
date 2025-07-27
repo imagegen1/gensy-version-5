@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { BatchProcessingService } from '@/lib/services/batch-processing'
 import { CreditService } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadToR2 } from '@/lib/storage/r2-client'
@@ -28,6 +27,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      )
+    }
+
+    // Check if Google Cloud is configured before proceeding
+    const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+
+    if (!isGoogleCloudConfigured()) {
+      return NextResponse.json(
+        { error: 'Batch image upscaling service is not available. Google Cloud Vertex AI is not configured.' },
+        { status: 503 }
       )
     }
 
@@ -68,6 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate batch request
+    const { BatchProcessingService } = await import('@/lib/services/batch-processing')
     const batchValidation = BatchProcessingService.validateBatchRequest(imageFiles)
     if (!batchValidation.isValid) {
       return NextResponse.json(

@@ -22,13 +22,18 @@ export function getGoogleCredentials(): any {
     if (env.GOOGLE_CREDENTIALS_BASE64) {
       console.log('🔐 GOOGLE AUTH: Using Base64 encoded credentials')
       
-      const credentialsJsonString = Buffer.from(
-        env.GOOGLE_CREDENTIALS_BASE64,
-        'base64'
-      ).toString('utf-8')
+      try {
+        const credentialsJsonString = Buffer.from(
+          env.GOOGLE_CREDENTIALS_BASE64,
+          'base64'
+        ).toString('utf-8')
 
-      cachedCredentials = JSON.parse(credentialsJsonString)
-      return cachedCredentials
+        cachedCredentials = JSON.parse(credentialsJsonString)
+        return cachedCredentials
+      } catch (parseError) {
+        console.error('❌ GOOGLE AUTH: Failed to parse Base64 credentials:', parseError)
+        throw new Error(`Invalid Base64 credentials format: ${parseError instanceof Error ? parseError.message : 'Unknown parsing error'}`)
+      }
     }
 
     // Option 2: Use file path (for local development)
@@ -134,6 +139,11 @@ export async function validateGoogleCredentials(): Promise<{
  */
 export function isGoogleCloudConfigured(): boolean {
   try {
+    // Check if Google Cloud is disabled during build
+    if (process.env.NEXT_BUILD_DISABLE_GOOGLE_CLOUD === 'true') {
+      return false
+    }
+
     return !!(
       env.GOOGLE_CLOUD_PROJECT_ID &&
       (env.GOOGLE_CREDENTIALS_BASE64 || env.GOOGLE_APPLICATION_CREDENTIALS)

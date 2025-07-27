@@ -31,7 +31,23 @@ function createGoogleCloudStorage() {
   }
 }
 
-const storage = createGoogleCloudStorage()
+// Lazy initialization of storage instance
+let storage: any = null
+
+function getStorageInstance() {
+  if (!storage) {
+    // Check if credentials are available before initializing
+    const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS
+    const credentialsBase64 = process.env.GOOGLE_CREDENTIALS_BASE64
+
+    if (!credentialsPath && !credentialsBase64) {
+      throw new Error('Google Cloud Storage not configured: Missing credentials')
+    }
+
+    storage = createGoogleCloudStorage()
+  }
+  return storage
+}
 
 // Helper function to generate fresh signed URL
 async function generateSignedUrl(bucketName: string, filePath: string): Promise<string> {
@@ -42,7 +58,7 @@ async function generateSignedUrl(bucketName: string, filePath: string): Promise<
       expires: Date.now() + 15 * 60 * 1000, // URL expires in 15 minutes
     }
 
-    const [url] = await storage
+    const [url] = await getStorageInstance()
       .bucket(bucketName)
       .file(filePath)
       .getSignedUrl(options)
@@ -176,9 +192,7 @@ export async function GET(request: NextRequest) {
         console.log(`🧪 [${requestId}] VIDEO PROXY: Test mode - looking up video in GCS directly`)
         // For test mode, try to find the video directly in GCS
         try {
-          const { Storage } = require('@google-cloud/storage')
-          const testStorage = createGoogleCloudStorage()
-
+          const testStorage = getStorageInstance()
           const bucket = testStorage.bucket('gensy-final')
           const prefix = `video-outputs/${generationId}/`
 
