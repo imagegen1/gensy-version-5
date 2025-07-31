@@ -1,0 +1,340 @@
+/* Import fonts from Google Fonts to match landing page */
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+/* Legal Pages Professional Typography & Layout */
+.legal-page {
+  font-family: "Raleway", sans-serif;
+  background: #050913;
+  min-height: 100vh;
+  padding: 60px 0;
+}
+
+.legal-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 80px;
+  line-height: 1.7;
+  color: #212529;
+}
+
+/* Typography Hierarchy */
+.legal-page h1 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+}
+
+.legal-page h2 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 48px 0 24px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e9ecef;
+}
+
+.legal-page h3 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: #34495e;
+  margin: 32px 0 16px 0;
+}
+
+.legal-page h6 {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 12px;
+}
+
+.legal-page p {
+  font-family: "Raleway", sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  color: #212529;
+}
+
+.legal-page .lead-text {
+  font-family: "Raleway", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #6c757d;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.legal-page .intro-text {
+  font-family: "Raleway", sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.8;
+  color: #495057;
+  margin-bottom: 24px;
+}
+
+/* Lists */
+.legal-page ul, .legal-page ol {
+  font-family: "Raleway", sans-serif;
+  margin-bottom: 24px;
+  padding-left: 24px;
+}
+
+.legal-page li {
+  font-family: "Raleway", sans-serif;
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+/* Links */
+.legal-page a {
+  font-family: "Raleway", sans-serif;
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.legal-page a:hover {
+  color: #0052a3;
+  text-decoration: underline;
+}
+
+/* Sections */
+.legal-section {
+  margin-bottom: 48px;
+}
+
+.legal-subsection {
+  margin: 32px 0;
+  padding-left: 20px;
+  border-left: 3px solid #e9ecef;
+}
+
+/* Cards and Boxes */
+.legal-card {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.legal-highlight-box {
+  background: linear-gradient(135deg, #667eea15, #764ba215);
+  border: 1px solid #667eea30;
+  border-radius: 8px;
+  padding: 24px;
+  margin: 24px 0;
+}
+
+.legal-info-box {
+  background: linear-gradient(135deg, #28a74515, #20c99715);
+  border: 1px solid #28a74530;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.legal-warning-box {
+  background: linear-gradient(135deg, #dc354515, #e7474715);
+  border: 1px solid #dc354530;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.legal-contact-card {
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  margin: 32px 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Table of Contents */
+.legal-toc {
+  margin: 48px 0;
+}
+
+.legal-toc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.legal-toc-item {
+  font-family: "Raleway", sans-serif;
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.legal-toc-item:hover {
+  background: #f8f9fa;
+  border-color: #667eea;
+  color: #667eea;
+  text-decoration: none;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.legal-toc-number {
+  background: #667eea;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+/* Payment Methods Grid */
+.legal-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.legal-payment-item {
+  font-family: "Raleway", sans-serif;
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+  font-weight: 500;
+  color: #495057;
+}
+
+/* Icons */
+.legal-icon {
+  margin-right: 8px;
+  color: #667eea;
+}
+
+.legal-icon-success {
+  color: #28a745;
+}
+
+.legal-icon-warning {
+  color: #ffc107;
+}
+
+.legal-icon-danger {
+  color: #dc3545;
+}
+
+/* Logo Size Consistency - Match Landing Page Exactly */
+.navbar-brand img {
+  height: 170px !important;
+  width: 224.66px !important;
+}
+
+.responsive-navbar .logo img {
+  height: 170px !important;
+  width: 224.66px !important;
+}
+
+.single-footer-widget .logo img {
+  height: 170px !important;
+  width: 224.66px !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .legal-page {
+    padding: 32px 0;
+  }
+
+  .legal-container {
+    margin: 0 16px;
+    padding: 40px 24px;
+    border-radius: 8px;
+  }
+  
+  .legal-page h1 {
+    font-size: 28px;
+  }
+  
+  .legal-page h2 {
+    font-size: 22px;
+    margin: 32px 0 20px 0;
+  }
+  
+  .legal-page h3 {
+    font-size: 18px;
+    margin: 24px 0 12px 0;
+  }
+  
+  .legal-page p {
+    font-size: 15px;
+  }
+  
+  .legal-page .intro-text {
+    font-size: 16px;
+  }
+  
+  .legal-toc-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .legal-payment-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+  
+  .legal-contact-card {
+    padding: 24px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .legal-container {
+    margin: 0 12px;
+    padding: 32px 20px;
+  }
+  
+  .legal-page h1 {
+    font-size: 24px;
+  }
+  
+  .legal-page h2 {
+    font-size: 20px;
+  }
+  
+  .legal-toc-item {
+    padding: 12px 16px;
+  }
+  
+  .legal-payment-grid {
+    grid-template-columns: 1fr;
+  }
+}
