@@ -1,77 +1,196 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { heroVideoConfig } from '@/config/hero-video'
 import { BeamsBackground } from '@/components/ui/beams-background'
+import './critical.css'
+
+// Preload critical resources
+const preloadResources = () => {
+  // Preload critical CSS
+  const criticalCSS = [
+    '/ainext-template/assets/css/bootstrap.min.css',
+    '/ainext-template/assets/css/style.css',
+    '/ainext-template/assets/css/responsive.css'
+  ]
+
+  criticalCSS.forEach(href => {
+    const link = document.createElement('link')
+    link.rel = 'preload'
+    link.as = 'style'
+    link.href = href
+    document.head.appendChild(link)
+  })
+}
 
 export default function AiNextTemplate() {
   const { isSignedIn } = useAuth()
   const router = useRouter()
-  useEffect(() => {
-    // Load CSS files
-    const loadCSS = (href: string) => {
+  const [isLoaded, setIsLoaded] = useState(false)
+  const [scriptsLoaded, setScriptsLoaded] = useState(false)
+
+  // Optimized CSS loading with prioritization
+  const loadCSS = useCallback((href: string, priority: 'critical' | 'normal' = 'normal') => {
+    return new Promise<void>((resolve) => {
       const link = document.createElement('link')
       link.rel = 'stylesheet'
       link.href = href
-      document.head.appendChild(link)
-    }
+      link.onload = () => resolve()
+      link.onerror = () => resolve() // Don't block on CSS errors
 
-    // Load all CSS files
-    loadCSS('/ainext-template/assets/css/bootstrap.min.css')
-    loadCSS('/ainext-template/assets/css/owl.carousel.min.css')
-    loadCSS('/ainext-template/assets/css/owl.theme.default.min.css')
-    loadCSS('/ainext-template/assets/css/remixicon.min.css')
-    loadCSS('/ainext-template/assets/css/odometer.min.css')
-    loadCSS('/ainext-template/assets/css/flaticon.css')
-    loadCSS('/ainext-template/assets/css/aos.css')
-    loadCSS('/ainext-template/assets/css/style.css')
-    loadCSS('/ainext-template/assets/css/responsive.css')
+      if (priority === 'critical') {
+        document.head.insertBefore(link, document.head.firstChild)
+      } else {
+        document.head.appendChild(link)
+      }
+    })
+  }, [])
 
-    // Load external scripts after component mounts
-    const loadScript = (src: string) => {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script')
-        script.src = src
-        script.onload = resolve
-        script.onerror = reject
-        document.body.appendChild(script)
-      })
-    }
+  // Optimized script loading with error handling
+  const loadScript = useCallback((src: string) => {
+    return new Promise<void>((resolve, reject) => {
+      // Check if script already exists
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve()
+        return
+      }
 
-    const loadScripts = async () => {
+      const script = document.createElement('script')
+      script.src = src
+      script.async = true
+      script.onload = () => resolve()
+      script.onerror = () => {
+        console.warn(`Failed to load script: ${src}`)
+        resolve() // Don't block on script errors
+      }
+      document.body.appendChild(script)
+    })
+  }, [])
+
+  useEffect(() => {
+    let isMounted = true
+
+    const initializePage = async () => {
       try {
-        // Load jQuery first
-        await loadScript('/ainext-template/assets/js/jquery.min.js')
+        // Preload resources immediately
+        preloadResources()
 
-        // Wait a bit for jQuery to be available
-        await new Promise(resolve => setTimeout(resolve, 100))
+        // Load critical CSS first (parallel)
+        const criticalCSSPromises = [
+          loadCSS('/ainext-template/assets/css/bootstrap.min.css', 'critical'),
+          loadCSS('/ainext-template/assets/css/style.css', 'critical'),
+          loadCSS('/ainext-template/assets/css/responsive.css', 'critical'),
+          loadCSS('/ainext-template/assets/css/remixicon.min.css', 'critical')
+        ]
 
-        // Load other dependencies
-        await loadScript('/ainext-template/assets/js/bootstrap.bundle.min.js')
-        await loadScript('/ainext-template/assets/js/aos.js')
-        await loadScript('/ainext-template/assets/js/appear.min.js')
-        await loadScript('/ainext-template/assets/js/odometer.min.js')
-        await loadScript('/ainext-template/assets/js/owl.carousel.min.js')
+        await Promise.all(criticalCSSPromises)
 
-        // Wait for all plugins to be ready
-        await new Promise(resolve => setTimeout(resolve, 200))
+        if (!isMounted) return
 
-        // Load main script last
-        await loadScript('/ainext-template/assets/js/ainext.js')
+        // Set initial load state
+        setIsLoaded(true)
+
+        // Load non-critical CSS in background
+        const nonCriticalCSS = [
+          '/ainext-template/assets/css/owl.carousel.min.css',
+          '/ainext-template/assets/css/owl.theme.default.min.css',
+          '/ainext-template/assets/css/odometer.min.css',
+          '/ainext-template/assets/css/flaticon.css',
+          '/ainext-template/assets/css/aos.css'
+        ]
+
+        // Load non-critical CSS without blocking
+        nonCriticalCSS.forEach(href => {
+          requestIdleCallback(() => loadCSS(href))
+        })
+
+        // Load scripts with intelligent prioritization
+        const loadScriptsOptimized = async () => {
+          try {
+            // Load jQuery first (most critical)
+            await loadScript('/ainext-template/assets/js/jquery.min.js')
+
+            if (!isMounted) return
+
+            // Load Bootstrap (second priority)
+            await loadScript('/ainext-template/assets/js/bootstrap.bundle.min.js')
+
+            if (!isMounted) return
+
+            // Load other scripts in parallel (lower priority)
+            const scriptPromises = [
+              loadScript('/ainext-template/assets/js/aos.js'),
+              loadScript('/ainext-template/assets/js/appear.min.js'),
+              loadScript('/ainext-template/assets/js/odometer.min.js'),
+              loadScript('/ainext-template/assets/js/owl.carousel.min.js')
+            ]
+
+            await Promise.allSettled(scriptPromises)
+
+            if (!isMounted) return
+
+            // Load main script last
+            await loadScript('/ainext-template/assets/js/ainext.js')
+
+            if (isMounted) {
+              setScriptsLoaded(true)
+            }
+          } catch (error) {
+            console.warn('Some scripts failed to load:', error)
+            if (isMounted) {
+              setScriptsLoaded(true) // Don't block the UI
+            }
+          }
+        }
+
+        // Use requestIdleCallback for non-critical script loading
+        if ('requestIdleCallback' in window) {
+          requestIdleCallback(() => loadScriptsOptimized())
+        } else {
+          setTimeout(loadScriptsOptimized, 100)
+        }
+
       } catch (error) {
-        console.error('Error loading scripts:', error)
+        console.error('Error initializing page:', error)
+        if (isMounted) {
+          setIsLoaded(true) // Don't block the UI on errors
+        }
       }
     }
 
-    loadScripts()
+    initializePage()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Initialize performance optimizations
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('@/lib/performance').then(({ initializePerformanceOptimizations }) => {
+        initializePerformanceOptimizations()
+      })
+    }
   }, [])
 
   return (
-    <div>
+    <div className={`landing-page ${isLoaded ? 'loaded' : 'loading'}`}>
       <style dangerouslySetInnerHTML={{
         __html: `
+          .landing-page.loading {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+
+          .landing-page.loaded {
+            opacity: 1;
+            transform: translateY(0);
+            transition: all 0.6s ease;
+          }
+
           @media (min-width: 992px) {
             .navbar-collapse {
               display: flex !important;
