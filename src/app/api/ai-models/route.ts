@@ -103,44 +103,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // If requesting image models, return Vertex AI Imagen models
+    // If requesting image models, return all available image models
     if (type === 'image') {
       try {
-        // Check if Google Cloud is configured before trying to use Vertex AI
-        const { isGoogleCloudConfigured } = await import('@/lib/google-auth')
+        console.log('🤖 AI Models API: Fetching all image models')
 
-        if (!isGoogleCloudConfigured()) {
-          console.log('🤖 AI Models API: Google Cloud not configured, returning static image models')
-          // Return static image models when Google Cloud is not configured
-          const staticImageModels = [
-            {
-              id: 'mock-imagen-4.0',
-              name: 'mock-imagen-4.0',
-              display_name: 'Imagen 4 (Mock)',
-              type: 'image',
-              provider: 'mock',
-              status: 'active',
-              description: 'Mock image generation model for development',
-              pricing_credits: 2,
-              max_duration: null,
-              supported_aspect_ratios: ['1:1', '16:9', '9:16', '4:3', '3:4'],
-              is_featured: true,
-              capabilities: {
-                textToImage: true,
-                styleTransfer: true,
-                highQuality: true,
-                maxResolution: '1920x1080'
-              }
-            }
-          ]
-          return NextResponse.json(staticImageModels)
-        }
-
-        const { VertexAIService } = await import('@/lib/services/vertex-ai')
-        const vertexModels = await VertexAIService.getAvailableModels('image')
-        if (vertexModels.success) {
-          // Transform Vertex AI models to match expected format
-          const imagenModels = [
+        // Always return comprehensive list of all available image models
+        const allImageModels = [
             // Imagen 4.0 models (latest generation)
             {
               id: 'imagen-4.0-generate-preview-06-06',
@@ -386,13 +355,16 @@ export async function GET(request: NextRequest) {
                 maxResolution: '1920x1080'
               }
             }
-          ]
+        ]
 
-          return NextResponse.json(imagenModels)
-        }
+        console.log('🤖 AI Models API: Returning all image models:', allImageModels.length)
+        return NextResponse.json(allImageModels)
       } catch (error) {
-        console.error('Error fetching Vertex AI models:', error)
-        // Fall through to database query as fallback
+        console.error('🤖 AI Models API: Error fetching image models:', error)
+        return NextResponse.json(
+          { error: 'Failed to fetch image models' },
+          { status: 500 }
+        )
       }
     }
 

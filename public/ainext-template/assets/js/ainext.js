@@ -1,14 +1,23 @@
 (function($) {
 	'use strict';
 
-	// Sticky Navbar
-    $(window).on('scroll', function() {
-        var $navbar = $('.navbar'),
-            $mbNav = $('.mb-nav');
+	// Check if jQuery is available
+	if (typeof $ === 'undefined') {
+		console.error('jQuery is not loaded');
+		return;
+	}
 
-        $navbar.toggleClass("sticky", $(this).scrollTop() > 100);
-        $mbNav.toggleClass("sticky", $(this).scrollTop() > 50);
-    });
+	// Wait for document ready
+	$(document).ready(function() {
+
+		// Sticky Navbar
+		$(window).on('scroll', function() {
+			var $navbar = $('.navbar'),
+				$mbNav = $('.mb-nav');
+
+			$navbar.toggleClass("sticky", $(this).scrollTop() > 100);
+			$mbNav.toggleClass("sticky", $(this).scrollTop() > 50);
+		});
 
 	// Responsive Menu
     $(document).on('click', '.responsive-menu-list', function(e) {
@@ -26,15 +35,18 @@
         $(this).find('span').css({top: relY, left: relX});
     });
 
-	// Odometer JS
-	$('.odometer').appear(function() {
-		$(".odometer").each(function() {
-			$(this).html($(this).attr("data-count"));
-		});
-	});
+		// Odometer JS
+		if ($.fn.appear && $('.odometer').length) {
+			$('.odometer').appear(function() {
+				$(".odometer").each(function() {
+					$(this).html($(this).attr("data-count"));
+				});
+			});
+		}
 
-	// Team Slides
-	$('.image-courser').owlCarousel({
+		// Team Slides
+		if ($.fn.owlCarousel && $('.image-courser').length) {
+			$('.image-courser').owlCarousel({
 		nav: true,
 		loop: true,
 		dots: false,
@@ -63,7 +75,8 @@
 				items: 3
 			}
 		}
-	});
+		});
+	}
 
 	// Gallery Filtering
     $(document).on('click', '.item-list', function() {
@@ -80,8 +93,9 @@
         $(this).addClass('on').siblings().removeClass('on');
     });
 
-	// Testimonial Slides
-	$('.testimonial-content').owlCarousel({
+		// Testimonial Slides
+		if ($.fn.owlCarousel && $('.testimonial-content').length) {
+			$('.testimonial-content').owlCarousel({
 		nav: true,
 		loop: true,
 		dots: false,
@@ -110,10 +124,12 @@
 				items: 1
 			}
 		}
-	});
+		});
+		}
 
-	// Article Slider
-	$('.article-content').owlCarousel({
+		// Article Slider
+		if ($.fn.owlCarousel && $('.article-content').length) {
+			$('.article-content').owlCarousel({
 		dots: true,
 		nav: false,
 		loop: true,
@@ -138,10 +154,12 @@
 				items: 2
 			}
 		}
-	});
-	
+		});
+	}
+
 	// Instagram slider
-	$('.ins-gallery').owlCarousel({
+	if ($.fn.owlCarousel && $('.ins-gallery').length) {
+		$('.ins-gallery').owlCarousel({
 		nav: false,
 		dots: false,
 		loop: true,
@@ -165,32 +183,38 @@
 				items: 10
 			}
 		}
-	});
-	
-	// AOS Animation
-	AOS.init();
-
-	// Back to Top Button
-	let calcScrollValue = () => {
-		let scrollProgress = document.getElementById("progress");
-		let progressValue = document.getElementById("progress-value");
-		let pos = document.documentElement.scrollTop;
-		let calcHeight =
-		  document.documentElement.scrollHeight -
-		  document.documentElement.clientHeight;
-		let scrollValue = Math.round((pos * 100) / calcHeight);
-		if (pos > 100) {
-		  	scrollProgress.style.display = "grid";
-		} else {
-		  	scrollProgress.style.display = "none";
-		}
-		scrollProgress.addEventListener("click", () => {
-		  	document.documentElement.scrollTop = 0;
 		});
-		scrollProgress.style.background = `conic-gradient(#7f00ff ${scrollValue}%, #9094a6 ${scrollValue}%)`;
-	  };
-	  
-	  window.onscroll = calcScrollValue;
-	  window.onload = calcScrollValue;
-		
+		}
+
+		// AOS Animation
+		if (typeof AOS !== 'undefined') {
+			AOS.init();
+		}
+
+		// Back to Top Button
+		let calcScrollValue = () => {
+			let scrollProgress = document.getElementById("progress");
+			let pos = document.documentElement.scrollTop;
+			let calcHeight =
+			  document.documentElement.scrollHeight -
+			  document.documentElement.clientHeight;
+			let scrollValue = Math.round((pos * 100) / calcHeight);
+			if (scrollProgress) {
+				if (pos > 100) {
+					scrollProgress.style.display = "grid";
+				} else {
+					scrollProgress.style.display = "none";
+				}
+				scrollProgress.addEventListener("click", () => {
+					document.documentElement.scrollTop = 0;
+				});
+				scrollProgress.style.background = `conic-gradient(#7f00ff ${scrollValue}%, #9094a6 ${scrollValue}%)`;
+			}
+		};
+
+		window.onscroll = calcScrollValue;
+		window.onload = calcScrollValue;
+
+	}); // End document ready
+
 })(jQuery);

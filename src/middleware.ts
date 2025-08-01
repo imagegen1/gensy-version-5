@@ -11,6 +11,16 @@ export default clerkMiddleware({
     '/features',
     '/contact',
     '/api/webhooks(.*)',
+    '/landing-page-2',
+    '/about',
+    '/team-ainext',
+    '/pricing-ainext',
+    '/terms-conditions',
+    '/privacy-policy',
+    '/not-found-ainext',
+    '/portfolio-ainext',
+    '/blog-ainext',
+    '/contact-ainext',
   ],
 });
 

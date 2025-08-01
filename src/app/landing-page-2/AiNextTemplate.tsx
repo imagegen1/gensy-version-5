@@ -1,8 +1,14 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useAuth } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
+import { heroVideoConfig } from '@/config/hero-video'
+import { BeamsBackground } from '@/components/ui/beams-background'
 
 export default function AiNextTemplate() {
+  const { isSignedIn } = useAuth()
+  const router = useRouter()
   useEffect(() => {
     // Load CSS files
     const loadCSS = (href: string) => {
@@ -36,12 +42,23 @@ export default function AiNextTemplate() {
 
     const loadScripts = async () => {
       try {
+        // Load jQuery first
         await loadScript('/ainext-template/assets/js/jquery.min.js')
+
+        // Wait a bit for jQuery to be available
+        await new Promise(resolve => setTimeout(resolve, 100))
+
+        // Load other dependencies
         await loadScript('/ainext-template/assets/js/bootstrap.bundle.min.js')
         await loadScript('/ainext-template/assets/js/aos.js')
         await loadScript('/ainext-template/assets/js/appear.min.js')
         await loadScript('/ainext-template/assets/js/odometer.min.js')
         await loadScript('/ainext-template/assets/js/owl.carousel.min.js')
+
+        // Wait for all plugins to be ready
+        await new Promise(resolve => setTimeout(resolve, 200))
+
+        // Load main script last
         await loadScript('/ainext-template/assets/js/ainext.js')
       } catch (error) {
         console.error('Error loading scripts:', error)
@@ -53,21 +70,90 @@ export default function AiNextTemplate() {
 
   return (
     <div>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @media (min-width: 992px) {
+            .navbar-collapse {
+              display: flex !important;
+              visibility: visible !important;
+            }
+          }
+
+          .gradient-signin-button {
+            position: relative;
+            width: 120px;
+            height: 40px;
+            background-color: #000;
+            display: inline-flex;
+            align-items: center;
+            color: white;
+            justify-content: center;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 1;
+            vertical-align: middle;
+            text-decoration: none;
+            transition: all 0.3s ease;
+          }
+
+          .gradient-signin-button::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            left: -4px;
+            top: -1px;
+            margin: auto;
+            width: 128px;
+            height: 48px;
+            border-radius: 10px;
+            background: linear-gradient(-45deg, #e81cff 0%, #40c9ff 100% );
+            z-index: -10;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
+
+          .gradient-signin-button::after {
+            content: "";
+            z-index: -1;
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(-45deg, #fc00ff 0%, #00dbde 100% );
+            transform: translate3d(0, 0, 0) scale(0.95);
+            filter: blur(20px);
+          }
+
+          .gradient-signin-button:hover::after {
+            filter: blur(30px);
+          }
+
+          .gradient-signin-button:hover::before {
+            transform: rotate(-180deg);
+          }
+
+          .gradient-signin-button:active::before {
+            scale: 0.7;
+          }
+        `
+      }} />
         {/* Start Navbar Area */}
         <nav className="navbar navbar-expand-lg mb-nav" id="navbar">
           <div className="container-fluid">
             <a className="navbar-brand" href="index.html">
-              <h2>AiNext</h2>
+              <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '170px', width: 'auto'}} />
             </a>
-            <a className="navbar-toggler text-decoration-none" data-bs-toggle="offcanvas" href="#navbarOffcanvas" role="button" aria-controls="navbarOffcanvas">
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
               <span className="burger-menu">
                 <span className="top-bar"></span>
                 <span className="middle-bar"></span>
                 <span className="bottom-bar"></span>
               </span>
-            </a>
-            <div className="collapse navbar-collapse">
-              <ul className="navbar-nav">
+            </button>
+            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul className="navbar-nav me-auto">
                 <li className="nav-item">
                   <a href="/landing-page-2" className="nav-link active">
                     Home
@@ -144,10 +230,31 @@ export default function AiNextTemplate() {
                 </li>
               </ul>
               <div className="nav-btn">
-                <a href="/contact-ainext" className="default-btn">
-                  Get Started
-                  <i className="ri-arrow-right-line"></i>
-                </a>
+                {isSignedIn ? (
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="default-btn"
+                  >
+                    Dashboard
+                    <i className="ri-arrow-right-line"></i>
+                  </button>
+                ) : (
+                  <div className="d-flex gap-3 align-items-center">
+                    <button
+                      onClick={() => router.push('/auth/sign-in')}
+                      className="gradient-signin-button"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => router.push('/auth/sign-up')}
+                      className="default-btn"
+                    >
+                      Sign Up
+                      <i className="ri-arrow-right-line"></i>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -158,7 +265,7 @@ export default function AiNextTemplate() {
         <div className="responsive-navbar offcanvas offcanvas-end border-0" data-bs-backdrop="static" tabIndex={-1} id="navbarOffcanvas">
           <div className="offcanvas-header">
             <a href="index.html" className="logo d-inline-block">
-              <h2>AiNext</h2>
+              <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '140px', width: 'auto'}} />
             </a>
             <button type="button" className="close-btn bg-transparent position-relative lh-1 p-0 border-0" data-bs-dismiss="offcanvas" aria-label="Close">
               <i className="ri-close-line"></i>
@@ -196,71 +303,88 @@ export default function AiNextTemplate() {
             </ul>
             <div className="others-option d-md-flex align-items-center">
               <div className="option-item">
-                <a href="/contact-ainext" className="default-btn">
-                  <i className="ri-arrow-right-line"></i>
-                  <span>Get Started</span>
-                </a>
+                {isSignedIn ? (
+                  <button
+                    onClick={() => router.push('/dashboard')}
+                    className="default-btn"
+                  >
+                    <i className="ri-arrow-right-line"></i>
+                    <span>Dashboard</span>
+                  </button>
+                ) : (
+                  <div className="d-flex flex-column gap-2">
+                    <button
+                      onClick={() => router.push('/auth/sign-in')}
+                      className="gradient-signin-button w-100"
+                      style={{ width: '100%' }}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => router.push('/auth/sign-up')}
+                      className="default-btn w-100"
+                    >
+                      <i className="ri-arrow-right-line"></i>
+                      <span>Sign Up</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
         {/* End Responsive Navbar Area */}
 
-        {/* Start Banner Area */}
-        <div className="banner-area">
-          <div className="container-fluid">
-            <div className="row align-items-center g-0">
-              <div className="col-lg-6">
-                <div className="content">
-                  <span className="banner-top-title">Fully Dynamic</span>
-                  <h1><span className="grd-color-1" >AiNext</span> Image Creating Solutions.</h1>
-                  <p>Create production-quality visual assets for your projects with unprecedented quality, speed, and style-consistency.</p>
-                  <div className="searchwrapper">
-                    <div className="searchbox">
-                      <div className="row align-items-center">
-                        <div className="col-md-6">
-                          <form>
-                            <input type="text" className="form-control" placeholder="Search by Keywords..." />
-                          </form>
-                        </div>
-                        <div className="col-md-3">
-                          <select className="form-control category" id="provider" name="provider">
-                            <option>deepai</option>
-                            <option>stabilityai</option>
-                            <option>replicate</option>
-                          </select>
-                        </div>
-                        <div className="col-lg-3">
-                          <form>
-                            <button className="btn" type="submit">Generate</button>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="popular-tag">
-                    <p>Popular Tag:</p>
-                    <a href="/blog-ainext">Business</a>
-                    <a href="/blog-ainext">Animation</a>
-                    <a href="/blog-ainext">Creative</a>
-                    <a href="/blog-ainext">Realistic</a>
-                  </div>
-                </div>
-              </div>
-              <div className="col-lg-6">
-                <div className="image">
-                  <img src="/ainext-template/assets/img/man.png" alt="image" />
-                </div>
-              </div>
-            </div>
-            <div className="scroll-down">
-              <a href="#features">
-                <div className="mouse"></div>
-              </a>
-            </div>
+        {/* Start Video Hero Section */}
+        <div className="video-hero-section">
+          <div className="video-container">
+            <video
+              autoPlay
+              muted
+              loop
+              playsInline
+              className="hero-video"
+              poster={heroVideoConfig.fallbackImage}
+              preload="auto"
+              onLoadStart={() => console.log('🎬 Video loading started:', heroVideoConfig.videoSrc)}
+              onCanPlay={() => console.log('✅ Video can play')}
+              onPlay={() => console.log('▶️ Video started playing')}
+              onError={(e) => {
+                console.error('❌ Video error:', e);
+                console.log('🔄 Falling back to background image');
+                // Fallback to background image if video fails to load
+                const videoElement = e.target as HTMLVideoElement;
+                videoElement.style.display = 'none';
+                const container = videoElement.parentElement;
+                if (container) {
+                  container.style.backgroundImage = `url(${heroVideoConfig.fallbackImage})`;
+                  container.style.backgroundSize = 'cover';
+                  container.style.backgroundPosition = 'center';
+                  container.style.backgroundRepeat = 'no-repeat';
+                }
+              }}
+              onLoadedData={() => {
+                console.log('📊 Video data loaded');
+                // Force play if autoplay didn't work
+                const video = document.querySelector('.hero-video') as HTMLVideoElement;
+                if (video && video.paused) {
+                  video.play().catch(e => console.log('Manual play failed:', e));
+                }
+              }}
+            >
+              <source src={heroVideoConfig.videoSrc} type="video/mp4" />
+              <source src={heroVideoConfig.videoSrc} type="video/webm" />
+              Your browser does not support the video tag.
+            </video>
+            {/* Removed all text content - clean video background only */}
+          </div>
+          <div className="scroll-down">
+            <a href="#features">
+              <div className="mouse"></div>
+            </a>
           </div>
         </div>
-        {/* End Banner Area */}
+        {/* End Video Hero Section */}
 
         {/* Start Fetuses Area */}
         <section id="features" className="fetuses-area pt-70">
@@ -269,44 +393,44 @@ export default function AiNextTemplate() {
               <div className="col-lg-3 col-md-6">
                 <div className="single-fetuses-box" data-aos="fade-up" data-aos-duration="1500">
                   <div className="icon">
-                    <i className="fi fi-tr-file-user"></i>
+                    <i className="fi fi-tr-rocket"></i>
                   </div>
-                  <h3>We analyzing Experience</h3>
-                  <p>Easy to grasp, rewarding to perfect. Be proficient in producing exquisite content quickly and efficiently.</p>
-                  <a href="/about">Read More</a>
+                  <h3>ByteDance Seeded 1.0</h3>
+                  <p>World's #1 AI video model. Generate cinematic videos from text or images with unmatched quality and realism. Industry-leading performance.</p>
+                  <a href="/video">Try Seeded 1.0</a>
                 </div>
               </div>
 
               <div className="col-lg-3 col-md-6">
                 <div className="single-fetuses-box" data-aos="fade-up" data-aos-duration="1500">
                   <div className="icon">
-                    <i className="fi fi-tr-graphic-style"></i>
+                    <i className="fi fi-tr-video-camera"></i>
                   </div>
-                  <h3>From Concept To Final</h3>
-                  <p>Easy to grasp, rewarding to perfect. Be proficient in producing exquisite content quickly and efficiently.</p>
-                  <a href="/about">Read More</a>
+                  <h3>Google Veo 3.0</h3>
+                  <p>World's #2 AI video model. Google's flagship text-to-video AI model for creating high-quality videos from text prompts with advanced understanding.</p>
+                  <a href="/video">Try Veo 3.0</a>
                 </div>
               </div>
 
               <div className="col-lg-3 col-md-6">
                 <div className="single-fetuses-box" data-aos="fade-up" data-aos-duration="1500">
                   <div className="icon">
-                    <i className="fi fi-tr-user-astronaut"></i>
+                    <i className="fi fi-tr-picture"></i>
                   </div>
-                  <h3>New Thinking For Result</h3>
-                  <p>Easy to grasp, rewarding to perfect. Be proficient in producing exquisite content quickly and efficiently.</p>
-                  <a href="/about">Read More</a>
+                  <h3>MiniMax Hailuo 02</h3>
+                  <p>World's #2 AI video model in image-to-video generation. Transform static images into dynamic videos with exceptional motion quality and realistic animations.</p>
+                  <a href="/video">Try Hailuo 02</a>
                 </div>
               </div>
 
               <div className="col-lg-3 col-md-6">
                 <div className="single-fetuses-box" data-aos="fade-up" data-aos-duration="1500">
                   <div className="icon">
-                    <i className="fi fi-tr-biking-mountain"></i>
+                    <i className="fi fi-tr-apps"></i>
                   </div>
-                  <h3>New Thinking For Result</h3>
-                  <p>Easy to grasp, rewarding to perfect. Be proficient in producing exquisite content quickly and efficiently.</p>
-                  <a href="/about">Read More</a>
+                  <h3>All Premium AI Models</h3>
+                  <p>Access 15+ cutting-edge AI models including Flux, Imagen, DALL-E, and more. Complete creative suite for all your AI generation needs.</p>
+                  <a href="/video">Explore All Models</a>
                 </div>
               </div>
             </div>
@@ -314,54 +438,271 @@ export default function AiNextTemplate() {
         </section>
         {/* End Fetuses Area */}
 
-        {/* Start About Area */}
-        <div className="about-area ptb-100 section-bg">
+        {/* Start Seedance 1.0 Showcase Area */}
+        <BeamsBackground className="about-area ptb-50">
           <div className="container">
-            <div className="row align-items-center" data-aos="fade-up" data-aos-duration="1500">
-              <div className="col-lg-6">
-                <div className="image">
-                  <img src="/ainext-template/assets/img/about-2.jpg" alt="image" />
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '500px'
+            }}>
+              {/* Video Player - Left Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%'
+              }}>
+                <div className="video-wrapper" style={{ width: '100%', maxWidth: '600px' }}>
+                  <div className="video-container" style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingBottom: '56.25%',
+                    height: 0,
+                    overflow: 'hidden'
+                  }}>
+                  <video
+                    controls
+                    autoPlay
+                    muted
+                    loop
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '10px',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                      objectFit: 'cover'
+                    }}
+                  >
+                    <source src="/videos/seedream.mp4.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  </div>
                 </div>
               </div>
-              <div className="col-lg-6">
-                <div className="content">
-                  <div className="sub-t">About Us</div>
-                  <h2>Create your own AI business easily.</h2>
-                  <p>Malesuada nunc vel risus commodo viverra maecenas accumsan lacus vel. Nam aliquam sem et tortor consequat. Porttitor leo a diam sollicitudin tempor id eu. Nisl pretium fusce id velit ut. At lectus urna duis convallis convallis tellus id interdum.</p>
-                  <div className="row">
-                    <div className="col-lg-4 col-md-4 col-4">
-                      <div className="sub-counter">
-                        <h3>
-                          <span className="odometer" data-count="5000">00</span>
-                        </h3>
-                        <p>Clients</p>
+
+              {/* Content - Right Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '100%'
+              }}>
+                <div className="content" style={{
+                  width: '100%',
+                  paddingLeft: '30px'
+                }}>
+                  <div className="sub-t" style={{ marginTop: '15px' }}>World's #1 AI Video Model</div>
+                  <h2 style={{ marginBottom: '20px' }}>ByteDance Seedance 1.0</h2>
+                  <p style={{ marginBottom: '25px', fontSize: '16px', lineHeight: '1.6' }}>
+                    Experience the world's most advanced AI video generation model. Create stunning cinematic videos from text prompts or transform images into dynamic scenes with unmatched quality and realism.
+                  </p>
+
+                  <div className="seedance-features" style={{ marginBottom: '25px' }}>
+                    <h4 style={{ marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>Sample Prompts:</h4>
+                    <div className="prompt-examples">
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Text-to-Video:</strong> "A majestic dragon soaring through misty mountains at sunset"
                       </div>
-                    </div>
-                    <div className="col-lg-4 col-md-4 col-4">
-                      <div className="sub-counter">
-                        <h3>
-                          <span className="odometer" data-count="10">00</span>
-                          <span className="target">K</span>
-                        </h3>
-                        <p>Projects</p>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Image-to-Video:</strong> "Transform a portrait into a cinematic close-up with natural movement"
                       </div>
-                    </div>
-                    <div className="col-lg-4 col-md-4 col-4">
-                      <div className="sub-counter">
-                        <h3>
-                          <span className="odometer" data-count="250">00</span>
-                        </h3>
-                        <p>Years</p>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Scene Creation:</strong> "Bustling Tokyo street at night with neon lights and rain"
                       </div>
                     </div>
                   </div>
-                  <a className="main-btn" href="/about"><span></span><i className="ri-quill-pen-line"></i> About Us</a>
+
+
+
+                  <a className="main-btn" href="/video">
+                    <span></span>
+                    <i className="ri-play-circle-line"></i> Try Seedance 1.0
+                  </a>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        {/* About Area */}
+        </BeamsBackground>
+        {/* End Seedance 1.0 Showcase Area */}
+
+        {/* Start Google Veo 3.0 Showcase Area */}
+        <BeamsBackground className="about-area ptb-50">
+          <div className="container">
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '500px'
+            }}>
+              {/* Content - Left Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '100%'
+              }}>
+                <div className="content" style={{
+                  width: '100%',
+                  paddingRight: '30px'
+                }}>
+                  <div className="sub-t">World's #2 AI Video Model</div>
+                  <h2 style={{ marginBottom: '20px' }}>Google Veo 3.0</h2>
+                  <p style={{ marginBottom: '25px', fontSize: '16px', lineHeight: '1.6' }}>
+                    Google's flagship text-to-video AI model for creating high-quality videos from text prompts with advanced understanding and cinematic quality output.
+                  </p>
+
+                  <div className="seedance-features" style={{ marginBottom: '25px' }}>
+                    <h4 style={{ marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>Sample Prompts:</h4>
+                    <div className="prompt-examples">
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Text-to-Video:</strong> "A serene lake reflecting autumn colors with gentle ripples"
+                      </div>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Cinematic Scene:</strong> "Time-lapse of a bustling city transitioning from day to night"
+                      </div>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Nature Scene:</strong> "Waves crashing against rocky cliffs during golden hour"
+                      </div>
+                    </div>
+                  </div>
+
+                  <a className="main-btn" href="/video">
+                    <span></span>
+                    <i className="ri-play-circle-line"></i> Try Veo 3.0
+                  </a>
+                </div>
+              </div>
+
+              {/* Video Player - Right Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%'
+              }}>
+                <div className="video-wrapper" style={{ width: '100%', maxWidth: '600px' }}>
+                  <div className="video-container" style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingBottom: '56.25%',
+                    height: 0,
+                    overflow: 'hidden'
+                  }}>
+                    <video
+                      controls
+                      autoPlay
+                      muted
+                      loop
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '10px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                        objectFit: 'cover'
+                      }}
+                    >
+                      <source src="/videos/veo 3.mp4.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </BeamsBackground>
+        {/* End Google Veo 3.0 Showcase Area */}
+
+        {/* Start MiniMax Hailuo AI Showcase Area */}
+        <BeamsBackground className="about-area ptb-50">
+          <div className="container">
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '500px'
+            }}>
+              {/* Video Player - Left Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%'
+              }}>
+                <div className="video-wrapper" style={{ width: '100%', maxWidth: '600px' }}>
+                  <div className="video-container" style={{
+                    position: 'relative',
+                    width: '100%',
+                    paddingBottom: '56.25%',
+                    height: 0,
+                    overflow: 'hidden'
+                  }}>
+                    <video
+                      controls
+                      autoPlay
+                      muted
+                      loop
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: '10px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                        objectFit: 'cover'
+                      }}
+                    >
+                      <source src="/videos/minimax.mp4.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                </div>
+              </div>
+
+              {/* Content - Right Column */}
+              <div className="col-lg-6 col-md-6" style={{
+                display: 'flex',
+                alignItems: 'center',
+                height: '100%'
+              }}>
+                <div className="content" style={{
+                  width: '100%',
+                  paddingLeft: '30px'
+                }}>
+                  <div className="sub-t">World's #2 AI Video Model in Image-to-Video</div>
+                  <h2 style={{ marginBottom: '20px' }}>MiniMax Hailuo AI</h2>
+                  <p style={{ marginBottom: '25px', fontSize: '16px', lineHeight: '1.6' }}>
+                    Transform static images into dynamic videos with exceptional motion quality and realistic animations. Leading the industry in image-to-video generation technology.
+                  </p>
+
+                  <div className="seedance-features" style={{ marginBottom: '25px' }}>
+                    <h4 style={{ marginBottom: '15px', fontSize: '18px', fontWeight: '600' }}>Sample Prompts:</h4>
+                    <div className="prompt-examples">
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Image-to-Video:</strong> "Animate a portrait with subtle breathing and eye movements"
+                      </div>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Scene Animation:</strong> "Bring a landscape photo to life with flowing water and swaying trees"
+                      </div>
+                      <div className="prompt-item" style={{ marginBottom: '10px', fontSize: '14px', lineHeight: '1.5' }}>
+                        <strong>Object Motion:</strong> "Add realistic movement to static objects in architectural photos"
+                      </div>
+                    </div>
+                  </div>
+
+                  <a className="main-btn" href="/video">
+                    <span></span>
+                    <i className="ri-play-circle-line"></i> Try Hailuo AI
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </BeamsBackground>
+        {/* End MiniMax Hailuo AI Showcase Area */}
 
         {/* Start Brands Area */}
         <div className="brands-area pt-70 pb-70">
@@ -816,7 +1157,7 @@ export default function AiNextTemplate() {
                 <div className="col-lg-4 col-md-6 col-sm-6">
                   <div className="single-footer-widget">
                     <a href="index.html" className="logo">
-                      <h2>AiNext</h2>
+                      <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '130px', width: 'auto'}} />
                     </a>
                     <p>Lorem ipsum amet, consectetur adipiscing elit. Suspendis varius enim eros elementum tristique. Duis cursus.</p>
                     <ul className="social-links">

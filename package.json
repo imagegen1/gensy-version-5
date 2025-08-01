@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "change-hero-video": "node scripts/change-hero-video.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.839.0",

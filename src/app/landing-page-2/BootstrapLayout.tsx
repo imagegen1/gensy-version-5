@@ -1,6 +1,8 @@
 'use client'
 
 import { useEffect } from 'react'
+import { useAuth } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 
 interface BootstrapLayoutProps {
   children: React.ReactNode
@@ -12,6 +14,8 @@ interface BootstrapLayoutProps {
 let assetsLoaded = false
 
 export default function BootstrapLayout({ children, title, currentPage = '' }: BootstrapLayoutProps) {
+  const { isSignedIn } = useAuth()
+  const router = useRouter()
   useEffect(() => {
     // Only load JavaScript assets once globally (CSS is now loaded in root layout)
     if (assetsLoaded) return
@@ -57,7 +61,7 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
       <nav className="navbar navbar-expand-lg" id="navbar">
         <div className="container-fluid">
           <a className="navbar-brand" href="/landing-page-2">
-            <h2>AiNext</h2>
+            <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '40px', width: 'auto'}} />
           </a>
           <a className="navbar-toggler text-decoration-none" data-bs-toggle="offcanvas" href="#navbarOffcanvas" role="button" aria-controls="navbarOffcanvas">
             <span className="burger-menu">
@@ -144,10 +148,47 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
               </li>
             </ul>
             <div className="nav-btn">
-              <a href="/contact-ainext" className="default-btn">
-                Get Started
-                <i className="ri-arrow-right-line"></i>
-              </a>
+              {isSignedIn ? (
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="default-btn"
+                >
+                  Dashboard
+                  <i className="ri-arrow-right-line"></i>
+                </button>
+              ) : (
+                <div className="d-flex gap-3">
+                  <button
+                    onClick={() => router.push('/auth/sign-in')}
+                    className="btn btn-outline-light px-4 py-2"
+                    style={{
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      backgroundColor: 'transparent',
+                      borderRadius: '25px',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.5)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent'
+                      e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => router.push('/auth/sign-up')}
+                    className="default-btn"
+                  >
+                    Sign Up
+                    <i className="ri-arrow-right-line"></i>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -158,7 +199,7 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
       <div className="responsive-navbar offcanvas offcanvas-end border-0" data-bs-backdrop="static" tabIndex={-1} id="navbarOffcanvas">
         <div className="offcanvas-header">
           <a href="/landing-page-2" className="logo d-inline-block">
-            <h2>AiNext</h2>
+            <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '35px', width: 'auto'}} />
           </a>
           <button type="button" className="close-btn bg-transparent position-relative lh-1 p-0 border-0" data-bs-dismiss="offcanvas" aria-label="Close">
             <i className="ri-close-line"></i>
@@ -197,10 +238,39 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
           </ul>
           <div className="others-option d-md-flex align-items-center">
             <div className="option-item">
-              <a href="/contact-ainext" className="default-btn">
-                <i className="ri-arrow-right-line"></i>
-                <span>Get Started</span>
-              </a>
+              {isSignedIn ? (
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="default-btn"
+                >
+                  <i className="ri-arrow-right-line"></i>
+                  <span>Dashboard</span>
+                </button>
+              ) : (
+                <div className="d-flex flex-column gap-2">
+                  <button
+                    onClick={() => router.push('/auth/sign-in')}
+                    className="btn btn-outline-light w-100"
+                    style={{
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      color: 'white',
+                      backgroundColor: 'transparent',
+                      borderRadius: '25px',
+                      fontWeight: '500',
+                      padding: '10px 20px'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => router.push('/auth/sign-up')}
+                    className="default-btn w-100"
+                  >
+                    <i className="ri-arrow-right-line"></i>
+                    <span>Sign Up</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -218,7 +288,7 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
               <div className="col-lg-4 col-md-6 col-sm-6">
                 <div className="single-footer-widget">
                   <a href="/landing-page-2" className="logo">
-                    <h2>AiNext</h2>
+                    <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '45px', width: 'auto'}} />
                   </a>
                   <p>Lorem ipsum amet, consectetur adipiscing elit. Suspendis varius enim eros elementum tristique. Duis cursus.</p>
                   <ul className="social-links">

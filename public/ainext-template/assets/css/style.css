@@ -205,10 +205,10 @@ Navbar Area Style
   z-index: 2;
   position: fixed;
   width: 100%;
-  box-shadow: 0px 2px 20px 0px rgba(0, 0, 0, 0.05);
+  box-shadow: none;
 }
 .navbar .container-fluid {
-  padding-left: 70px;
+  padding-left: 20px;
   padding-right: 70px;
 }
 .navbar .navbar-brand {
@@ -450,9 +450,7 @@ Navbar Area Style
   animation: 500ms ease-in-out 0s normal none 1 running fadeInDown;
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: rgba(5, 9, 19, 0.7411764706);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background-color: transparent;
 }
 
 @keyframes fadeInDown {
@@ -1204,6 +1202,158 @@ Banner Area CSS
 }
 .section-banner .breadcrumb-item.active {
   color: var(--paragraphColor);
+}
+
+/*================================================
+Video Hero Section CSS
+=================================================*/
+.video-hero-section {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* Full viewport height for maximum impact */
+  min-height: 800px; /* Minimum height to ensure it's always prominent */
+  overflow: hidden;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  object-fit: cover;
+  object-position: center center;
+  /* Ensure video fills the larger hero section properly */
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Gradient overlay for smooth transition to next section */
+.video-hero-section::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 30%; /* Bottom 30% of the video height */
+  background: linear-gradient(to bottom, transparent 0%, rgba(5, 9, 19, 0.3) 40%, rgba(5, 9, 19, 0.7) 70%, #050913 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Hero content styles removed - clean video background only */
+
+.video-hero-section .scroll-down {
+  position: absolute;
+  content: "";
+  left: 0;
+  right: 0;
+  text-align: center;
+  bottom: 30px;
+  z-index: 4; /* Above the gradient overlay */
+}
+
+.video-hero-section .scroll-down .mouse {
+  width: 24px;
+  height: 45px;
+  border: 2px solid var(--white_color);
+  border-radius: 60px;
+  position: relative;
+  margin: auto;
+}
+
+.video-hero-section .scroll-down .mouse::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--white_color);
+  border-radius: 50%;
+  opacity: 1;
+  animation: wheel 2s infinite;
+}
+
+@keyframes wheel {
+  to {
+    opacity: 0;
+    top: 20px;
+  }
+}
+
+/* Responsive styles for video hero - Larger sizes for better impact */
+@media (max-width: 1280px) {
+  .video-hero-section {
+    height: 90vh; /* 90% of viewport height */
+    min-height: 700px;
+  }
+}
+
+@media (max-width: 768px) {
+  .video-hero-section {
+    height: 85vh; /* 85% of viewport height on tablets */
+    min-height: 600px;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-hero-section {
+    height: 80vh; /* 80% of viewport height on mobile */
+    min-height: 500px;
+  }
+}
+
+/* Ensure video covers full width on all screen sizes */
+@media (max-width: 1200px) {
+  .hero-video {
+    width: 100vw;
+    height: 100vh;
+  }
+}
+
+/* Optimized for 720p video (1280x720) */
+@media (min-aspect-ratio: 16/9) {
+  .hero-video {
+    width: 100%;
+    height: auto;
+    min-height: 720px;
+  }
+}
+
+/* Handle screens taller than 16:9 */
+@media (max-aspect-ratio: 16/9) {
+  .hero-video {
+    width: auto;
+    height: 100%;
+    min-width: 1280px;
+  }
 }
 
 /*================================================

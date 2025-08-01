@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+        }
+        .video-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            transform: translate(-50%, -50%);
+            object-fit: cover;
+        }
+        .debug {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug" id="debug">
+        Video Status: Loading...
+    </div>
+    
+    <div class="video-container">
+        <video
+            id="testVideo"
+            autoplay
+            muted
+            loop
+            playsinline
+            class="hero-video"
+            onloadstart="updateDebug('Loading started')"
+            oncanplay="updateDebug('Can play')"
+            onplay="updateDebug('Playing')"
+            onerror="updateDebug('Error loading video')"
+            onloadeddata="updateDebug('Data loaded')"
+        >
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            <source src="/videos/hailuo-ai-video-02.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+
+    <script>
+        function updateDebug(message) {
+            const debug = document.getElementById('debug');
+            debug.innerHTML = `Video Status: ${message}<br>Time: ${new Date().toLocaleTimeString()}`;
+            console.log('Video:', message);
+        }
+
+        // Force play after page load
+        window.addEventListener('load', () => {
+            const video = document.getElementById('testVideo');
+            setTimeout(() => {
+                if (video.paused) {
+                    video.play().then(() => {
+                        updateDebug('Manually started playing');
+                    }).catch(e => {
+                        updateDebug('Manual play failed: ' + e.message);
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

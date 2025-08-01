@@ -89,6 +89,10 @@ export default function RootLayout({
   return (
     <ClerkProvider
       publishableKey={effectiveKey}
+      signInUrl="/auth/sign-in"
+      signUpUrl="/auth/sign-up"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/onboarding"
     >
       <html lang="en" suppressHydrationWarning>
         <head>
