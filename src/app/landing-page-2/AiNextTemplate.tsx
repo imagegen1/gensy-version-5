@@ -5,7 +5,6 @@ import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { heroVideoConfig } from '@/config/hero-video'
 import { BeamsBackground } from '@/components/ui/beams-background'
-import './critical.css'
 
 // Preload critical resources
 const preloadResources = () => {
@@ -170,9 +169,16 @@ export default function AiNextTemplate() {
   // Initialize performance optimizations
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      import('@/lib/performance').then(({ initializePerformanceOptimizations }) => {
-        initializePerformanceOptimizations()
-      })
+      // Initialize performance optimizations after component mounts
+      const initPerformance = async () => {
+        try {
+          const { initializePerformanceOptimizations } = await import('@/lib/performance')
+          initializePerformanceOptimizations()
+        } catch (error) {
+          console.warn('Performance optimizations failed to load:', error)
+        }
+      }
+      initPerformance()
     }
   }, [])
 

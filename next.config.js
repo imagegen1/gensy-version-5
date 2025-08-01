@@ -2,7 +2,6 @@
 const nextConfig = {
   experimental: {
     typedRoutes: true,
-    optimizeCss: true,
     scrollRestoration: true,
   },
   eslint: {
