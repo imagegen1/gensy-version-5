@@ -63,7 +63,7 @@ const envSchema = z.object({
 
   // MiniMax Hailuo AI Video Generation Configuration
   MINIMAX_API_KEY: z.string().min(1, 'MiniMax API key is required'),
-  MINIMAX_API_ENDPOINT: z.string().url('Invalid MiniMax API endpoint').default('https://api.minimax.chat/v1'),
+  MINIMAX_API_ENDPOINT: z.string().url('Invalid MiniMax API endpoint').default('https://gateway.appypie.com'),
 
   // PhonePe Payment Gateway Configuration
   PHONEPE_MERCHANT_ID: z.string().min(1, 'PhonePe merchant ID is required'),

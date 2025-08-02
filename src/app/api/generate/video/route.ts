@@ -197,7 +197,7 @@ export async function POST(request: NextRequest) {
     // Fallback model ID
     if (!modelId) {
       modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
-                finalProvider === 'minimax' ? 'hailuo-02' :
+                finalProvider === 'minimax' ? 'minimax-hailuo-ai' :
                 finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-preview'
     }
 

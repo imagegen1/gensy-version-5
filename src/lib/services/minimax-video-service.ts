@@ -46,36 +46,16 @@ export interface MinimaxTaskStatus {
   progress?: number
 }
 
-// MiniMax model configurations
+// MiniMax model configurations (based on actual API documentation)
 const MINIMAX_MODELS = {
-  'hailuo-02': {
-    id: 'hailuo-02',
-    name: 'MiniMax Hailuo 02',
-    description: 'Text-to-Video & Image-to-Video with SOTA instruction following',
-    capabilities: ['text-to-video', 'image-to-video'],
-    resolutions: ['1080p', '768p'],
-    durations: [6, 10],
-    frameRate: 24,
-    aspectRatios: ['16:9', '9:16', '1:1']
-  },
-  't2v-01-director': {
-    id: 't2v-01-director',
-    name: 'T2V-01-Director',
-    description: 'Text-to-Video with enhanced precision shot control',
+  'minimax-hailuo-ai': {
+    id: 'minimax-hailuo-ai',
+    name: 'MiniMax Hailuo AI',
+    description: 'Advanced text-to-video generation with high-quality output',
     capabilities: ['text-to-video'],
-    resolutions: ['720p'],
-    durations: [6],
-    frameRate: 25,
-    aspectRatios: ['16:9', '9:16', '1:1']
-  },
-  'i2v-01-director': {
-    id: 'i2v-01-director',
-    name: 'I2V-01-Director',
-    description: 'Image-to-Video with enhanced precision shot control',
-    capabilities: ['image-to-video'],
-    resolutions: ['720p'],
-    durations: [6],
-    frameRate: 25,
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
     aspectRatios: ['16:9', '9:16', '1:1']
   }
 } as const
@@ -138,41 +118,27 @@ export class MinimaxVideoService {
         }
       }
 
-      // Determine model to use
-      const selectedModel = modelName || options.model || 'hailuo-02'
-      const modelConfig = MINIMAX_MODELS[selectedModel as keyof typeof MINIMAX_MODELS]
-      
-      if (!modelConfig) {
-        console.error(`❌ [${minimaxRequestId}] MINIMAX VIDEO: Invalid model: ${selectedModel}`)
-        return {
-          success: false,
-          status: 'failed',
-          error: `Invalid model: ${selectedModel}`
-        }
+      // Use the single MiniMax model
+      const selectedModel = 'minimax-hailuo-ai'
+      const modelConfig = MINIMAX_MODELS[selectedModel]
+
+      // MiniMax API only supports text-to-video currently
+      const sourceType = 'text-to-video'
+      if (options.referenceImage) {
+        console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Image-to-video not supported by MiniMax API, using text-to-video`)
       }
 
-      // Validate source type compatibility
-      const sourceType = options.sourceType || 'text-to-video'
-      if (!modelConfig.capabilities.includes(sourceType)) {
-        console.error(`❌ [${minimaxRequestId}] MINIMAX VIDEO: Model ${selectedModel} doesn't support ${sourceType}`)
-        return {
-          success: false,
-          status: 'failed',
-          error: `Model ${selectedModel} doesn't support ${sourceType}`
-        }
-      }
-
-      // Set default options based on model capabilities
+      // Set default options (simplified for MiniMax API)
       const finalOptions: Required<MinimaxVideoGenerationOptions> = {
-        duration: options.duration || modelConfig.durations[0],
+        duration: options.duration || 5,
         aspectRatio: options.aspectRatio || '16:9',
         style: options.style || 'realistic',
         quality: options.quality || 'standard',
-        resolution: options.resolution || modelConfig.resolutions[0],
+        resolution: options.resolution || '720p',
         motionIntensity: options.motionIntensity || 'medium',
-        frameRate: options.frameRate || modelConfig.frameRate,
-        referenceImage: options.referenceImage || '',
-        sourceType: sourceType,
+        frameRate: options.frameRate || 24,
+        referenceImage: '', // Not supported by current API
+        sourceType: 'text-to-video',
         seed: options.seed || Math.floor(Math.random() * 1000000),
         model: selectedModel
       }
@@ -296,24 +262,19 @@ export class MinimaxVideoService {
     console.log(`🚀 [${requestId}] MINIMAX VIDEO: Creating generation task...`)
 
     try {
-      // Prepare request payload based on MiniMax API documentation
-      const requestPayload: any = {
-        model: options.model,
+      // Prepare request payload based on actual MiniMax API documentation
+      const requestPayload = {
         prompt: prompt,
-        // Add model-specific parameters here based on MiniMax API docs
-      }
-
-      // Add image for image-to-video models
-      if (options.sourceType === 'image-to-video' && options.referenceImage) {
-        requestPayload.image = options.referenceImage
+        prompt_optimizer: true // Default optimization
       }
 
       console.log(`🌐 [${requestId}] MINIMAX VIDEO: Making API call to MiniMax...`)
-      const response = await fetch(`${config.minimax.apiEndpoint}/video_generation`, {
+      const response = await fetch('https://gateway.appypie.com/minimax-hailuo-ai/v1/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.minimax.apiKey}`
+          'Cache-Control': 'no-cache',
+          'Ocp-Apim-Subscription-Key': config.minimax.apiKey
         },
         body: JSON.stringify(requestPayload),
         signal: AbortSignal.timeout(this.API_TIMEOUT)
@@ -366,11 +327,14 @@ export class MinimaxVideoService {
       try {
         console.log(`🔍 [${requestId}] MINIMAX VIDEO: Polling attempt ${attempt}/${maxAttempts}`)
 
-        const response = await fetch(`${config.minimax.apiEndpoint}/video_generation/${taskId}`, {
-          method: 'GET',
+        const response = await fetch('https://gateway.appypie.com/minimax-hailuo-ai-polling/v1/getStatus', {
+          method: 'POST',
           headers: {
-            'Authorization': `Bearer ${config.minimax.apiKey}`
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            'Ocp-Apim-Subscription-Key': config.minimax.apiKey
           },
+          body: JSON.stringify({ task_id: taskId }),
           signal: AbortSignal.timeout(30000) // 30 second timeout per request
         })
 
@@ -393,30 +357,28 @@ export class MinimaxVideoService {
           progress: result.progress
         })
 
-        // Handle different status responses based on MiniMax API
-        if (result.status === 'completed' || result.status === 'success') {
-          console.log(`✅ [${requestId}] MINIMAX VIDEO: Task completed successfully`)
-          return {
-            success: true,
-            status: 'completed',
-            downloadUrl: result.video_url || result.download_url,
-            videoUrl: result.video_url
+        // Handle different status responses based on actual MiniMax API response
+        if (result.base_resp && result.base_resp.status_code === 0) {
+          if (result.file && result.file.download_url) {
+            console.log(`✅ [${requestId}] MINIMAX VIDEO: Task completed successfully`)
+            return {
+              success: true,
+              status: 'completed',
+              downloadUrl: result.file.download_url,
+              videoUrl: result.file.download_url
+            }
+          } else {
+            console.log(`⏳ [${requestId}] MINIMAX VIDEO: Task still processing...`)
+            await new Promise(resolve => setTimeout(resolve, pollInterval))
+            continue
           }
-        } else if (result.status === 'failed' || result.status === 'error') {
-          console.error(`❌ [${requestId}] MINIMAX VIDEO: Task failed:`, result.error || result.message)
+        } else {
+          console.error(`❌ [${requestId}] MINIMAX VIDEO: Task failed:`, result.base_resp?.status_msg || 'Unknown error')
           return {
             success: false,
             status: 'failed',
-            error: result.error || result.message || 'Video generation failed'
+            error: result.base_resp?.status_msg || 'Video generation failed'
           }
-        } else if (result.status === 'processing' || result.status === 'pending') {
-          console.log(`⏳ [${requestId}] MINIMAX VIDEO: Task still processing... (${result.progress || 'unknown'}%)`)
-          await new Promise(resolve => setTimeout(resolve, pollInterval))
-          continue
-        } else {
-          console.warn(`⚠️ [${requestId}] MINIMAX VIDEO: Unknown status:`, result.status)
-          await new Promise(resolve => setTimeout(resolve, pollInterval))
-          continue
         }
 
       } catch (error) {
