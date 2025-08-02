@@ -186,6 +186,28 @@ export async function POST(request: NextRequest) {
       } else if (model.includes('replicate') || model.includes('wan')) {
         finalProvider = 'replicate-wan'
         modelId = model
+      } else if (model.includes('MiniMax') || model.includes('minimax') ||
+                 model.includes('Hailuo') || model.includes('hailuo') ||
+                 model.includes('T2V-01') || model.includes('I2V-01') || model.includes('S2V-01')) {
+        finalProvider = 'minimax'
+        // Map specific MiniMax models - use the exact model name as ID
+        if (model.includes('MiniMax-Hailuo-02') || model.includes('Hailuo 02')) {
+          modelId = 'MiniMax-Hailuo-02'
+        } else if (model.includes('T2V-01-Director') || model.includes('T2V-01 Director')) {
+          modelId = 'T2V-01-Director'
+        } else if (model.includes('I2V-01-Director') || model.includes('I2V-01 Director')) {
+          modelId = 'I2V-01-Director'
+        } else if (model.includes('I2V-01-live') || model.includes('I2V-01 Live')) {
+          modelId = 'I2V-01-live'
+        } else if (model.includes('T2V-01') && !model.includes('Director')) {
+          modelId = 'T2V-01'
+        } else if (model.includes('I2V-01') && !model.includes('Director') && !model.includes('live')) {
+          modelId = 'I2V-01'
+        } else if (model.includes('S2V-01')) {
+          modelId = 'S2V-01'
+        } else {
+          modelId = 'MiniMax-Hailuo-02' // Default to latest model
+        }
       }
     }
 
@@ -197,7 +219,7 @@ export async function POST(request: NextRequest) {
     // Fallback model ID
     if (!modelId) {
       modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
-                finalProvider === 'minimax' ? 'minimax-hailuo-ai' :
+                finalProvider === 'minimax' ? 'MiniMax-Hailuo-02' :
                 finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-preview'
     }
 
@@ -363,11 +385,7 @@ export async function POST(request: NextRequest) {
         enhancePrompt,
         sampleCount,
         seed,
-        model: (modelId === 'veo-2.0-generate-001' ||
-                modelId === 'veo-3.0-generate-preview' ||
-                modelId === 'veo-3.0-fast-generate-preview')
-          ? modelId
-          : (finalProvider === 'google-veo' ? 'veo-3.0-generate-preview' : undefined)
+        model: modelId
       }
       console.log(`🔍 [${requestId}] VIDEO GENERATION: Final model in options: "${options.model}", modelId was: "${modelId}"`)
       console.log(`⚙️ [${requestId}] VIDEO GENERATION: Generation options prepared:`, {
@@ -414,7 +432,7 @@ export async function POST(request: NextRequest) {
               await supabase
                 .from('generations')
                 .update({
-                  model_used: 'veo-2.0-generate-001',
+                  model: 'veo-2.0-generate-001',
                   metadata: {
                     ...generation.metadata,
                     fallback_reason: 'veo_3_access_not_available',
@@ -452,7 +470,7 @@ export async function POST(request: NextRequest) {
             resolution: options.resolution,
             motionIntensity: options.motionIntensity,
             frameRate: options.frameRate,
-            referenceImage: options.referenceImage,
+            referenceImage: options.referenceImage, // Full data URI with MIME type
             sourceType: options.sourceType as 'text-to-video' | 'image-to-video',
             seed: options.seed,
             model: modelId

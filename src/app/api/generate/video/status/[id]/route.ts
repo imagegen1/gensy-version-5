@@ -88,7 +88,7 @@ export async function GET(
 
     // Check with the provider for status update
     const jobId = generation.metadata?.jobId
-    const provider = generation.metadata?.provider || generation.model_used
+    const provider = generation.metadata?.provider || generation.model
 
     if (!jobId) {
       return NextResponse.json({
@@ -221,7 +221,7 @@ async function handleVideoCompletion(
         generationId,
         userId: profileId,
         type: 'generated-video',
-        provider: generation.metadata?.provider || generation.model_used
+        provider: generation.metadata?.provider || generation.model
       },
       isPublic: false
     })
@@ -260,7 +260,7 @@ async function handleVideoCompletion(
         mime_type: 'video/mp4',
         metadata: {
           type: 'generated-video',
-          provider: generation.metadata?.provider || generation.model_used,
+          provider: generation.metadata?.provider || generation.model,
           duration: generation.metadata?.duration || 5,
           aspectRatio: generation.metadata?.aspectRatio || '16:9',
           style: generation.metadata?.style || 'realistic'

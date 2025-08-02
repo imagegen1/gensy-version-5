@@ -54,12 +54,12 @@ function getStorageInstance() {
   return storage
 }
 
-// Request validation schema - supports both Google Veo and ByteDance
+// Request validation schema - supports Google Veo, ByteDance, and MiniMax
 const pollRequestSchema = z.object({
   generationId: z.string().min(1, 'Generation ID is required'),
   gcsOutputDirectory: z.string().optional(), // GCS bucket path where video will be saved (Google Veo)
-  taskId: z.string().optional(), // ByteDance task ID
-  provider: z.enum(['google-veo', 'bytedance']).optional(), // Provider type
+  taskId: z.string().optional(), // ByteDance or MiniMax task ID
+  provider: z.enum(['google-veo', 'bytedance', 'minimax']).optional(), // Provider type
   operationName: z.string().optional(), // Google Vertex AI operation name for status checking
   testMode: z.boolean().optional()
 })
@@ -267,11 +267,11 @@ export async function POST(request: NextRequest) {
           const supabase = createServiceRoleClient()
           const { data: generation } = await supabase
             .from('generations')
-            .select('model_used')
+            .select('model')
             .eq('id', generationId)
             .single()
 
-          const model = generation?.model_used || 'seedance-1-0-lite-i2v-250428' // Default to I2V model
+          const model = generation?.model || 'seedance-1-0-lite-i2v-250428' // Default to I2V model
 
           // Download video and upload to Cloudflare R2
           const uploadResult = await BytedanceVideoService.downloadAndUploadToR2(
@@ -377,6 +377,159 @@ export async function POST(request: NextRequest) {
           success: false,
           status: 'failed',
           error: error instanceof Error ? error.message : 'ByteDance polling failed'
+        }, { status: 500 })
+      }
+    }
+
+    // Handle MiniMax polling
+    if (provider === 'minimax' && taskId) {
+      console.log(`🎬 [${requestId}] MINIMAX POLL: Checking MiniMax task status...`)
+
+      try {
+        // Check task status using MiniMax API
+        const response = await fetch(`https://api.minimax.io/v1/query/video_generation?task_id=${taskId}`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${process.env.MINIMAX_API_KEY}`,
+            'Cache-Control': 'no-cache'
+          },
+          signal: AbortSignal.timeout(30000) // 30 second timeout
+        })
+
+        if (!response.ok) {
+          console.error(`❌ [${requestId}] MINIMAX POLL: API request failed:`, response.status)
+          return NextResponse.json({
+            success: false,
+            status: 'failed',
+            error: `MiniMax API request failed: ${response.status}`
+          }, { status: 500 })
+        }
+
+        const result = await response.json()
+        console.log(`📊 [${requestId}] MINIMAX POLL: Task status:`, result.status)
+
+        if (result.status === 'Success' && result.file_id) {
+          console.log(`✅ [${requestId}] MINIMAX POLL: Task completed! Downloading and uploading to R2...`)
+
+          // Get generation record to retrieve model information
+          const supabase = createServiceRoleClient()
+          const { data: generation } = await supabase
+            .from('generations')
+            .select('model')
+            .eq('id', generationId)
+            .single()
+
+          const model = generation?.model || 'MiniMax-Hailuo-02'
+
+          // Download video from MiniMax and upload to Cloudflare R2
+          const downloadUrl = `https://api.minimax.io/v1/files/retrieve?file_id=${result.file_id}`
+          const downloadResponse = await fetch(downloadUrl, {
+            headers: {
+              'Authorization': `Bearer ${process.env.MINIMAX_API_KEY}`
+            }
+          })
+
+          if (!downloadResponse.ok) {
+            console.error(`❌ [${requestId}] MINIMAX POLL: Failed to download video:`, downloadResponse.status)
+            return NextResponse.json({
+              success: false,
+              status: 'failed',
+              error: 'Failed to download video from MiniMax'
+            }, { status: 500 })
+          }
+
+          const videoBuffer = await downloadResponse.arrayBuffer()
+
+          // Upload to Cloudflare R2
+          const { uploadFile } = await import('@/lib/storage/r2-client')
+          const uploadKey = `videos/${generationId}/${Date.now()}_minimax_video.mp4`
+
+          try {
+            const uploadResult = await uploadFile({
+              key: uploadKey,
+              file: Buffer.from(videoBuffer),
+              contentType: 'video/mp4',
+              isPublic: true
+            })
+
+            if (uploadResult.success && uploadResult.url) {
+              console.log(`✅ [${requestId}] MINIMAX POLL: Video uploaded to R2:`, uploadResult.url)
+
+              // Update generation record with video URL
+              const { error: updateError } = await supabase
+                .from('generations')
+                .update({
+                  status: 'completed',
+                  result_url: uploadResult.url, // Use result_url field that video proxy expects
+                  completed_at: new Date().toISOString()
+                })
+                .eq('id', generationId)
+
+              if (updateError) {
+                console.error(`❌ [${requestId}] MINIMAX POLL: Failed to update generation record:`, updateError)
+              }
+
+              return NextResponse.json({
+                success: true,
+                status: 'completed',
+                generationId,
+                videoUrl: uploadResult.url,
+                message: 'Video generation completed successfully!'
+              })
+            } else {
+              console.error(`❌ [${requestId}] MINIMAX POLL: R2 upload failed:`, uploadResult.error)
+              // Return original MiniMax URL as fallback
+              return NextResponse.json({
+                success: true,
+                status: 'completed',
+                generationId,
+                videoUrl: downloadUrl,
+                message: 'Video generation completed (using original URL)'
+              })
+            }
+          } catch (uploadError) {
+            console.error(`❌ [${requestId}] MINIMAX POLL: R2 upload error:`, uploadError)
+            // Return original MiniMax URL as fallback
+            return NextResponse.json({
+              success: true,
+              status: 'completed',
+              generationId,
+              videoUrl: downloadUrl,
+              message: 'Video generation completed (using original URL)'
+            })
+          }
+
+        } else if (result.status === 'Fail') {
+          console.error(`❌ [${requestId}] MINIMAX POLL: Task failed`)
+          return NextResponse.json({
+            success: false,
+            status: 'failed',
+            error: 'MiniMax video generation failed'
+          }, { status: 500 })
+        } else if (result.status === 'Preparing' || result.status === 'Queueing' || result.status === 'Processing') {
+          console.log(`⏳ [${requestId}] MINIMAX POLL: Task status: ${result.status}`)
+          return NextResponse.json({
+            success: true,
+            status: 'processing',
+            generationId,
+            message: 'MiniMax video generation in progress...'
+          })
+        } else {
+          console.warn(`⚠️ [${requestId}] MINIMAX POLL: Unknown status: ${result.status}`)
+          return NextResponse.json({
+            success: true,
+            status: 'processing',
+            generationId,
+            message: 'MiniMax video generation in progress...'
+          })
+        }
+
+      } catch (error) {
+        console.error(`❌ [${requestId}] MINIMAX POLL: Error:`, error)
+        return NextResponse.json({
+          success: false,
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'MiniMax polling failed'
         }, { status: 500 })
       }
     }

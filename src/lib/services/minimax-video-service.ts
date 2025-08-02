@@ -11,10 +11,10 @@ export interface MinimaxVideoGenerationOptions {
   aspectRatio?: '16:9' | '9:16' | '1:1'
   style?: 'realistic' | 'artistic' | 'cartoon' | 'cinematic' | 'documentary'
   quality?: 'standard' | 'high' | 'ultra'
-  resolution?: '720p' | '768p' | '1080p'
+  resolution?: '512p' | '720p' | '768p' | '1080p'
   motionIntensity?: 'low' | 'medium' | 'high'
   frameRate?: number // 24-25 fps
-  referenceImage?: string // Base64 encoded image for image-to-video
+  referenceImage?: string // Full data URI for image-to-video (data:image/jpeg;base64,...)
   sourceType?: 'text-to-video' | 'image-to-video'
   seed?: number
   model?: string // Specific MiniMax model to use
@@ -46,17 +46,90 @@ export interface MinimaxTaskStatus {
   progress?: number
 }
 
-// MiniMax model configurations (based on actual API documentation)
+// MiniMax model configurations (based on official API documentation)
 const MINIMAX_MODELS = {
-  'minimax-hailuo-ai': {
-    id: 'minimax-hailuo-ai',
-    name: 'MiniMax Hailuo AI',
-    description: 'Advanced text-to-video generation with high-quality output',
+  'MiniMax-Hailuo-02': {
+    id: 'MiniMax-Hailuo-02',
+    name: 'MiniMax Hailuo 02',
+    description: 'Latest MiniMax video generation model with SOTA instruction following and extreme physics mastery',
+    capabilities: ['text-to-video', 'image-to-video'],
+    resolutions: ['512p', '768p', '1080p'],
+    durations: [6, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.65,
+    // Resolution-specific duration constraints
+    resolutionConstraints: {
+      '1080p': [6], // 1080p only supports 6s
+      '768p': [6, 10], // 768p supports both 6s and 10s
+      '512p': [6, 10]  // 512p supports both 6s and 10s
+    }
+  },
+  'T2V-01-Director': {
+    id: 'T2V-01-Director',
+    name: 'T2V-01 Director',
+    description: 'Advanced text-to-video model with director-level control and precision',
     capabilities: ['text-to-video'],
     resolutions: ['720p', '1080p'],
     durations: [5, 10],
     frameRate: 24,
-    aspectRatios: ['16:9', '9:16', '1:1']
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.43
+  },
+  'I2V-01-Director': {
+    id: 'I2V-01-Director',
+    name: 'I2V-01 Director',
+    description: 'Image-to-video model with director-level control and high-quality motion generation',
+    capabilities: ['image-to-video'],
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.43
+  },
+  'T2V-01': {
+    id: 'T2V-01',
+    name: 'T2V-01',
+    description: 'Standard text-to-video generation model with good quality and speed',
+    capabilities: ['text-to-video'],
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.30
+  },
+  'I2V-01': {
+    id: 'I2V-01',
+    name: 'I2V-01',
+    description: 'Standard image-to-video generation model with natural motion',
+    capabilities: ['image-to-video'],
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.30
+  },
+  'I2V-01-live': {
+    id: 'I2V-01-live',
+    name: 'I2V-01 Live',
+    description: 'Live image-to-video generation with real-time processing capabilities',
+    capabilities: ['image-to-video', 'live-generation'],
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.35
+  },
+  'S2V-01': {
+    id: 'S2V-01',
+    name: 'S2V-01',
+    description: 'Speech-to-video generation model that creates videos from audio input',
+    capabilities: ['speech-to-video'],
+    resolutions: ['720p', '1080p'],
+    durations: [5, 10],
+    frameRate: 24,
+    aspectRatios: ['16:9', '9:16', '1:1'],
+    pricing: 0.40
   }
 } as const
 
@@ -118,27 +191,38 @@ export class MinimaxVideoService {
         }
       }
 
-      // Use the single MiniMax model
-      const selectedModel = 'minimax-hailuo-ai'
-      const modelConfig = MINIMAX_MODELS[selectedModel]
+      // Select appropriate MiniMax model based on options and modelName
+      let selectedModel = modelName || options.model || 'MiniMax-Hailuo-02' // Default to latest model
 
-      // MiniMax API only supports text-to-video currently
-      const sourceType = 'text-to-video'
-      if (options.referenceImage) {
-        console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Image-to-video not supported by MiniMax API, using text-to-video`)
+      // Validate model exists
+      if (!MINIMAX_MODELS[selectedModel as keyof typeof MINIMAX_MODELS]) {
+        console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Model ${selectedModel} not found, using MiniMax-Hailuo-02`)
+        selectedModel = 'MiniMax-Hailuo-02'
       }
 
-      // Set default options (simplified for MiniMax API)
+      const modelConfig = MINIMAX_MODELS[selectedModel as keyof typeof MINIMAX_MODELS]
+
+      // Determine source type based on model capabilities and options
+      let sourceType: 'text-to-video' | 'image-to-video' | 'speech-to-video' = 'text-to-video'
+
+      if (options.referenceImage && modelConfig.capabilities.includes('image-to-video')) {
+        sourceType = 'image-to-video'
+      } else if (options.referenceImage && !modelConfig.capabilities.includes('image-to-video')) {
+        console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Model ${selectedModel} doesn't support image-to-video, using text-to-video`)
+        sourceType = 'text-to-video'
+      }
+
+      // Set default options based on model capabilities
       const finalOptions: Required<MinimaxVideoGenerationOptions> = {
         duration: options.duration || 5,
         aspectRatio: options.aspectRatio || '16:9',
         style: options.style || 'realistic',
         quality: options.quality || 'standard',
-        resolution: options.resolution || '720p',
+        resolution: options.resolution || '768p',
         motionIntensity: options.motionIntensity || 'medium',
         frameRate: options.frameRate || 24,
-        referenceImage: '', // Not supported by current API
-        sourceType: 'text-to-video',
+        referenceImage: sourceType === 'image-to-video' ? (options.referenceImage || '') : '',
+        sourceType: sourceType,
         seed: options.seed || Math.floor(Math.random() * 1000000),
         model: selectedModel
       }
@@ -262,19 +346,45 @@ export class MinimaxVideoService {
     console.log(`🚀 [${requestId}] MINIMAX VIDEO: Creating generation task...`)
 
     try {
-      // Prepare request payload based on actual MiniMax API documentation
-      const requestPayload = {
+      // MiniMax API expects uppercase P format (e.g., "1080P", not "1080p")
+      const minimaxResolution = options.resolution.replace('p', 'P')
+      console.log(`🎯 [${requestId}] MINIMAX VIDEO: Resolution conversion: ${options.resolution} -> ${minimaxResolution}`)
+
+      // Prepare request payload based on official MiniMax API documentation
+      const requestPayload: any = {
         prompt: prompt,
-        prompt_optimizer: true // Default optimization
+        model: options.model,
+        duration: options.duration,
+        resolution: minimaxResolution,
+        aspect_ratio: options.aspectRatio,
+        frame_rate: options.frameRate,
+        style: options.style,
+        quality: options.quality,
+        motion_intensity: options.motionIntensity,
+        sample_count: 1,
+        enhance_prompt: true,
+        seed: options.seed
       }
 
-      console.log(`🌐 [${requestId}] MINIMAX VIDEO: Making API call to MiniMax...`)
-      const response = await fetch('https://gateway.appypie.com/minimax-hailuo-ai/v1/generate', {
+      // Add first frame image if provided (enables image-to-video generation)
+      if (options.referenceImage) {
+        // MiniMax expects first_frame_image field with full data URI (per official docs)
+        requestPayload.first_frame_image = options.referenceImage
+
+        console.log(`🖼️ [${requestId}] MINIMAX VIDEO: Added first_frame_image for image-to-video generation`)
+      }
+
+      console.log(`🌐 [${requestId}] MINIMAX VIDEO: Making API call to MiniMax with model: ${options.model}`)
+      console.log(`📦 [${requestId}] MINIMAX VIDEO: Final request payload:`, {
+        ...requestPayload,
+        first_frame_image: requestPayload.first_frame_image ? '[BASE64_DATA]' : undefined
+      })
+      const response = await fetch('https://api.minimax.io/v1/video_generation', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache',
-          'Ocp-Apim-Subscription-Key': config.minimax.apiKey
+          'Authorization': `Bearer ${config.minimax.apiKey}`,
+          'Cache-Control': 'no-cache'
         },
         body: JSON.stringify(requestPayload),
         signal: AbortSignal.timeout(this.API_TIMEOUT)
@@ -327,14 +437,12 @@ export class MinimaxVideoService {
       try {
         console.log(`🔍 [${requestId}] MINIMAX VIDEO: Polling attempt ${attempt}/${maxAttempts}`)
 
-        const response = await fetch('https://gateway.appypie.com/minimax-hailuo-ai-polling/v1/getStatus', {
-          method: 'POST',
+        const response = await fetch(`https://api.minimax.io/v1/query/video_generation?task_id=${taskId}`, {
+          method: 'GET',
           headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache',
-            'Ocp-Apim-Subscription-Key': config.minimax.apiKey
+            'Authorization': `Bearer ${config.minimax.apiKey}`,
+            'Cache-Control': 'no-cache'
           },
-          body: JSON.stringify({ task_id: taskId }),
           signal: AbortSignal.timeout(30000) // 30 second timeout per request
         })
 
@@ -354,31 +462,53 @@ export class MinimaxVideoService {
         const result = await response.json()
         console.log(`📊 [${requestId}] MINIMAX VIDEO: Poll result:`, {
           status: result.status,
-          progress: result.progress
+          file_id: result.file_id
         })
 
-        // Handle different status responses based on actual MiniMax API response
-        if (result.base_resp && result.base_resp.status_code === 0) {
-          if (result.file && result.file.download_url) {
-            console.log(`✅ [${requestId}] MINIMAX VIDEO: Task completed successfully`)
-            return {
-              success: true,
-              status: 'completed',
-              downloadUrl: result.file.download_url,
-              videoUrl: result.file.download_url
+        // Handle different status responses based on official MiniMax API documentation
+        if (result.status === 'Success') {
+          if (result.file_id) {
+            console.log(`✅ [${requestId}] MINIMAX VIDEO: Task completed successfully, getting download URL...`)
+
+            // Get download URL using file_id
+            const downloadUrl = await this.getDownloadUrl(result.file_id, requestId)
+            if (downloadUrl) {
+              return {
+                success: true,
+                status: 'completed',
+                downloadUrl: downloadUrl,
+                videoUrl: downloadUrl
+              }
+            } else {
+              return {
+                success: false,
+                status: 'failed',
+                error: 'Failed to get download URL'
+              }
             }
           } else {
-            console.log(`⏳ [${requestId}] MINIMAX VIDEO: Task still processing...`)
-            await new Promise(resolve => setTimeout(resolve, pollInterval))
-            continue
+            console.error(`❌ [${requestId}] MINIMAX VIDEO: Success status but no file_id`)
+            return {
+              success: false,
+              status: 'failed',
+              error: 'Success status but no file_id received'
+            }
           }
-        } else {
-          console.error(`❌ [${requestId}] MINIMAX VIDEO: Task failed:`, result.base_resp?.status_msg || 'Unknown error')
+        } else if (result.status === 'Fail') {
+          console.error(`❌ [${requestId}] MINIMAX VIDEO: Task failed`)
           return {
             success: false,
             status: 'failed',
-            error: result.base_resp?.status_msg || 'Video generation failed'
+            error: 'Video generation failed'
           }
+        } else if (result.status === 'Preparing' || result.status === 'Queueing' || result.status === 'Processing') {
+          console.log(`⏳ [${requestId}] MINIMAX VIDEO: Task status: ${result.status}`)
+          await new Promise(resolve => setTimeout(resolve, pollInterval))
+          continue
+        } else {
+          console.warn(`⚠️ [${requestId}] MINIMAX VIDEO: Unknown status: ${result.status}`)
+          await new Promise(resolve => setTimeout(resolve, pollInterval))
+          continue
         }
 
       } catch (error) {
@@ -399,6 +529,44 @@ export class MinimaxVideoService {
       success: false,
       status: 'failed',
       error: 'Video generation timeout'
+    }
+  }
+
+  /**
+   * Get download URL from file_id
+   */
+  private static async getDownloadUrl(fileId: string, requestId: string): Promise<string | null> {
+    try {
+      console.log(`📥 [${requestId}] MINIMAX VIDEO: Getting download URL for file_id: ${fileId}`)
+
+      const response = await fetch(`https://api.minimax.io/v1/files/retrieve?file_id=${fileId}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${config.minimax.apiKey}`,
+          'Cache-Control': 'no-cache'
+        },
+        signal: AbortSignal.timeout(30000)
+      })
+
+      if (!response.ok) {
+        console.error(`❌ [${requestId}] MINIMAX VIDEO: Failed to get download URL:`, response.status)
+        return null
+      }
+
+      const result = await response.json()
+      console.log(`📥 [${requestId}] MINIMAX VIDEO: File retrieve result:`, result)
+
+      if (result.file && result.file.download_url) {
+        console.log(`✅ [${requestId}] MINIMAX VIDEO: Got download URL successfully`)
+        return result.file.download_url
+      } else {
+        console.error(`❌ [${requestId}] MINIMAX VIDEO: No download_url in response`)
+        return null
+      }
+
+    } catch (error) {
+      console.error(`❌ [${requestId}] MINIMAX VIDEO: Error getting download URL:`, error)
+      return null
     }
   }
 
@@ -439,17 +607,18 @@ export class MinimaxVideoService {
         sizeBytes: videoSize
       })
 
-      // Generate filename
+      // Generate R2 key (path)
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-      const filename = `minimax-video-${model}-${generationId}-${timestamp}.mp4`
+      const uploadKey = `videos/minimax-video-${model}-${generationId}-${timestamp}.mp4`
 
       // Upload to R2
-      console.log(`☁️ [${downloadRequestId}] MINIMAX DOWNLOAD: Uploading to R2 as ${filename}`)
-      const uploadResult = await uploadFile(
-        Buffer.from(videoBuffer),
-        filename,
-        'video/mp4'
-      )
+      console.log(`☁️ [${downloadRequestId}] MINIMAX DOWNLOAD: Uploading to R2 with key: ${uploadKey}`)
+      const uploadResult = await uploadFile({
+        key: uploadKey,
+        file: Buffer.from(videoBuffer),
+        contentType: 'video/mp4',
+        isPublic: true
+      })
 
       if (uploadResult.success && uploadResult.url) {
         console.log(`🎉 [${downloadRequestId}] MINIMAX DOWNLOAD: Upload completed successfully:`, uploadResult.url)
@@ -460,17 +629,22 @@ export class MinimaxVideoService {
         }
       } else {
         console.error(`❌ [${downloadRequestId}] MINIMAX DOWNLOAD: R2 upload failed:`, uploadResult.error)
+        console.log(`🔄 [${downloadRequestId}] MINIMAX DOWNLOAD: Falling back to original download URL`)
         return {
-          success: false,
-          error: uploadResult.error || 'Failed to upload to R2'
+          success: true, // Still consider it successful since we have the video
+          url: downloadUrl, // Return original MiniMax download URL as fallback
+          size: videoSize,
+          error: `R2 upload failed, using original URL: ${uploadResult.error}`
         }
       }
 
     } catch (error) {
       console.error(`❌ [${downloadRequestId}] MINIMAX DOWNLOAD: Download and upload failed:`, error)
+      console.log(`🔄 [${downloadRequestId}] MINIMAX DOWNLOAD: Falling back to original download URL`)
       return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Download and upload failed'
+        success: true, // Still return success with original URL
+        url: downloadUrl, // Return original MiniMax download URL as fallback
+        error: `Download/upload failed, using original URL: ${error instanceof Error ? error.message : 'Unknown error'}`
       }
     }
   }
@@ -481,14 +655,14 @@ export class MinimaxVideoService {
   static getSupportedOptions() {
     return {
       models: Object.values(MINIMAX_MODELS),
-      durations: [6, 10],
+      durations: [5, 10],
       aspectRatios: ['16:9', '9:16', '1:1'],
       styles: ['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary'],
       qualities: ['standard', 'high', 'ultra'],
-      resolutions: ['720p', '768p', '1080p'],
+      resolutions: ['720p', '1080p'],
       motionIntensities: ['low', 'medium', 'high'],
       frameRates: [24, 25],
-      sourceTypes: ['text-to-video', 'image-to-video']
+      sourceTypes: ['text-to-video', 'image-to-video', 'speech-to-video']
     }
   }
 

@@ -149,11 +149,30 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
     { id: '9:16', label: '9:16 (Portrait)', ratio: '9:16', width: 9, height: 16 },
   ]
 
-  // Get available durations based on selected model
+  // Get available durations based on selected model and resolution
   const getAvailableDurations = () => {
     const model = selectedModel.toLowerCase()
 
-    // MiniMax Hailuo AI supports 5s and 10s
+    // MiniMax Hailuo 02 has resolution-specific duration constraints
+    if (model.includes('minimax-hailuo-02') || model.includes('hailuo 02')) {
+      if (selectedResolution === '1080p') {
+        return [
+          { value: 6, label: '6 seconds', description: '1080p only supports 6s' }
+        ]
+      } else if (selectedResolution === '768p' || selectedResolution === '512p') {
+        return [
+          { value: 6, label: '6 seconds', description: 'Standard duration' },
+          { value: 10, label: '10 seconds', description: 'Extended duration' }
+        ]
+      }
+      // Default for MiniMax-Hailuo-02
+      return [
+        { value: 6, label: '6 seconds', description: 'Standard duration' },
+        { value: 10, label: '10 seconds', description: 'Extended duration' }
+      ]
+    }
+
+    // Other MiniMax models support 5s and 10s
     if (model.includes('minimax') || model.includes('hailuo')) {
       return [
         { value: 5, label: '5 seconds', description: 'Standard duration' },
@@ -188,7 +207,16 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   const getAvailableResolutions = () => {
     const model = selectedModel.toLowerCase()
 
-    // MiniMax Hailuo AI supports 720p and 1080p
+    // MiniMax Hailuo 02 supports 512p, 768p, and 1080p (backend expects lowercase)
+    if (model.includes('minimax-hailuo-02') || model.includes('hailuo 02')) {
+      return [
+        { value: '512p', label: '512p (Standard)', description: 'Standard quality - supports 6s & 10s' },
+        { value: '768p', label: '768p (HD)', description: 'High definition - supports 6s & 10s' },
+        { value: '1080p', label: '1080p (Full HD)', description: 'Full HD - supports 6s only' }
+      ]
+    }
+
+    // Other MiniMax models support 720p and 1080p
     if (model.includes('minimax') || model.includes('hailuo')) {
       return [
         { value: '720p', label: '720p (HD)', description: 'High definition' },
@@ -222,10 +250,20 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   // Check if the selected model supports image-to-video generation
   const supportsImageToVideo = () => {
     const model = selectedModel.toLowerCase()
+    console.log(`🔍 IMAGE-TO-VIDEO CHECK: selectedModel="${selectedModel}", model="${model}"`)
 
-    // MiniMax Hailuo AI currently only supports text-to-video
+    // MiniMax Hailuo 02 supports both text-to-video and image-to-video
+    // Check for both hyphenated and space-separated versions
+    if (model.includes('minimax-hailuo-02') || model.includes('hailuo-02') ||
+        model.includes('minimax hailuo 02') || model.includes('hailuo 02')) {
+      console.log(`✅ IMAGE-TO-VIDEO: MiniMax Hailuo 02 detected - ENABLED`)
+      return true // Hailuo 02 supports image-to-video
+    }
+
+    // Other MiniMax models (if any) may only support text-to-video
     if (model.includes('minimax') || model.includes('hailuo')) {
-      return false // Current API only supports text-to-video
+      console.log(`❌ IMAGE-TO-VIDEO: Other MiniMax model detected - DISABLED`)
+      return false // Other MiniMax models may be text-to-video only
     }
 
     // Veo 3.0 Fast does NOT support image-to-video
@@ -271,17 +309,17 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
           setAiModels([
             { id: 'veo-001', name: 'Google Veo', description: 'Advanced video generation with text-to-video and image-to-video capabilities', isNew: false, tags: ['Video'], pricing_credits: 10 },
             { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 },
-            { id: 'minimax-hailuo-ai', name: 'MiniMax Hailuo AI', description: 'Advanced text-to-video generation with high-quality output and natural motion.', isNew: true, tags: ['Video'], pricing_credits: 12 }
+            { id: 'MiniMax-Hailuo-02', name: 'MiniMax Hailuo 02', description: 'Latest MiniMax video generation model with text-to-video and image-to-video capabilities, SOTA instruction following and extreme physics mastery', isNew: true, tags: ['Video'], pricing_credits: 13 }
           ])
-          setSelectedModel('MiniMax Hailuo AI')
+          setSelectedModel('MiniMax Hailuo 02')
         }
       } catch (error) {
         setAiModels([
           { id: 'veo-001', name: 'Google Veo', description: 'Advanced video generation with text-to-video and image-to-video capabilities', isNew: false, tags: ['Video'], pricing_credits: 10 },
           { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 },
-          { id: 'minimax-hailuo-ai', name: 'MiniMax Hailuo AI', description: 'Advanced text-to-video generation with high-quality output and natural motion.', isNew: true, tags: ['Video'], pricing_credits: 12 }
+          { id: 'MiniMax-Hailuo-02', name: 'MiniMax Hailuo 02', description: 'Latest MiniMax video generation model with text-to-video and image-to-video capabilities, SOTA instruction following and extreme physics mastery', isNew: true, tags: ['Video'], pricing_credits: 13 }
         ])
-        setSelectedModel('MiniMax Hailuo AI')
+        setSelectedModel('MiniMax Hailuo 02')
       } finally {
         setIsLoadingModels(false)
       }
@@ -311,6 +349,20 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
       setSelectedResolution(availableResolutions[0].value)
     }
   }, [selectedModel, selectedResolution])
+
+  // Update duration when resolution changes for MiniMax-Hailuo-02 (due to resolution constraints)
+  useEffect(() => {
+    const model = selectedModel.toLowerCase()
+    if (model.includes('minimax-hailuo-02') || model.includes('hailuo 02')) {
+      const availableDurations = getAvailableDurations()
+      const currentDurationAvailable = availableDurations.some(d => d.value === duration)
+
+      if (!currentDurationAvailable) {
+        // Set to the first available duration for this resolution
+        setDuration(availableDurations[0].value)
+      }
+    }
+  }, [selectedResolution, selectedModel, duration])
 
   // Clear uploaded files when switching to a model that doesn't support image-to-video
   useEffect(() => {
@@ -702,14 +754,12 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
     try {
       // Process uploaded files to base64 if any
       let referenceImageBase64: string | undefined = undefined
-      let referenceImageMimeType: string | undefined = undefined
       let startFrameBase64: string | undefined = undefined
       let endFrameBase64: string | undefined = undefined
 
       if (files.length > 0) {
         const file = files[0]
-        referenceImageBase64 = await fileToBase64(file)
-        referenceImageMimeType = file.type // Capture the MIME type
+        referenceImageBase64 = await fileToBase64(file) // Full data URI with MIME type
       }
 
       if (startFrameFile) {
@@ -731,6 +781,16 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
         sourceType = file.type.startsWith('video/') ? 'video-to-video' : 'image-to-video'
       }
 
+      // Determine provider based on selected model
+      let provider = 'google-veo' // default
+      if (selectedModel.toLowerCase().includes('minimax') || selectedModel.toLowerCase().includes('hailuo')) {
+        provider = 'minimax'
+      } else if (selectedModel.toLowerCase().includes('bytedance') || selectedModel.toLowerCase().includes('seedance')) {
+        provider = 'bytedance'
+      } else if (selectedModel.toLowerCase().includes('replicate') || selectedModel.toLowerCase().includes('wan')) {
+        provider = 'replicate-wan'
+      }
+
       const requestPayload = {
         prompt: prompt.trim(),
         duration: duration,
@@ -738,12 +798,12 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
         style: selectedStyle,
         quality: selectedQuality,
         resolution: selectedResolution,
+        provider: provider,
         model: selectedModel,
         sourceType,
         testMode: isTestMode,
         ...(referenceImageBase64 && {
-          referenceImage: referenceImageBase64,
-          referenceImageMimeType: referenceImageMimeType
+          referenceImage: referenceImageBase64 // Full data URI with MIME type
         }),
         ...(startFrameBase64 && { startFrameImage: startFrameBase64 }),
         ...(endFrameBase64 && { endFrameImage: endFrameBase64 })
@@ -1066,8 +1126,8 @@ ${errorMessage}
       const reader = new FileReader()
       reader.onload = () => {
         const result = reader.result as string
-        const base64Data = result.split(',')[1]
-        resolve(base64Data)
+        // For MiniMax, return the full data URI (data:image/jpeg;base64,...)
+        resolve(result)
       }
       reader.onerror = () => reject(new Error('Failed to read file'))
       reader.readAsDataURL(file)

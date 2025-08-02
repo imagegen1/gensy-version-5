@@ -220,17 +220,17 @@ export async function GET(request: NextRequest) {
         }
       } else {
         // Look up the video by generation ID in database
-        // First try with all fields for dynamic naming, fallback to basic fields if needed
+        // Query with correct column names (database uses 'model' not 'model_used')
         let { data: generationData, error } = await supabase
           .from('generations')
-          .select('result_url, user_id, prompt, model_used, created_at')
+          .select('result_url, user_id, prompt, model, created_at')
           .eq('id', generationId)
           .eq('type', 'video')
           .single()
 
-        // If the query with additional fields fails, try with just the essential fields
+        // If the query fails, try with minimal fields
         if (error) {
-          console.log(`⚠️ [${requestId}] VIDEO PROXY: Extended query failed, trying basic query - Error: ${error?.message}`)
+          console.log(`⚠️ [${requestId}] VIDEO PROXY: Query failed, trying minimal fields - Error: ${error?.message}`)
           const basicQuery = await supabase
             .from('generations')
             .select('result_url, user_id')
@@ -294,9 +294,11 @@ export async function GET(request: NextRequest) {
           )
         }
       } else {
-        // Not a GCS URL, use as-is (e.g., R2 URLs)
+        // Not a GCS URL, use as-is (e.g., R2 URLs, MiniMax URLs)
         videoUrl = generation.result_url
-        console.log(`📋 [${requestId}] VIDEO PROXY: Using stored URL directly (non-GCS)`)
+        const urlType = generation.result_url.includes('r2.cloudflarestorage.com') ? 'R2' :
+                       generation.result_url.includes('minimax.io') ? 'MiniMax' : 'Direct'
+        console.log(`📋 [${requestId}] VIDEO PROXY: Using stored URL directly (${urlType}): ${generation.result_url.substring(0, 100)}...`)
       }
     } else {
       // Use the provided URL directly with robust security validation
@@ -342,11 +344,11 @@ export async function GET(request: NextRequest) {
     if (generationId && generation) {
       try {
         // Only use dynamic naming if we have the required fields
-        if (generation.prompt || generation.model_used) {
+        if (generation.prompt || generation.model) {
           dynamicFilename = generateVideoFilename({
             url: videoUrl,
             prompt: generation.prompt || 'Generated video',
-            model: generation.model_used || 'ai-model',
+            model: generation.model || 'ai-model',
             timestamp: generation.created_at ? new Date(generation.created_at) : new Date(),
             generationId: generationId,
             format: 'mp4'

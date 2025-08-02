@@ -343,7 +343,7 @@ export async function POST(request: NextRequest) {
         user_id: userResult.user.id,
         type,
         prompt,
-        model_used,
+        model: model_used,
         credits_used: credits_required,
         metadata,
         status: 'pending',
