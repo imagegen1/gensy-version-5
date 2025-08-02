@@ -14,7 +14,7 @@ interface VideoOptions {
   aspectRatio: '16:9' | '9:16' | '1:1' | '4:3' | '3:4'
   style: 'realistic' | 'artistic' | 'cartoon' | 'cinematic' | 'documentary'
   quality: 'standard' | 'high' | 'ultra'
-  provider: 'google-veo' | 'replicate-wan'
+  provider: 'google-veo' | 'replicate-wan' | 'bytedance' | 'minimax'
   motionIntensity: 'low' | 'medium' | 'high'
   frameRate: number
 }
@@ -84,17 +84,29 @@ const QUALITY_OPTIONS = [
 ]
 
 const PROVIDER_OPTIONS = [
-  { 
-    value: 'google-veo' as const, 
-    label: 'Google Veo', 
+  {
+    value: 'google-veo' as const,
+    label: 'Google Veo',
     description: 'High-quality, versatile',
     features: ['Best quality', 'Multiple styles', 'Fast processing']
   },
-  { 
-    value: 'replicate-wan' as const, 
-    label: 'Replicate Wan 2.1', 
+  {
+    value: 'replicate-wan' as const,
+    label: 'Replicate Wan 2.1',
     description: 'Advanced AI model',
     features: ['Artistic styles', 'Fine control', 'Custom parameters']
+  },
+  {
+    value: 'bytedance' as const,
+    label: 'ByteDance Seedream',
+    description: 'High-quality video generation',
+    features: ['Text-to-video', 'Image-to-video', 'Multiple durations']
+  },
+  {
+    value: 'minimax' as const,
+    label: 'MiniMax Hailuo AI',
+    description: 'SOTA instruction following',
+    features: ['Extreme physics mastery', 'Precision control', 'Multiple models']
   }
 ]
 

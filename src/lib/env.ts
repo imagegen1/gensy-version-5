@@ -61,6 +61,10 @@ const envSchema = z.object({
   BFL_API_KEY: z.string().min(1, 'BFL API key is required'),
   BFL_API_ENDPOINT: z.string().url('Invalid BFL API endpoint').default('https://api.bfl.ai/v1'),
 
+  // MiniMax Hailuo AI Video Generation Configuration
+  MINIMAX_API_KEY: z.string().min(1, 'MiniMax API key is required'),
+  MINIMAX_API_ENDPOINT: z.string().url('Invalid MiniMax API endpoint').default('https://api.minimax.chat/v1'),
+
   // PhonePe Payment Gateway Configuration
   PHONEPE_MERCHANT_ID: z.string().min(1, 'PhonePe merchant ID is required'),
   PHONEPE_SALT_KEY: z.string().min(1, 'PhonePe salt key is required'),
@@ -127,6 +131,8 @@ const devEnvSchema = envSchema.extend({
   OPENROUTER_API_KEY: z.string().optional(),
   BFL_API_KEY: z.string().optional(),
   BFL_API_ENDPOINT: z.string().optional(),
+  MINIMAX_API_KEY: z.string().optional(),
+  MINIMAX_API_ENDPOINT: z.string().optional(),
   PHONEPE_MERCHANT_ID: z.string().optional(),
   PHONEPE_SALT_KEY: z.string().optional(),
 })
@@ -284,6 +290,10 @@ export const config = {
   bfl: {
     apiKey: env.BFL_API_KEY,
     apiEndpoint: env.BFL_API_ENDPOINT,
+  },
+  minimax: {
+    apiKey: env.MINIMAX_API_KEY,
+    apiEndpoint: env.MINIMAX_API_ENDPOINT,
   },
   phonepe: {
     merchantId: env.PHONEPE_MERCHANT_ID,

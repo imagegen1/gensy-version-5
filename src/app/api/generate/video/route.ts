@@ -9,6 +9,7 @@ import { auth } from '@clerk/nextjs/server'
 import { GoogleVeoService } from '@/lib/services/google-veo'
 import { ReplicateWanService } from '@/lib/services/replicate-wan'
 import { BytedanceVideoService } from '@/lib/services/bytedance-video-service'
+import { MinimaxVideoService } from '@/lib/services/minimax-video-service'
 import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadFile } from '@/lib/storage/r2-client'
@@ -22,7 +23,7 @@ const videoGenerationSchema = z.object({
   style: z.enum(['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary']).default('realistic'),
   quality: z.enum(['standard', 'high', 'ultra']).default('standard'),
   resolution: z.enum(['480p', '720p', '1080p']).default('720p'),
-  provider: z.enum(['google-veo', 'replicate-wan', 'bytedance']).default('google-veo'),
+  provider: z.enum(['google-veo', 'replicate-wan', 'bytedance', 'minimax']).default('google-veo'),
   motionIntensity: z.enum(['low', 'medium', 'high']).default('medium'),
   frameRate: z.number().min(24).max(60).default(24),
   referenceImage: z.string().optional(), // Base64 encoded
@@ -196,6 +197,7 @@ export async function POST(request: NextRequest) {
     // Fallback model ID
     if (!modelId) {
       modelId = finalProvider === 'bytedance' ? 'seedance-1-0-lite-t2v-250428' :
+                finalProvider === 'minimax' ? 'hailuo-02' :
                 finalProvider === 'replicate-wan' ? 'replicate-wan' : 'veo-3.0-generate-preview'
     }
 
@@ -440,6 +442,22 @@ export async function POST(request: NextRequest) {
             negativePrompt: options.negativePrompt
           }
           result = await BytedanceVideoService.generateVideo(prompt, bytedanceOptions, generation.id, modelId)
+        } else if (finalProvider === 'minimax') {
+          // Create MiniMax specific options
+          const minimaxOptions = {
+            duration: options.duration,
+            aspectRatio: options.aspectRatio as '16:9' | '9:16' | '1:1',
+            style: options.style,
+            quality: options.quality,
+            resolution: options.resolution,
+            motionIntensity: options.motionIntensity,
+            frameRate: options.frameRate,
+            referenceImage: options.referenceImage,
+            sourceType: options.sourceType as 'text-to-video' | 'image-to-video',
+            seed: options.seed,
+            model: modelId
+          }
+          result = await MinimaxVideoService.generateVideo(prompt, minimaxOptions, generation.id, modelId)
         } else {
           // Create Replicate specific options (remove Veo-specific fields)
           const { model: _, negativePrompt: __, enhancePrompt: ___, sampleCount: ____, ...replicateOptions } = options
@@ -648,7 +666,7 @@ export async function POST(request: NextRequest) {
           }),
           provider: finalProvider, // Add provider for frontend polling logic
           status: 'processing',
-          estimatedTime: finalProvider === 'bytedance' ? 180 : 120, // ByteDance typically takes longer
+          estimatedTime: finalProvider === 'bytedance' ? 180 : finalProvider === 'minimax' ? 150 : 120, // ByteDance and MiniMax typically take longer
           creditsUsed: creditCost,
           remainingCredits: currentCredits - creditCost
         }
@@ -833,6 +851,7 @@ export async function GET(request: NextRequest) {
     const googleVeoOptions = GoogleVeoService.getSupportedOptions()
     const replicateOptions = ReplicateWanService.getSupportedOptions()
     const bytedanceOptions = BytedanceVideoService.getSupportedOptions()
+    const minimaxOptions = MinimaxVideoService.getSupportedOptions()
 
     return NextResponse.json({
       success: true,
@@ -840,7 +859,8 @@ export async function GET(request: NextRequest) {
       supportedOptions: {
         googleVeo: googleVeoOptions,
         replicate: replicateOptions,
-        bytedance: bytedanceOptions
+        bytedance: bytedanceOptions,
+        minimax: minimaxOptions
       }
     })
 

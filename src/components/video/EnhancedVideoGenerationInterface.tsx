@@ -153,6 +153,21 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   const getAvailableDurations = () => {
     const model = selectedModel.toLowerCase()
 
+    // MiniMax Hailuo models support 6s and 10s (Hailuo 02), 6s only (Directors)
+    if (model.includes('minimax') || model.includes('hailuo') || model.includes('director')) {
+      if (model.includes('hailuo 02') || model.includes('hailuo-02')) {
+        return [
+          { value: 6, label: '6 seconds', description: 'Standard duration' },
+          { value: 10, label: '10 seconds', description: 'Extended duration' }
+        ]
+      } else {
+        // T2V-01-Director and I2V-01-Director support only 6s
+        return [
+          { value: 6, label: '6 seconds', description: 'Standard duration' }
+        ]
+      }
+    }
+
     // ByteDance Seedream model supports 5s and 10s
     if (model.includes('bytedance') || model.includes('seedream')) {
       return [
@@ -180,6 +195,22 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   const getAvailableResolutions = () => {
     const model = selectedModel.toLowerCase()
 
+    // MiniMax Hailuo models support different resolutions
+    if (model.includes('minimax') || model.includes('hailuo') || model.includes('director')) {
+      if (model.includes('hailuo 02') || model.includes('hailuo-02')) {
+        // Hailuo 02 supports 1080p and 768p
+        return [
+          { value: '768p', label: '768p (HD+)', description: 'Enhanced HD quality' },
+          { value: '1080p', label: '1080p (Full HD)', description: 'Full high definition' }
+        ]
+      } else {
+        // T2V-01-Director and I2V-01-Director support 720p only
+        return [
+          { value: '720p', label: '720p (HD)', description: 'High definition' }
+        ]
+      }
+    }
+
     // ByteDance Seedance Pro model supports only 480p and 1080p
     if (model.includes('pro') || model.includes('250528')) {
       return [
@@ -206,6 +237,16 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   // Check if the selected model supports image-to-video generation
   const supportsImageToVideo = () => {
     const model = selectedModel.toLowerCase()
+
+    // MiniMax models support image-to-video based on model type
+    if (model.includes('minimax') || model.includes('hailuo') || model.includes('director')) {
+      // T2V-01-Director does NOT support image-to-video (text-to-video only)
+      if (model.includes('t2v') || model.includes('t2v-01-director')) {
+        return false
+      }
+      // Hailuo 02 and I2V-01-Director support image-to-video
+      return true
+    }
 
     // Veo 3.0 Fast does NOT support image-to-video
     if (model.includes('veo 3.0 fast')) {
@@ -249,16 +290,22 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
         } else {
           setAiModels([
             { id: 'veo-001', name: 'Google Veo', description: 'Advanced video generation with text-to-video and image-to-video capabilities', isNew: false, tags: ['Video'], pricing_credits: 10 },
-            { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 }
+            { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 },
+            { id: 'hailuo-02', name: 'MiniMax Hailuo 02', description: 'SOTA instruction following with extreme physics mastery. Supports both text-to-video and image-to-video generation.', isNew: true, tags: ['Video'], pricing_credits: 12 },
+            { id: 't2v-01-director', name: 'T2V-01-Director', description: 'Enhanced precision shot control for text-to-video generation with cinematic quality.', isNew: false, tags: ['Video'], pricing_credits: 10 },
+            { id: 'i2v-01-director', name: 'I2V-01-Director', description: 'Enhanced precision shot control for image-to-video generation with cinematic quality.', isNew: false, tags: ['Video'], pricing_credits: 10 }
           ])
-          setSelectedModel('Google Veo 2')
+          setSelectedModel('MiniMax Hailuo 02')
         }
       } catch (error) {
         setAiModels([
           { id: 'veo-001', name: 'Google Veo', description: 'Advanced video generation with text-to-video and image-to-video capabilities', isNew: false, tags: ['Video'], pricing_credits: 10 },
-          { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 }
+          { id: 'veo-002', name: 'Google Veo 2', description: 'Latest Google video model with ultra-high-quality generation and frame-to-video support', isNew: true, tags: ['Video'], pricing_credits: 15 },
+          { id: 'hailuo-02', name: 'MiniMax Hailuo 02', description: 'SOTA instruction following with extreme physics mastery. Supports both text-to-video and image-to-video generation.', isNew: true, tags: ['Video'], pricing_credits: 12 },
+          { id: 't2v-01-director', name: 'T2V-01-Director', description: 'Enhanced precision shot control for text-to-video generation with cinematic quality.', isNew: false, tags: ['Video'], pricing_credits: 10 },
+          { id: 'i2v-01-director', name: 'I2V-01-Director', description: 'Enhanced precision shot control for image-to-video generation with cinematic quality.', isNew: false, tags: ['Video'], pricing_credits: 10 }
         ])
-        setSelectedModel('Google Veo 2')
+        setSelectedModel('MiniMax Hailuo 02')
       } finally {
         setIsLoadingModels(false)
       }
