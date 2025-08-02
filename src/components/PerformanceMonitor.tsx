@@ -2,134 +2,134 @@
 
 import { useEffect } from 'react'
 
+interface PerformanceMetrics {
+  fcp?: number // First Contentful Paint
+  lcp?: number // Largest Contentful Paint
+  fid?: number // First Input Delay
+  cls?: number // Cumulative Layout Shift
+  ttfb?: number // Time to First Byte
+}
+
 export default function PerformanceMonitor() {
   useEffect(() => {
-    // Only run in development
-    if (process.env.NODE_ENV !== 'development') return
+    if (typeof window === 'undefined') return
 
-    const measurePerformance = () => {
-      // Wait for page to be fully loaded
-      if (document.readyState === 'complete') {
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
-        
-        if (navigation) {
-          const metrics = {
-            'DNS Lookup': navigation.domainLookupEnd - navigation.domainLookupStart,
-            'TCP Connection': navigation.connectEnd - navigation.connectStart,
-            'Request': navigation.responseStart - navigation.requestStart,
-            'Response': navigation.responseEnd - navigation.responseStart,
-            'DOM Processing': navigation.domContentLoadedEventEnd - navigation.responseEnd,
-            'Load Complete': navigation.loadEventEnd - navigation.loadEventStart,
-            'Total Load Time': navigation.loadEventEnd - navigation.navigationStart,
-            'First Contentful Paint': 0,
-            'Largest Contentful Paint': 0
+    const metrics: PerformanceMetrics = {}
+
+    // Measure First Contentful Paint
+    const measureFCP = () => {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (entry.name === 'first-contentful-paint') {
+            metrics.fcp = entry.startTime
+            console.log('FCP:', entry.startTime)
           }
-
-          // Get paint metrics
-          const paintEntries = performance.getEntriesByType('paint')
-          paintEntries.forEach(entry => {
-            if (entry.name === 'first-contentful-paint') {
-              metrics['First Contentful Paint'] = entry.startTime
-            }
-          })
-
-          // Get LCP if available
-          if ('PerformanceObserver' in window) {
-            try {
-              const observer = new PerformanceObserver((list) => {
-                const entries = list.getEntries()
-                const lastEntry = entries[entries.length - 1]
-                if (lastEntry) {
-                  metrics['Largest Contentful Paint'] = lastEntry.startTime
-                  console.group('🚀 Landing Page Performance Metrics')
-                  Object.entries(metrics).forEach(([key, value]) => {
-                    const time = typeof value === 'number' ? Math.round(value) : value
-                    const color = time < 1000 ? 'green' : time < 2000 ? 'orange' : 'red'
-                    console.log(`%c${key}: ${time}ms`, `color: ${color}`)
-                  })
-                  console.groupEnd()
-                }
-              })
-              observer.observe({ entryTypes: ['largest-contentful-paint'] })
-            } catch (e) {
-              // LCP not supported
-            }
-          }
-
-          // Log basic metrics immediately
-          setTimeout(() => {
-            console.group('🚀 Landing Page Performance Metrics')
-            Object.entries(metrics).forEach(([key, value]) => {
-              if (value > 0) {
-                const time = Math.round(value)
-                const color = time < 1000 ? 'green' : time < 2000 ? 'orange' : 'red'
-                console.log(`%c${key}: ${time}ms`, `color: ${color}`)
-              }
-            })
-            console.groupEnd()
-
-            // Performance recommendations
-            const totalTime = metrics['Total Load Time']
-            if (totalTime > 3000) {
-              console.warn('⚠️ Page load time is over 3 seconds. Consider optimizing.')
-            } else if (totalTime > 1000) {
-              console.info('ℹ️ Page load time is good but could be improved.')
-            } else {
-              console.log('✅ Excellent page load time!')
-            }
-          }, 100)
         }
-      } else {
-        // Wait for load complete
-        window.addEventListener('load', measurePerformance, { once: true })
+      })
+      observer.observe({ entryTypes: ['paint'] })
+    }
+
+    // Measure Largest Contentful Paint
+    const measureLCP = () => {
+      const observer = new PerformanceObserver((list) => {
+        const entries = list.getEntries()
+        const lastEntry = entries[entries.length - 1]
+        metrics.lcp = lastEntry.startTime
+        console.log('LCP:', lastEntry.startTime)
+      })
+      observer.observe({ entryTypes: ['largest-contentful-paint'] })
+    }
+
+    // Measure First Input Delay
+    const measureFID = () => {
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          metrics.fid = (entry as any).processingStart - entry.startTime
+          console.log('FID:', metrics.fid)
+        }
+      })
+      observer.observe({ entryTypes: ['first-input'] })
+    }
+
+    // Measure Cumulative Layout Shift
+    const measureCLS = () => {
+      let clsValue = 0
+      const observer = new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (!(entry as any).hadRecentInput) {
+            clsValue += (entry as any).value
+          }
+        }
+        metrics.cls = clsValue
+        console.log('CLS:', clsValue)
+      })
+      observer.observe({ entryTypes: ['layout-shift'] })
+    }
+
+    // Measure Time to First Byte
+    const measureTTFB = () => {
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      if (navigation) {
+        metrics.ttfb = navigation.responseStart - navigation.requestStart
+        console.log('TTFB:', metrics.ttfb)
       }
     }
 
-    measurePerformance()
+    // Initialize measurements
+    if ('PerformanceObserver' in window) {
+      measureFCP()
+      measureLCP()
+      measureFID()
+      measureCLS()
+    }
+    measureTTFB()
+
+    // Log all metrics after page load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        console.log('Performance Metrics:', metrics)
+      }, 1000)
+    })
+
+    // Cleanup
+    return () => {
+      // Performance observers are automatically cleaned up
+    }
   }, [])
 
-  return null
+  return null // This component doesn't render anything
 }
 
-// Utility function to preload critical resources
-export const preloadCriticalResources = () => {
-  const criticalResources = [
-    { href: '/ainext-template/assets/img/main logo.svg', as: 'image' },
-    { href: '/ainext-template/assets/css/bootstrap.min.css', as: 'style' },
-    { href: '/ainext-template/assets/css/style.css', as: 'style' },
-    { href: '/ainext-template/assets/js/jquery.min.js', as: 'script' }
-  ]
+// Hook for performance monitoring
+export function usePerformanceMonitoring() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return
 
-  criticalResources.forEach(resource => {
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.href = resource.href
-    link.as = resource.as
-    if (resource.as === 'style') {
-      link.onload = () => {
-        link.rel = 'stylesheet'
+    const logResourceTiming = () => {
+      const resources = performance.getEntriesByType('resource')
+      const slowResources = resources.filter(resource => resource.duration > 1000)
+      
+      if (slowResources.length > 0) {
+        console.warn('Slow loading resources:', slowResources)
       }
     }
-    document.head.appendChild(link)
-  })
-}
 
-// Resource hints for better loading
-export const addResourceHints = () => {
-  const hints = [
-    { rel: 'dns-prefetch', href: '//fonts.googleapis.com' },
-    { rel: 'dns-prefetch', href: '//fonts.gstatic.com' },
-    { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-    { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: 'anonymous' }
-  ]
-
-  hints.forEach(hint => {
-    const link = document.createElement('link')
-    link.rel = hint.rel
-    link.href = hint.href
-    if (hint.crossorigin) {
-      link.crossOrigin = hint.crossorigin
+    const logNavigationTiming = () => {
+      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
+      if (navigation) {
+        console.log('Navigation Timing:', {
+          domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+          loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
+          totalTime: navigation.loadEventEnd - navigation.fetchStart
+        })
+      }
     }
-    document.head.appendChild(link)
-  })
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        logResourceTiming()
+        logNavigationTiming()
+      }, 1000)
+    })
+  }, [])
 }

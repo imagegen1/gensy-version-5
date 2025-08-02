@@ -1,155 +1,50 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { heroVideoConfig } from '@/config/hero-video'
 import { BeamsBackground } from '@/components/ui/beams-background'
-
-// Preload critical resources
-const preloadResources = () => {
-  // Preload critical CSS
-  const criticalCSS = [
-    '/ainext-template/assets/css/bootstrap.min.css',
-    '/ainext-template/assets/css/style.css',
-    '/ainext-template/assets/css/responsive.css'
-  ]
-
-  criticalCSS.forEach(href => {
-    const link = document.createElement('link')
-    link.rel = 'preload'
-    link.as = 'style'
-    link.href = href
-    document.head.appendChild(link)
-  })
-}
+import PerformanceMonitor from '@/components/PerformanceMonitor'
+import InteractiveSelector from '@/components/ui/interactive-selector'
+import {
+  loadCriticalResources,
+  loadNonCriticalResources,
+  runWhenIdle,
+  measurePerformance
+} from '@/lib/performance'
 
 export default function AiNextTemplate() {
   const { isSignedIn } = useAuth()
   const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
-  const [scriptsLoaded, setScriptsLoaded] = useState(false)
+  const [videoLoaded, setVideoLoaded] = useState(false)
 
-  // Optimized CSS loading with prioritization
-  const loadCSS = useCallback((href: string, priority: 'critical' | 'normal' = 'normal') => {
-    return new Promise<void>((resolve) => {
-      const link = document.createElement('link')
-      link.rel = 'stylesheet'
-      link.href = href
-      link.onload = () => resolve()
-      link.onerror = () => resolve() // Don't block on CSS errors
 
-      if (priority === 'critical') {
-        document.head.insertBefore(link, document.head.firstChild)
-      } else {
-        document.head.appendChild(link)
-      }
-    })
-  }, [])
-
-  // Optimized script loading with error handling
-  const loadScript = useCallback((src: string) => {
-    return new Promise<void>((resolve, reject) => {
-      // Check if script already exists
-      if (document.querySelector(`script[src="${src}"]`)) {
-        resolve()
-        return
-      }
-
-      const script = document.createElement('script')
-      script.src = src
-      script.async = true
-      script.onload = () => resolve()
-      script.onerror = () => {
-        console.warn(`Failed to load script: ${src}`)
-        resolve() // Don't block on script errors
-      }
-      document.body.appendChild(script)
-    })
-  }, [])
 
   useEffect(() => {
     let isMounted = true
 
     const initializePage = async () => {
       try {
-        // Preload resources immediately
-        preloadResources()
-
-        // Load critical CSS first (parallel)
-        const criticalCSSPromises = [
-          loadCSS('/ainext-template/assets/css/bootstrap.min.css', 'critical'),
-          loadCSS('/ainext-template/assets/css/style.css', 'critical'),
-          loadCSS('/ainext-template/assets/css/responsive.css', 'critical'),
-          loadCSS('/ainext-template/assets/css/remixicon.min.css', 'critical')
-        ]
-
-        await Promise.all(criticalCSSPromises)
+        // Load critical resources with performance measurement
+        measurePerformance('Critical Resources Loading', async () => {
+          await loadCriticalResources()
+        })
 
         if (!isMounted) return
 
         // Set initial load state
         setIsLoaded(true)
 
-        // Load non-critical CSS in background
-        const nonCriticalCSS = [
-          '/ainext-template/assets/css/owl.carousel.min.css',
-          '/ainext-template/assets/css/owl.theme.default.min.css',
-          '/ainext-template/assets/css/odometer.min.css',
-          '/ainext-template/assets/css/flaticon.css',
-          '/ainext-template/assets/css/aos.css'
-        ]
-
-        // Load non-critical CSS without blocking
-        nonCriticalCSS.forEach(href => {
-          requestIdleCallback(() => loadCSS(href))
+        // Load non-critical resources in the background
+        runWhenIdle(() => {
+          measurePerformance('Non-Critical Resources Loading', () => {
+            loadNonCriticalResources()
+          })
         })
 
-        // Load scripts with intelligent prioritization
-        const loadScriptsOptimized = async () => {
-          try {
-            // Load jQuery first (most critical)
-            await loadScript('/ainext-template/assets/js/jquery.min.js')
-
-            if (!isMounted) return
-
-            // Load Bootstrap (second priority)
-            await loadScript('/ainext-template/assets/js/bootstrap.bundle.min.js')
-
-            if (!isMounted) return
-
-            // Load other scripts in parallel (lower priority)
-            const scriptPromises = [
-              loadScript('/ainext-template/assets/js/aos.js'),
-              loadScript('/ainext-template/assets/js/appear.min.js'),
-              loadScript('/ainext-template/assets/js/odometer.min.js'),
-              loadScript('/ainext-template/assets/js/owl.carousel.min.js')
-            ]
-
-            await Promise.allSettled(scriptPromises)
-
-            if (!isMounted) return
-
-            // Load main script last
-            await loadScript('/ainext-template/assets/js/ainext.js')
-
-            if (isMounted) {
-              setScriptsLoaded(true)
-            }
-          } catch (error) {
-            console.warn('Some scripts failed to load:', error)
-            if (isMounted) {
-              setScriptsLoaded(true) // Don't block the UI
-            }
-          }
-        }
-
-        // Use requestIdleCallback for non-critical script loading
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(() => loadScriptsOptimized())
-        } else {
-          setTimeout(loadScriptsOptimized, 100)
-        }
+        // Resources loaded successfully
 
       } catch (error) {
         console.error('Error initializing page:', error)
@@ -166,24 +61,9 @@ export default function AiNextTemplate() {
     }
   }, [])
 
-  // Initialize performance optimizations
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Initialize performance optimizations after component mounts
-      const initPerformance = async () => {
-        try {
-          const { initializePerformanceOptimizations } = await import('@/lib/performance')
-          initializePerformanceOptimizations()
-        } catch (error) {
-          console.warn('Performance optimizations failed to load:', error)
-        }
-      }
-      initPerformance()
-    }
-  }, [])
-
   return (
     <div className={`landing-page ${isLoaded ? 'loaded' : 'loading'}`}>
+      <PerformanceMonitor />
       <style dangerouslySetInnerHTML={{
         __html: `
           .landing-page.loading {
@@ -197,11 +77,23 @@ export default function AiNextTemplate() {
             transition: all 0.6s ease;
           }
 
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+
           @media (min-width: 992px) {
             .navbar-collapse {
               display: flex !important;
               visibility: visible !important;
             }
+          }
+
+          /* Hide team carousel elements */
+          .team-area,
+          .image-courser,
+          .courser-item {
+            display: none !important;
           }
 
           .gradient-signin-button {
@@ -366,13 +258,13 @@ export default function AiNextTemplate() {
                 ) : (
                   <div className="d-flex gap-3 align-items-center">
                     <button
-                      onClick={() => router.push('/auth/sign-in')}
+                      onClick={() => router.push('/auth/sign-in' as any)}
                       className="gradient-signin-button"
                     >
                       Sign In
                     </button>
                     <button
-                      onClick={() => router.push('/auth/sign-up')}
+                      onClick={() => router.push('/auth/sign-up' as any)}
                       className="default-btn"
                     >
                       Sign Up
@@ -439,14 +331,14 @@ export default function AiNextTemplate() {
                 ) : (
                   <div className="d-flex flex-column gap-2">
                     <button
-                      onClick={() => router.push('/auth/sign-in')}
+                      onClick={() => router.push('/auth/sign-in' as any)}
                       className="gradient-signin-button w-100"
                       style={{ width: '100%' }}
                     >
                       Sign In
                     </button>
                     <button
-                      onClick={() => router.push('/auth/sign-up')}
+                      onClick={() => router.push('/auth/sign-up' as any)}
                       className="default-btn w-100"
                     >
                       <i className="ri-arrow-right-line"></i>
@@ -462,34 +354,78 @@ export default function AiNextTemplate() {
 
         {/* Start Video Hero Section */}
         <div className="video-hero-section">
-          <div className="video-container">
+          <div className="video-container" style={{
+            background: videoLoaded ? 'transparent' : '#050913',
+            position: 'relative'
+          }}>
+            {/* Video loading overlay */}
+            {!videoLoaded && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #050913 0%, #1a1a2e 50%, #16213e 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 2
+              }}>
+                <div style={{
+                  color: 'white',
+                  textAlign: 'center',
+                  opacity: 0.7
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    border: '3px solid rgba(255,255,255,0.3)',
+                    borderTop: '3px solid white',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                    margin: '0 auto 16px'
+                  }}></div>
+                  <div style={{ fontSize: '16px', fontWeight: '500' }}>Loading video...</div>
+                </div>
+              </div>
+            )}
+
             <video
               autoPlay
               muted
               loop
               playsInline
               className="hero-video"
-              poster={heroVideoConfig.fallbackImage}
               preload="auto"
-              onLoadStart={() => console.log('🎬 Video loading started:', heroVideoConfig.videoSrc)}
-              onCanPlay={() => console.log('✅ Video can play')}
+              style={{
+                opacity: videoLoaded ? 1 : 0,
+                transition: 'opacity 0.5s ease'
+              }}
+              onLoadStart={() => {
+                console.log('🎬 Video loading started:', heroVideoConfig.videoSrc)
+                setVideoLoaded(false)
+              }}
+              onCanPlay={() => {
+                console.log('✅ Video can play')
+                setVideoLoaded(true)
+              }}
               onPlay={() => console.log('▶️ Video started playing')}
               onError={(e) => {
                 console.error('❌ Video error:', e);
-                console.log('🔄 Falling back to background image');
-                // Fallback to background image if video fails to load
+                console.log('🔄 Falling back to gradient background');
+                setVideoLoaded(true) // Hide loading overlay even on error
+                // Fallback to gradient background if video fails to load
                 const videoElement = e.target as HTMLVideoElement;
                 videoElement.style.display = 'none';
                 const container = videoElement.parentElement;
                 if (container) {
-                  container.style.backgroundImage = `url(${heroVideoConfig.fallbackImage})`;
-                  container.style.backgroundSize = 'cover';
-                  container.style.backgroundPosition = 'center';
-                  container.style.backgroundRepeat = 'no-repeat';
+                  container.style.background = 'linear-gradient(135deg, #050913 0%, #1a1a2e 50%, #16213e 100%)';
                 }
               }}
               onLoadedData={() => {
                 console.log('📊 Video data loaded');
+                setVideoLoaded(true)
                 // Force play if autoplay didn't work
                 const video = document.querySelector('.hero-video') as HTMLVideoElement;
                 if (video && video.paused) {
@@ -863,84 +799,89 @@ export default function AiNextTemplate() {
         </div>
         {/* End Brands Area */}
 
-        {/* Start Team Area */}
-        <div className="team-area pt-100">
+        {/* Start Interactive Selector Section */}
+        <div className="w-full h-min-screen">
+          <InteractiveSelector />
+        </div>
+        {/* End Interactive Selector Section */}
+
+        {/* Start Features Section */}
+        <div className="features-section ptb-100 bg-light">
           <div className="container">
-            <div className="image-courser owl-carousel owl-theme" data-aos="fade-up" data-aos-duration="1500">
-              <div className="courser-item">
-                <div className="image-item">
-                  <img src="/ainext-template/assets/img/about-image-1.jpg" alt="image" />
-                  <div className="hover-content">
-                    <h4>Christian Haol</h4>
-                    <p>Web Developer</p>
-                    <ul>
-                      <li><a href="#"><i className="ri-facebook-fill"></i></a></li>
-                      <li><a href="#"><i className="ri-instagram-line"></i></a></li>
-                      <li><a href="#"><i className="ri-linkedin-fill"></i></a></li>
-                    </ul>
-                  </div>
+            <div className="row">
+              <div className="col-lg-12">
+                <div className="section-title text-center mb-5">
+                  <div className="sub-t">Why Choose Gensy</div>
+                  <h2>Powerful Features for Creative Professionals</h2>
+                  <p>Discover the advanced capabilities that make Gensy the ultimate AI creative platform</p>
                 </div>
               </div>
-              <div className="courser-item">
-                <div className="image-item">
-                  <img src="/ainext-template/assets/img/about-image-2.jpg" alt="image" />
-                  <div className="hover-content">
-                    <h4>Christian Haol</h4>
-                    <p>Web Developer</p>
-                    <ul>
-                      <li><a href="#"><i className="ri-facebook-fill"></i></a></li>
-                      <li><a href="#"><i className="ri-instagram-line"></i></a></li>
-                      <li><a href="#"><i className="ri-linkedin-fill"></i></a></li>
-                    </ul>
+            </div>
+
+            <div className="row">
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1500">
+                  <div className="icon mb-3">
+                    <i className="ri-rocket-line" style={{fontSize: '40px', color: '#667eea'}}></i>
                   </div>
+                  <h4 className="mb-3">Lightning Fast</h4>
+                  <p>Generate high-quality content in seconds with our optimized AI infrastructure and cutting-edge models.</p>
                 </div>
               </div>
-              <div className="courser-item">
-                <div className="image-item">
-                  <img src="/ainext-template/assets/img/about-image-3.jpg" alt="image" />
-                  <div className="hover-content">
-                    <h4>Christian Haol</h4>
-                    <p>Web Developer</p>
-                    <ul>
-                      <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                      <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                      <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                    </ul>
+
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1700">
+                  <div className="icon mb-3">
+                    <i className="ri-shield-check-line" style={{fontSize: '40px', color: '#667eea'}}></i>
                   </div>
+                  <h4 className="mb-3">Enterprise Security</h4>
+                  <p>Your data is protected with enterprise-grade security, encryption, and privacy controls you can trust.</p>
                 </div>
               </div>
-              <div className="courser-item">
-                <div className="image-item">
-                  <img src="/ainext-template/assets/img/about-image-4.jpg" alt="image" />
-                  <div className="hover-content">
-                    <h4>Christian Haol</h4>
-                    <p>Web Developer</p>
-                    <ul>
-                      <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                      <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                      <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                    </ul>
+
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1900">
+                  <div className="icon mb-3">
+                    <i className="ri-palette-line" style={{fontSize: '40px', color: '#667eea'}}></i>
                   </div>
+                  <h4 className="mb-3">Multiple AI Models</h4>
+                  <p>Access 15+ cutting-edge AI models including Flux, Imagen, DALL-E, ByteDance Seeded, and Google Veo.</p>
                 </div>
               </div>
-              <div className="courser-item">
-                <div className="image-item">
-                  <img src="/ainext-template/assets/img/about-image-5.jpg" alt="image" />
-                  <div className="hover-content">
-                    <h4>Christian Haol</h4>
-                    <p>Web Developer</p>
-                    <ul>
-                      <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                      <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                      <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                    </ul>
+
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2100">
+                  <div className="icon mb-3">
+                    <i className="ri-download-cloud-line" style={{fontSize: '40px', color: '#667eea'}}></i>
                   </div>
+                  <h4 className="mb-3">Easy Export</h4>
+                  <p>Download your creations in multiple formats with dynamic naming and organize your creative library.</p>
+                </div>
+              </div>
+
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2300">
+                  <div className="icon mb-3">
+                    <i className="ri-team-line" style={{fontSize: '40px', color: '#667eea'}}></i>
+                  </div>
+                  <h4 className="mb-3">Team Collaboration</h4>
+                  <p>Work together with your team, share projects, and manage creative workflows seamlessly.</p>
+                </div>
+              </div>
+
+              <div className="col-lg-4 col-md-6 mb-4">
+                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2500">
+                  <div className="icon mb-3">
+                    <i className="ri-settings-3-line" style={{fontSize: '40px', color: '#667eea'}}></i>
+                  </div>
+                  <h4 className="mb-3">Advanced Controls</h4>
+                  <p>Fine-tune your generations with advanced parameters, styles, and quality settings for perfect results.</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        {/* End Team Area */}
+        {/* End Features Section */}
 
         {/* Start Gallery Area */}
         <div className="gallery-area ptb-100">

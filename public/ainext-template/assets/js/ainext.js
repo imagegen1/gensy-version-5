@@ -44,39 +44,39 @@
 			});
 		}
 
-		// Team Slides
-		if ($.fn.owlCarousel && $('.image-courser').length) {
-			$('.image-courser').owlCarousel({
-		nav: true,
-		loop: true,
-		dots: false,
-		margin: 30,
-		autoplay: true,
-		autoplayTimeout: 2000,
-		autoplayHoverPause: true,
-		navText: [
-			"<i class='fi fi-tr-angle-small-left'></i>",
-			"<i class='fi fi-tr-angle-small-right'></i>"
-		],
-		responsive: {
-			0: {
-				items: 1
-			},
-			576: {
-				items: 2
-			},
-			768: {
-				items: 2
-			},
-			992: {
-				items: 3
-			},
-			1200: {
-				items: 3
-			}
-		}
-		});
-	}
+		// Team Slides - DISABLED to remove team carousel
+		// if ($.fn.owlCarousel && $('.image-courser').length) {
+		// 	$('.image-courser').owlCarousel({
+		// nav: true,
+		// loop: true,
+		// dots: false,
+		// margin: 30,
+		// autoplay: true,
+		// autoplayTimeout: 2000,
+		// autoplayHoverPause: true,
+		// navText: [
+		// 	"<i class='fi fi-tr-angle-small-left'></i>",
+		// 	"<i class='fi fi-tr-angle-small-right'></i>"
+		// ],
+		// responsive: {
+		// 	0: {
+		// 		items: 1
+		// 	},
+		// 	576: {
+		// 		items: 2
+		// 	},
+		// 	768: {
+		// 		items: 2
+		// 	},
+		// 	992: {
+		// 		items: 3
+		// 	},
+		// 	1200: {
+		// 		items: 3
+		// 	}
+		// }
+		// });
+	// }
 
 	// Gallery Filtering
     $(document).on('click', '.item-list', function() {

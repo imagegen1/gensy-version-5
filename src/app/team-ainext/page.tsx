@@ -2,13 +2,13 @@ import { Metadata } from 'next'
 import BootstrapLayout from '../landing-page-2/BootstrapLayout'
 
 export const metadata: Metadata = {
-  title: 'Our Team - AiNext',
-  description: 'Meet the talented team behind AiNext AI solutions.',
+  title: 'Our Team - Gensy',
+  description: 'Meet the talented team behind Gensy AI solutions.',
 }
 
 export default function TeamPage() {
   return (
-    <BootstrapLayout title="Our Team - AiNext" currentPage="team">
+    <BootstrapLayout title="Our Team - Gensy" currentPage="team">
       {/* Start Section Banner */}
       <div className="section-banner">
         <div className="container">

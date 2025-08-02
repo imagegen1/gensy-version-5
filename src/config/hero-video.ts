@@ -13,7 +13,8 @@ export const heroVideoConfig: HeroVideoConfig = {
   videoSrc: "/videos/hailuo-ai-video-02.mp4.mp4",
   title: "AiNext Video Generation",
   subtitle: "Experience the future of AI-powered video creation with cutting-edge technology",
-  fallbackImage: "/ainext-template/assets/img/bg.jpg"
+  // Removed fallbackImage to prevent placeholder from showing
+  // fallbackImage: "/ainext-template/assets/img/bg.jpg"
 };
 
 // Instructions for changing the hero video:

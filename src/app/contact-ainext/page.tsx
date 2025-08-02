@@ -2,13 +2,13 @@ import { Metadata } from 'next'
 import BootstrapLayout from '../landing-page-2/BootstrapLayout'
 
 export const metadata: Metadata = {
-  title: 'Contact Us - AiNext',
+  title: 'Contact Us - Gensy',
   description: 'Get in touch with our team for support, partnerships, or inquiries.',
 }
 
 export default function ContactPage() {
   return (
-    <BootstrapLayout title="Contact Us - AiNext" currentPage="contact">
+    <BootstrapLayout title="Contact Us - Gensy" currentPage="contact">
       {/* Start Section Banner */}
       <div className="section-banner">
         <div className="container">

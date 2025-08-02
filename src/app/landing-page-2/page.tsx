@@ -1,17 +1,14 @@
 import { Metadata } from 'next'
-import AiNextTemplate from './AiNextTemplate'
+import ClientWrapper from './ClientWrapper'
 
 export const metadata: Metadata = {
-  title: 'Gensy - AI Image & Video Generation Platform',
-  description: 'Create production-quality visual assets for your projects with unprecedented quality, speed, and style-consistency using advanced AI models.',
-  keywords: 'AI image generation, AI video generation, Gensy, artificial intelligence, creative tools',
-  openGraph: {
-    title: 'Gensy - AI Image & Video Generation Platform',
-    description: 'Create production-quality visual assets with AI',
-    type: 'website',
-  }
+  title: 'Gensy - AI Creative Suite',
+  description: 'Create production-quality visual assets for your projects with unprecedented quality, speed, and style-consistency.',
+  other: {
+    'color-scheme': 'dark'
+  },
 }
 
 export default function LandingPage2() {
-  return <AiNextTemplate />
+  return <ClientWrapper />
 }

@@ -2,13 +2,13 @@ import { Metadata } from 'next'
 import BootstrapLayout from '../landing-page-2/BootstrapLayout'
 
 export const metadata: Metadata = {
-  title: '404 - Page Not Found | AiNext',
+  title: '404 - Page Not Found | Gensy',
   description: 'The page you are looking for could not be found.',
 }
 
 export default function NotFoundPage() {
   return (
-    <BootstrapLayout title="404 - Page Not Found | AiNext" currentPage="404">
+    <BootstrapLayout title="404 - Page Not Found | Gensy" currentPage="404">
       {/* Start Section Banner */}
       <div className="section-banner">
         <div className="container">
