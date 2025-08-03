@@ -135,9 +135,10 @@ export function VideoGenerator() {
         return
       }
 
-      // Only require gcsOutputDirectory for non-ByteDance providers
-      if (!gcsOutputDirectory && provider !== 'bytedance') {
-        console.error('❌ [FRONTEND] Missing gcsOutputDirectory for polling')
+      // Only require gcsOutputDirectory for Google Veo providers
+      // ByteDance and MiniMax use different storage (Cloudflare R2)
+      if (!gcsOutputDirectory && provider === 'google-veo') {
+        console.error('❌ [FRONTEND] Missing gcsOutputDirectory for Google Veo polling')
         return
       }
 
@@ -209,10 +210,10 @@ export function VideoGenerator() {
         })
 
         // Set the polling trigger with all necessary data
-        // Only set gcsOutputDirectory for Google providers, not ByteDance
+        // Only set gcsOutputDirectory for Google Veo providers - ByteDance and MiniMax use different storage
         setPollingTrigger({
           generationId: data.generationId,
-          gcsOutputDirectory: data.provider === 'bytedance' ? undefined : (data.gcsOutputDirectory || `gs://gensy-final/video-outputs/${data.generationId}`),
+          gcsOutputDirectory: data.provider === 'google-veo' ? (data.gcsOutputDirectory || `gs://gensy-final/video-outputs/${data.generationId}`) : undefined,
           provider: data.provider,
           taskId: data.taskId,
           operationName: data.operationName, // Add operation name for enhanced polling
@@ -259,9 +260,10 @@ export function VideoGenerator() {
       return
     }
 
-    // Only require gcsOutputDirectory for non-ByteDance providers
-    if (!gcsOutputDirectory && provider !== 'bytedance') {
-      console.error(`❌ [${pollingId}] FRONTEND: Cannot start polling - missing gcsOutputDirectory`)
+    // Only require gcsOutputDirectory for Google Veo providers
+    // ByteDance and MiniMax use different storage (Cloudflare R2)
+    if (!gcsOutputDirectory && provider === 'google-veo') {
+      console.error(`❌ [${pollingId}] FRONTEND: Cannot start polling - missing gcsOutputDirectory for Google Veo`)
       return
     }
 

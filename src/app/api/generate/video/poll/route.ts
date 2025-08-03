@@ -381,141 +381,59 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Handle MiniMax polling
-    if (provider === 'minimax' && taskId) {
-      console.log(`🎬 [${requestId}] MINIMAX POLL: Checking MiniMax task status...`)
+    // Handle MiniMax polling - FIXED: Only check database status, don't re-process video
+    if (provider === 'minimax') {
+      console.log(`🎬 [${requestId}] MINIMAX POLL: Checking database for generation status...`)
 
       try {
-        // Check task status using MiniMax API
-        const response = await fetch(`https://api.minimax.io/v1/query/video_generation?task_id=${taskId}`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${process.env.MINIMAX_API_KEY}`,
-            'Cache-Control': 'no-cache'
-          },
-          signal: AbortSignal.timeout(30000) // 30 second timeout
-        })
+        // Get generation record from database
+        const supabase = createServiceRoleClient()
+        const { data: generation, error: fetchError } = await supabase
+          .from('generations')
+          .select('status, result_url, completed_at')
+          .eq('id', generationId)
+          .single()
 
-        if (!response.ok) {
-          console.error(`❌ [${requestId}] MINIMAX POLL: API request failed:`, response.status)
+        if (fetchError) {
+          console.error(`❌ [${requestId}] MINIMAX POLL: Failed to fetch generation:`, fetchError)
           return NextResponse.json({
             success: false,
             status: 'failed',
-            error: `MiniMax API request failed: ${response.status}`
+            error: 'Failed to fetch generation record'
           }, { status: 500 })
         }
 
-        const result = await response.json()
-        console.log(`📊 [${requestId}] MINIMAX POLL: Task status:`, result.status)
+        if (!generation) {
+          console.error(`❌ [${requestId}] MINIMAX POLL: Generation not found`)
+          return NextResponse.json({
+            success: false,
+            status: 'failed',
+            error: 'Generation not found'
+          }, { status: 404 })
+        }
 
-        if (result.status === 'Success' && result.file_id) {
-          console.log(`✅ [${requestId}] MINIMAX POLL: Task completed! Downloading and uploading to R2...`)
+        console.log(`📊 [${requestId}] MINIMAX POLL: Generation status: ${generation.status}`)
 
-          // Get generation record to retrieve model information
-          const supabase = createServiceRoleClient()
-          const { data: generation } = await supabase
-            .from('generations')
-            .select('model')
-            .eq('id', generationId)
-            .single()
-
-          const model = generation?.model || 'MiniMax-Hailuo-02'
-
-          // Download video from MiniMax and upload to Cloudflare R2
-          const downloadUrl = `https://api.minimax.io/v1/files/retrieve?file_id=${result.file_id}`
-          const downloadResponse = await fetch(downloadUrl, {
-            headers: {
-              'Authorization': `Bearer ${process.env.MINIMAX_API_KEY}`
-            }
+        // Return the current status from database
+        if (generation.status === 'completed' && generation.result_url) {
+          console.log(`✅ [${requestId}] MINIMAX POLL: Generation completed! URL: ${generation.result_url}`)
+          return NextResponse.json({
+            success: true,
+            status: 'completed',
+            generationId,
+            videoUrl: generation.result_url,
+            message: 'MiniMax video generation completed successfully!'
           })
-
-          if (!downloadResponse.ok) {
-            console.error(`❌ [${requestId}] MINIMAX POLL: Failed to download video:`, downloadResponse.status)
-            return NextResponse.json({
-              success: false,
-              status: 'failed',
-              error: 'Failed to download video from MiniMax'
-            }, { status: 500 })
-          }
-
-          const videoBuffer = await downloadResponse.arrayBuffer()
-
-          // Upload to Cloudflare R2
-          const { uploadFile } = await import('@/lib/storage/r2-client')
-          const uploadKey = `videos/${generationId}/${Date.now()}_minimax_video.mp4`
-
-          try {
-            const uploadResult = await uploadFile({
-              key: uploadKey,
-              file: Buffer.from(videoBuffer),
-              contentType: 'video/mp4',
-              isPublic: true
-            })
-
-            if (uploadResult.success && uploadResult.url) {
-              console.log(`✅ [${requestId}] MINIMAX POLL: Video uploaded to R2:`, uploadResult.url)
-
-              // Update generation record with video URL
-              const { error: updateError } = await supabase
-                .from('generations')
-                .update({
-                  status: 'completed',
-                  result_url: uploadResult.url, // Use result_url field that video proxy expects
-                  completed_at: new Date().toISOString()
-                })
-                .eq('id', generationId)
-
-              if (updateError) {
-                console.error(`❌ [${requestId}] MINIMAX POLL: Failed to update generation record:`, updateError)
-              }
-
-              return NextResponse.json({
-                success: true,
-                status: 'completed',
-                generationId,
-                videoUrl: uploadResult.url,
-                message: 'Video generation completed successfully!'
-              })
-            } else {
-              console.error(`❌ [${requestId}] MINIMAX POLL: R2 upload failed:`, uploadResult.error)
-              // Return original MiniMax URL as fallback
-              return NextResponse.json({
-                success: true,
-                status: 'completed',
-                generationId,
-                videoUrl: downloadUrl,
-                message: 'Video generation completed (using original URL)'
-              })
-            }
-          } catch (uploadError) {
-            console.error(`❌ [${requestId}] MINIMAX POLL: R2 upload error:`, uploadError)
-            // Return original MiniMax URL as fallback
-            return NextResponse.json({
-              success: true,
-              status: 'completed',
-              generationId,
-              videoUrl: downloadUrl,
-              message: 'Video generation completed (using original URL)'
-            })
-          }
-
-        } else if (result.status === 'Fail') {
-          console.error(`❌ [${requestId}] MINIMAX POLL: Task failed`)
+        } else if (generation.status === 'failed') {
+          console.error(`❌ [${requestId}] MINIMAX POLL: Generation failed`)
           return NextResponse.json({
             success: false,
             status: 'failed',
             error: 'MiniMax video generation failed'
           }, { status: 500 })
-        } else if (result.status === 'Preparing' || result.status === 'Queueing' || result.status === 'Processing') {
-          console.log(`⏳ [${requestId}] MINIMAX POLL: Task status: ${result.status}`)
-          return NextResponse.json({
-            success: true,
-            status: 'processing',
-            generationId,
-            message: 'MiniMax video generation in progress...'
-          })
         } else {
-          console.warn(`⚠️ [${requestId}] MINIMAX POLL: Unknown status: ${result.status}`)
+          // Status is 'processing' or other intermediate state
+          console.log(`⏳ [${requestId}] MINIMAX POLL: Generation still processing...`)
           return NextResponse.json({
             success: true,
             status: 'processing',
@@ -535,7 +453,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle Google Veo polling with operation status checking
-    if (provider === 'google-veo' || !provider) {
+    // CRITICAL FIX: Only handle Google Veo requests, never MiniMax requests
+    if (provider === 'google-veo') {
       console.log(`🔍 [${requestId}] GOOGLE VEO POLL: Starting enhanced polling with operation status checking`)
 
       // First, check operation status if we have an operation name
@@ -733,6 +652,16 @@ export async function POST(request: NextRequest) {
       })
     }
     } // Close Google Veo polling section
+
+    // CRITICAL FIX: If we reach here, it means an unknown provider or missing provider
+    // Return processing status instead of trying to handle it
+    console.log(`⚠️ [${requestId}] POLL: Unknown or missing provider: ${provider}`)
+    return NextResponse.json({
+      success: true,
+      status: 'processing',
+      generationId,
+      message: 'Video generation in progress...'
+    })
 
   } catch (error) {
     console.error(`❌ [${requestId}] GCS POLL: Critical error:`, error)

@@ -22,7 +22,7 @@ const videoGenerationSchema = z.object({
   aspectRatio: z.enum(['16:9', '9:16', '1:1']).default('16:9'), // Support for ByteDance 1:1 ratio
   style: z.enum(['realistic', 'artistic', 'cartoon', 'cinematic', 'documentary']).default('realistic'),
   quality: z.enum(['standard', 'high', 'ultra']).default('standard'),
-  resolution: z.enum(['480p', '720p', '1080p']).default('720p'),
+  resolution: z.enum(['480p', '512p', '720p', '768p', '1080p']).default('720p'),
   provider: z.enum(['google-veo', 'replicate-wan', 'bytedance', 'minimax']).default('google-veo'),
   motionIntensity: z.enum(['low', 'medium', 'high']).default('medium'),
   frameRate: z.number().min(24).max(60).default(24),
@@ -640,6 +640,36 @@ export async function POST(request: NextRequest) {
         })
       }
 
+      // Handle completed MiniMax result with videoUrl
+      if (result.status === 'completed' && result.videoUrl && !result.videoData && !result.videoUrls) {
+        console.log(`✅ [${requestId}] VIDEO GENERATION: MiniMax completed with videoUrl: ${result.videoUrl}`)
+
+        const supabase = createServiceRoleClient()
+
+        // Update generation record with video URL
+        await supabase
+          .from('generations')
+          .update({
+            status: 'completed',
+            result_url: result.videoUrl, // Store R2 URL directly
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', generation.id)
+
+        console.log(`✅ [${requestId}] VIDEO GENERATION: Database updated with MiniMax result`)
+
+        return NextResponse.json({
+          success: true,
+          generationId: generation.id,
+          status: 'completed',
+          videoUrl: result.videoUrl,
+          metadata: result.metadata,
+          creditsUsed: creditCost,
+          remainingCredits: currentCredits - creditCost
+        })
+      }
+
       // Handle async processing (operation submitted to Veo API or ByteDance)
       if (result.operationName || result.jobId || result.taskId) {
         console.log(`🔄 [${requestId}] VIDEO GENERATION: Async processing detected - operationName: ${result.operationName}, jobId: ${result.jobId}, taskId: ${result.taskId}`)
@@ -678,8 +708,8 @@ export async function POST(request: NextRequest) {
           operationName: result.operationName,
           jobId: result.jobId,
           taskId: result.taskId, // Add ByteDance task ID
-          // Only include GCS output directory for Google providers, not ByteDance
-          ...(finalProvider !== 'bytedance' && result.gcsOutputDirectory && {
+          // Only include GCS output directory for Google providers, not ByteDance or MiniMax (they use Cloudflare R2)
+          ...(finalProvider === 'google-veo' && result.gcsOutputDirectory && {
             gcsOutputDirectory: result.gcsOutputDirectory
           }),
           provider: finalProvider, // Add provider for frontend polling logic

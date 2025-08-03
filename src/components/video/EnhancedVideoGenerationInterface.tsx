@@ -207,10 +207,11 @@ export function EnhancedVideoGenerationInterface({ preloadedImageData }: Enhance
   const getAvailableResolutions = () => {
     const model = selectedModel.toLowerCase()
 
-    // MiniMax Hailuo 02 supports 512p, 768p, and 1080p (backend expects lowercase)
+    // MiniMax Hailuo 02 supports different resolutions for text-to-video vs image-to-video
     if (model.includes('minimax-hailuo-02') || model.includes('hailuo 02')) {
+      // 512p is only supported for image-to-video (when first_frame_image is provided)
+      // For text-to-video, use 768p and 1080p only
       return [
-        { value: '512p', label: '512p (Standard)', description: 'Standard quality - supports 6s & 10s' },
         { value: '768p', label: '768p (HD)', description: 'High definition - supports 6s & 10s' },
         { value: '1080p', label: '1080p (Full HD)', description: 'Full HD - supports 6s only' }
       ]

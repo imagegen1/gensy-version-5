@@ -10,19 +10,54 @@ export async function POST(request: NextRequest) {
   const requestId = `fix_gen_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   
   try {
-    const { generationId, resultUrl } = await request.json()
-    
-    if (!generationId || !resultUrl) {
+    const { generationId, resultUrl, action } = await request.json()
+
+    if (!generationId) {
       return NextResponse.json({
         success: false,
-        error: 'generationId and resultUrl are required'
+        error: 'generationId is required'
       }, { status: 400 })
     }
     
-    console.log(`🔧 [${requestId}] FIX GENERATION: Updating ${generationId} with ${resultUrl}`)
-    
     const supabase = createServiceRoleClient()
-    
+
+    // Handle different actions
+    if (action === 'delete_corrupted') {
+      console.log(`🗑️ [${requestId}] FIX GENERATION: Deleting corrupted generation ${generationId}`)
+
+      // Delete corrupted generation
+      const { error: deleteError } = await supabase
+        .from('generations')
+        .delete()
+        .eq('id', generationId)
+
+      if (deleteError) {
+        console.error(`❌ [${requestId}] Failed to delete generation:`, deleteError)
+        return NextResponse.json({
+          success: false,
+          error: deleteError.message
+        }, { status: 500 })
+      }
+
+      console.log(`✅ [${requestId}] Corrupted generation deleted successfully`)
+
+      return NextResponse.json({
+        success: true,
+        message: 'Corrupted generation deleted successfully',
+        generationId
+      })
+    }
+
+    // Default action: update generation
+    if (!resultUrl) {
+      return NextResponse.json({
+        success: false,
+        error: 'resultUrl is required for update action'
+      }, { status: 400 })
+    }
+
+    console.log(`🔧 [${requestId}] FIX GENERATION: Updating ${generationId} with ${resultUrl}`)
+
     // Update the generation record
     const { error: updateError } = await supabase
       .from('generations')

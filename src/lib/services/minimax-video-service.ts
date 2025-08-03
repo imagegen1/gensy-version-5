@@ -53,7 +53,7 @@ const MINIMAX_MODELS = {
     name: 'MiniMax Hailuo 02',
     description: 'Latest MiniMax video generation model with SOTA instruction following and extreme physics mastery',
     capabilities: ['text-to-video', 'image-to-video'],
-    resolutions: ['512p', '768p', '1080p'],
+    resolutions: ['768p', '1080p'], // 768p and 1080p work for text-to-video, 512p only for image-to-video
     durations: [6, 10],
     frameRate: 24,
     aspectRatios: ['16:9', '9:16', '1:1'],
@@ -62,7 +62,7 @@ const MINIMAX_MODELS = {
     resolutionConstraints: {
       '1080p': [6], // 1080p only supports 6s
       '768p': [6, 10], // 768p supports both 6s and 10s
-      '512p': [6, 10]  // 512p supports both 6s and 10s
+      '512p': [6, 10]  // 512p supports both 6s and 10s (image-to-video only)
     }
   },
   'T2V-01-Director': {
@@ -238,9 +238,20 @@ export class MinimaxVideoService {
         finalOptions.duration = modelConfig.durations[0]
       }
 
-      if (!modelConfig.resolutions.includes(finalOptions.resolution)) {
-        console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Resolution ${finalOptions.resolution} not supported by ${selectedModel}, using ${modelConfig.resolutions[0]}`)
-        finalOptions.resolution = modelConfig.resolutions[0]
+      // For resolution validation, allow 512p only for image-to-video, otherwise use 768p/1080p
+      if (sourceType === 'image-to-video') {
+        // Image-to-video supports 512p, 768p, and 1080p
+        const imageToVideoResolutions = ['512p', '768p', '1080p']
+        if (!imageToVideoResolutions.includes(finalOptions.resolution)) {
+          console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Resolution ${finalOptions.resolution} not supported for image-to-video, using 768p`)
+          finalOptions.resolution = '768p'
+        }
+      } else {
+        // Text-to-video only supports 768p and 1080p (not 512p)
+        if (!modelConfig.resolutions.includes(finalOptions.resolution)) {
+          console.warn(`⚠️ [${minimaxRequestId}] MINIMAX VIDEO: Resolution ${finalOptions.resolution} not supported for text-to-video, using ${modelConfig.resolutions[0]}`)
+          finalOptions.resolution = modelConfig.resolutions[0]
+        }
       }
 
       // Create video generation task
