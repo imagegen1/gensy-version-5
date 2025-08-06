@@ -7,6 +7,7 @@ import { heroVideoConfig } from '@/config/hero-video'
 import { BeamsBackground } from '@/components/ui/beams-background'
 import PerformanceMonitor from '@/components/PerformanceMonitor'
 import InteractiveSelector from '@/components/ui/interactive-selector'
+import { DemoOne } from '@/components/features/DemoOne'
 import {
   loadCriticalResources,
   loadNonCriticalResources,
@@ -403,7 +404,7 @@ export default function AiNextTemplate() {
                 transition: 'opacity 0.5s ease'
               }}
               onLoadStart={() => {
-                console.log('🎬 Video loading started:', heroVideoConfig.videoSrc)
+                console.log('🎬 Video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
                 setVideoLoaded(false)
               }}
               onCanPlay={() => {
@@ -433,8 +434,9 @@ export default function AiNextTemplate() {
                 }
               }}
             >
-              <source src={heroVideoConfig.videoSrc} type="video/mp4" />
-              <source src={heroVideoConfig.videoSrc} type="video/webm" />
+              {heroVideoConfig.videoSources.map((source, index) => (
+                <source key={index} src={source.src} type={source.type} />
+              ))}
               Your browser does not support the video tag.
             </video>
             {/* Removed all text content - clean video background only */}
@@ -538,7 +540,9 @@ export default function AiNextTemplate() {
                       objectFit: 'cover'
                     }}
                   >
-                    <source src="/videos/seedream.mp4.mp4" type="video/mp4" />
+                    {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
+                    <source src="/videos/seedream.webm" type="video/webm" />
+                    <source src="/videos/seedream.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                   </video>
                   </div>
@@ -716,7 +720,9 @@ export default function AiNextTemplate() {
                         objectFit: 'cover'
                       }}
                     >
-                      <source src="/videos/minimax.mp4.mp4" type="video/mp4" />
+                      {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
+                      <source src="/videos/minimax.webm" type="video/webm" />
+                      <source src="/videos/minimax.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   </div>
@@ -800,88 +806,10 @@ export default function AiNextTemplate() {
         {/* End Brands Area */}
 
         {/* Start Interactive Selector Section */}
-        <div className="w-full h-min-screen">
+        <BeamsBackground className="w-full h-[800px] flex items-center justify-center">
           <InteractiveSelector />
-        </div>
+        </BeamsBackground>
         {/* End Interactive Selector Section */}
-
-        {/* Start Features Section */}
-        <div className="features-section ptb-100 bg-light">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-12">
-                <div className="section-title text-center mb-5">
-                  <div className="sub-t">Why Choose Gensy</div>
-                  <h2>Powerful Features for Creative Professionals</h2>
-                  <p>Discover the advanced capabilities that make Gensy the ultimate AI creative platform</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="row">
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1500">
-                  <div className="icon mb-3">
-                    <i className="ri-rocket-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Lightning Fast</h4>
-                  <p>Generate high-quality content in seconds with our optimized AI infrastructure and cutting-edge models.</p>
-                </div>
-              </div>
-
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1700">
-                  <div className="icon mb-3">
-                    <i className="ri-shield-check-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Enterprise Security</h4>
-                  <p>Your data is protected with enterprise-grade security, encryption, and privacy controls you can trust.</p>
-                </div>
-              </div>
-
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="1900">
-                  <div className="icon mb-3">
-                    <i className="ri-palette-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Multiple AI Models</h4>
-                  <p>Access 15+ cutting-edge AI models including Flux, Imagen, DALL-E, ByteDance Seeded, and Google Veo.</p>
-                </div>
-              </div>
-
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2100">
-                  <div className="icon mb-3">
-                    <i className="ri-download-cloud-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Easy Export</h4>
-                  <p>Download your creations in multiple formats with dynamic naming and organize your creative library.</p>
-                </div>
-              </div>
-
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2300">
-                  <div className="icon mb-3">
-                    <i className="ri-team-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Team Collaboration</h4>
-                  <p>Work together with your team, share projects, and manage creative workflows seamlessly.</p>
-                </div>
-              </div>
-
-              <div className="col-lg-4 col-md-6 mb-4">
-                <div className="single-feature-box" data-aos="fade-up" data-aos-duration="2500">
-                  <div className="icon mb-3">
-                    <i className="ri-settings-3-line" style={{fontSize: '40px', color: '#667eea'}}></i>
-                  </div>
-                  <h4 className="mb-3">Advanced Controls</h4>
-                  <p>Fine-tune your generations with advanced parameters, styles, and quality settings for perfect results.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* End Features Section */}
 
         {/* Start Gallery Area */}
         <div className="gallery-area ptb-100">
@@ -952,55 +880,7 @@ export default function AiNextTemplate() {
         </div>
         {/* End Gallery Area */}
 
-        {/* Start Testimonial Area */}
-        <div className="testimonial-area ptb-100">
-          <div className="container">
-            <div className="testimonial-content owl-carousel owl-theme">
-              <div className="testimonial-item">
-                <ul>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                </ul>
-                <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using</p>
-                <h4>Aloin Lden</h4>
-                <span>Web Developer</span>
-              </div>
-              <div className="testimonial-item">
-                <ul>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                  <li><i className="ri-star-s-fill"></i></li>
-                </ul>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. In aut, tempora iste quidem ipsa eos. Mollitia, illo, nisi laboriosam nostrum</p>
-                <h4>Jacob Daniels</h4>
-                <span>Engineer</span>
-              </div>
-            </div>
-            <div className="user">
-              <img src="/ainext-template/assets/img/user-1.jpg" alt="image" />
-            </div>
-            <div className="user">
-              <img src="/ainext-template/assets/img/user-2.jpg" alt="image" />
-            </div>
-            <div className="user">
-              <img src="/ainext-template/assets/img/user-3.jpg" alt="image" />
-            </div>
-            <div className="user">
-              <img src="/ainext-template/assets/img/user-4.jpg" alt="image" />
-            </div>
-          </div>
-          <div className="star"></div>
-          <div className="star"></div>
-          <div className="star"></div>
-          <div className="star"></div>
-          <div className="star"></div>
-        </div>
-        {/* End Testimonial Area */}
+
 
         {/* Start Pricing Area */}
         <div className="pricing-area pt-100 section-bg">
@@ -1056,95 +936,7 @@ export default function AiNextTemplate() {
         </div>
         {/* End Pricing Area */}
 
-        {/* Start Article Area */}
-        <div className="article-area ptb-100">
-          <div className="container">
-            <div className="row">
-              <div className="col-lg-4">
-                <div className="section-title">
-                  <div className="width">
-                    <div className="sub-t">Our Latest News</div>
-                    <h2>Latest News & Articles</h2>
-                    <a className="main-btn" href="/blog-ainext"><span></span><i className="ri-pencil-line"></i> See More</a>
-                  </div>
-                </div>
-              </div>
-              <div className="col-lg-8">
-                <div className="article-content owl-carousel owl-theme">
-                  <div className="item">
-                    <img src="/ainext-template/assets/img/blogs/artical-1.jpg" alt="image" />
-                    <div className="pop-content">
-                      <h3><a href="/blog-ainext">The actual history of machine intelligence</a></h3>
-                      <ul>
-                        <li>March 18, 2022</li>
-                        <li><span>0</span>Comments</li>
-                      </ul>
-                    </div>
-                    <a href="/blog-ainext">
-                      <div className="go-corner">
-                        <div className="go-arrow">
-                          <i className="ri-arrow-right-up-line"></i>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-                  <div className="item">
-                    <img src="/ainext-template/assets/img/blogs/artical-3.jpg" alt="image" />
-                    <div className="pop-content">
-                      <h3><a href="/blog-ainext">The actual history of machine intelligence</a></h3>
-                      <ul>
-                        <li>March 18, 2022</li>
-                        <li><span>0</span>Comments</li>
-                      </ul>
-                    </div>
-                    <a href="/blog-ainext">
-                      <div className="go-corner">
-                        <div className="go-arrow">
-                          <i className="ri-arrow-right-up-line"></i>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-                  <div className="item">
-                    <img src="/ainext-template/assets/img/blogs/artical-2.jpg" alt="image" />
-                    <div className="pop-content">
-                      <h3><a href="/blog-ainext">The actual history of machine intelligence</a></h3>
-                      <ul>
-                        <li>March 18, 2022</li>
-                        <li><span>0</span>Comments</li>
-                      </ul>
-                    </div>
-                    <a href="/blog-ainext">
-                      <div className="go-corner">
-                        <div className="go-arrow">
-                          <i className="ri-arrow-right-up-line"></i>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-                  <div className="item">
-                    <img src="/ainext-template/assets/img/blogs/artical-4.jpg" alt="image" />
-                    <div className="pop-content">
-                      <h3><a href="/blog-ainext">The actual history of machine intelligence</a></h3>
-                      <ul>
-                        <li>March 18, 2022</li>
-                        <li><span>0</span>Comments</li>
-                      </ul>
-                    </div>
-                    <a href="/blog-ainext">
-                      <div className="go-corner">
-                        <div className="go-arrow">
-                          <i className="ri-arrow-right-up-line"></i>
-                        </div>
-                      </div>
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* End Article Area */}
+
 
         {/* Start Insta Gallery */}
         <div className="insta-gallery">

@@ -32,22 +32,35 @@ export function DashboardLayout({ children, title, description }: DashboardLayou
 
   const fetchUserCredits = async () => {
     try {
+      console.log('🔄 Fetching user credits...')
       const response = await fetch('/api/user/credits')
+
       if (response.ok) {
         const data = await response.json()
-        setUserCredits(data.credits || 0)
+        console.log('📊 Credits API response:', data)
+
+        // Fix: Access the correct property from the API response
+        const credits = data.balance?.current || 0
+        console.log('💳 Setting user credits to:', credits)
+        setUserCredits(credits)
       } else if (response.status === 401) {
+        console.log('🔐 User not authenticated')
         // User not authenticated, redirect to sign in (unless in test mode)
         if (!isTestMode) {
           window.location.href = '/auth/sign-in'
           return
         } else {
           // In test mode, set default credits
+          console.log('🧪 Test mode: Setting default credits')
           setUserCredits(1000)
         }
+      } else {
+        console.error('❌ Credits API error:', response.status, response.statusText)
+        const errorData = await response.text()
+        console.error('❌ Error details:', errorData)
       }
     } catch (error) {
-      console.error('Error fetching user credits:', error)
+      console.error('❌ Error fetching user credits:', error)
     } finally {
       setIsLoading(false)
     }

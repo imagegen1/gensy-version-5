@@ -7,6 +7,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { clsx } from 'clsx'
 import {
@@ -124,9 +125,16 @@ export function Sidebar({ isOpen = true, onClose }: SidebarProps) {
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="flex items-center px-6 py-4 border-b border-gray-200">
-            <SparklesIcon className="h-8 w-8 text-primary-600" />
-            <div className="ml-3">
-              <h1 className="text-xl font-bold text-gray-900">Gensy</h1>
+            <Image
+              src="/logo das.svg"
+              alt="Gensy Logo"
+              width={300}
+              height={100}
+              className="h-[100px] w-auto"
+              priority
+              style={{ height: '100px', width: 'auto' }}
+            />
+            <div className="ml-2">
               <p className="text-xs text-gray-500">AI Creative Suite</p>
             </div>
           </div>

@@ -58,7 +58,8 @@
             onerror="updateDebug('Error loading video')"
             onloadeddata="updateDebug('Data loaded')"
         >
-            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+            <!-- Progressive Enhancement: WebM first (better compression), MP4 fallback -->
+            <source src="/videos/hailuo-ai-video-02.webm" type="video/webm">
             <source src="/videos/hailuo-ai-video-02.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>

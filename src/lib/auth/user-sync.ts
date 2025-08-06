@@ -25,6 +25,13 @@ export async function syncUserProfile(clerkUser?: User | null): Promise<{
 
     const supabase = createServiceRoleClient()
 
+    // First, check if user already exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id, credits')
+      .eq('clerk_user_id', user.id)
+      .single()
+
     // Prepare user data (matching the 'profiles' table schema)
     const userData = {
       clerk_user_id: user.id,
@@ -32,6 +39,8 @@ export async function syncUserProfile(clerkUser?: User | null): Promise<{
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim() || null,
       avatar_url: user.imageUrl || null,
       updated_at: new Date().toISOString(),
+      // Only set credits if this is a new user (no existing user found)
+      ...(existingUser ? {} : { credits: 10 })
     }
 
     // Use upsert to safely create or update user profile

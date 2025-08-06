@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRightIcon, SparklesIcon, PhotoIcon, VideoCameraIcon, Bars3Icon } from '@heroicons/react/24/outline'
 
 export default function HomePage() {
@@ -9,11 +10,16 @@ export default function HomePage() {
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <SparklesIcon className="h-8 w-8 text-primary-600" />
-              </div>
+              <Image
+                src="/logo das.svg"
+                alt="Gensy Logo"
+                width={300}
+                height={100}
+                className="h-[100px] w-auto"
+                priority
+                style={{ height: '100px', width: 'auto' }}
+              />
               <div className="ml-2">
-                <h1 className="text-2xl font-bold text-gray-900">Gensy</h1>
                 <p className="text-xs text-gray-500">AI Creative Suite</p>
               </div>
             </div>

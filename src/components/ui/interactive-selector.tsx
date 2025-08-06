@@ -11,31 +11,31 @@ const InteractiveSelector = () => {
     {
       title: "Luxury Tent",
       description: "Cozy glamping under the stars",
-      image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80",
+      image: "/flux-kontext-1.png",
       icon: <FaCampground size={24} className="text-white" />
     },
     {
       title: "Campfire Feast",
       description: "Gourmet s'mores & stories",
-      image: "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=800&q=80",
+      image: "/flux-kontext-2.png",
       icon: <FaFire size={24} className="text-white" />
     },
     {
       title: "Lakeside Retreat",
       description: "Private dock & canoe rides",
-      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+      image: "/flux-kontext-3.png",
       icon: <FaTint size={24} className="text-white" />
     },
     {
       title: "Mountain Spa",
       description: "Outdoor sauna & hot tub",
-      image: "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+      image: "/flux-kontext-4.png",
       icon: <FaHotTub size={24} className="text-white" />
     },
     {
       title: "Guided Adventure",
       description: "Expert-led nature tours",
-      image: "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=800&q=80",
+      image: "/flux-kontext-5.png",
       icon: <FaHiking size={24} className="text-white" />
     }
   ];
@@ -62,7 +62,7 @@ const InteractiveSelector = () => {
   }, []);
 
   return (
-    <div className="relative flex flex-col items-center justify-center h-[800px] bg-[#050913] font-sans text-white py-8">
+    <div className="relative flex flex-col items-center justify-center h-[600px] font-sans text-white py-4">
       {/* Header Section */}
       <div className="w-full max-w-6xl px-6 mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-3 tracking-tight drop-shadow-lg animate-fadeInTop delay-300">FLUX Kontext Pro</h1>

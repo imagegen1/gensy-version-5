@@ -20,7 +20,7 @@ export async function testConnection() {
   try {
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('count')
       .limit(1)
       .single()
@@ -73,15 +73,28 @@ export async function upsertUser(userData: {
 }): Promise<User | null> {
   try {
     const supabase = createClient()
+
+    // First, check if user already exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('id, credits')
+      .eq('clerk_user_id', userData.clerkUserId)
+      .single()
+
+    // Prepare user data - only set credits for new users
+    const userDataToUpsert = {
+      clerk_user_id: userData.clerkUserId,
+      email: userData.email,
+      name: userData.fullName || null,
+      avatar_url: userData.avatarUrl || null,
+      updated_at: new Date().toISOString(),
+      // Only set credits if this is a new user (no existing user found)
+      ...(existingUser ? {} : { credits: 10 })
+    }
+
     const { data, error } = await supabase
       .from('profiles')
-      .upsert({
-        clerk_user_id: userData.clerkUserId,
-        email: userData.email,
-        name: userData.fullName || null,
-        avatar_url: userData.avatarUrl || null,
-        updated_at: new Date().toISOString(),
-      }, {
+      .upsert(userDataToUpsert, {
         onConflict: 'clerk_user_id'
       })
       .select()
@@ -106,7 +119,7 @@ export async function getUserCredits(userId: string): Promise<number> {
   try {
     const supabase = createClient()
     const { data, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('credits')
       .eq('id', userId)
       .single()
@@ -262,10 +275,10 @@ export async function healthCheck(): Promise<{
 }> {
   try {
     const supabase = createClient()
-    
-    // Test basic connectivity
+
+    // Test basic connectivity using the correct table name
     const { data: connectionTest, error: connectionError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('count')
       .limit(1)
 
@@ -279,8 +292,8 @@ export async function healthCheck(): Promise<{
       }
     }
 
-    // Test table access
-    const tables = ['users', 'generations', 'media_files']
+    // Test table access - using the actual table names that exist
+    const tables = ['profiles', 'generations', 'credit_transactions']
     const tableTests = await Promise.all(
       tables.map(async (table) => {
         try {

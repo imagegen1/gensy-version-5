@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+  <defs>
+    <style>
+      .logo-text { fill: #1f2937; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; font-weight: 700; }
+      .logo-accent { fill: #3b82f6; }
+    </style>
+  </defs>
+  
+  <!-- Background circle for better visibility -->
+  <circle cx="150" cy="150" r="140" fill="#f8fafc" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Simplified "G" shape -->
+  <path d="M40 178 C40 104, 104 40, 178 40 C252 40, 316 104, 316 178 C316 252, 252 316, 178 316 C130 316, 88 274, 88 226 L88 178 L178 178 L178 226 C178 252, 204 278, 230 278 C256 278, 282 252, 282 226 C282 130, 204 52, 108 52 C82 52, 56 78, 56 104 L56 178 Z" 
+        fill="#3b82f6" 
+        transform="translate(-28, -28) scale(0.8)"/>
+  
+  <!-- Letter shapes for "ensy" -->
+  <g transform="translate(100, 120)">
+    <!-- e -->
+    <path d="M10 20 C10 10, 20 0, 30 0 C40 0, 50 10, 50 20 C50 30, 40 40, 30 40 C20 40, 10 30, 10 20 Z M15 20 L45 20" 
+          class="logo-text" stroke="#1f2937" stroke-width="3" fill="none"/>
+    
+    <!-- n -->
+    <path d="M60 40 L60 10 M60 15 C60 5, 70 0, 80 0 C90 0, 100 5, 100 15 L100 40" 
+          class="logo-text" stroke="#1f2937" stroke-width="3" fill="none"/>
+    
+    <!-- s -->
+    <path d="M110 15 C110 5, 120 0, 130 0 C140 0, 150 5, 150 15 C150 20, 145 22, 140 22 C135 22, 130 25, 130 30 C130 35, 135 40, 145 40 C155 40, 165 35, 165 25" 
+          class="logo-text" stroke="#1f2937" stroke-width="3" fill="none"/>
+    
+    <!-- y -->
+    <path d="M175 10 L185 30 L195 10 M185 30 L185 50" 
+          class="logo-text" stroke="#1f2937" stroke-width="3" fill="none"/>
+  </g>
+  
+  <!-- Decorative elements -->
+  <circle cx="80" cy="80" r="3" class="logo-accent"/>
+  <circle cx="220" cy="80" r="2" class="logo-accent"/>
+  <circle cx="250" cy="200" r="3" class="logo-accent"/>
+  <circle cx="70" cy="220" r="2" class="logo-accent"/>
+</svg>

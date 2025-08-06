@@ -3,27 +3,39 @@
 This directory contains the video files used in the hero section of the landing page.
 
 ## Current Video
-- **File**: `hailuo-ai-video-02.mp4`
+- **Files**:
+  - `hailuo-ai-video-02.webm` (Primary - WebM format, better compression)
+  - `hailuo-ai-video-02.mp4` (Fallback - MP4 format, broader compatibility)
 - **Used in**: `/landing-page-2` hero section
-- **Description**: Hailuo AI Video 02 Model demonstration
+- **Description**: Hailuo AI Video 02 Model demonstration with progressive enhancement
 
 ## How to Change the Hero Video
 
-### Step 1: Add Your New Video
-1. Place your new video file in this `/public/videos/` directory
-2. Recommended format: MP4
+### Step 1: Add Your New Video Files
+1. Place your new video files in this `/public/videos/` directory
+2. **Recommended formats**: Provide both for optimal performance:
+   - **WebM format** (e.g., `your-video.webm`) - Better compression, modern browsers
+   - **MP4 format** (e.g., `your-video.mp4`) - Broader compatibility, fallback
 3. Recommended aspect ratio: 16:9
 4. Recommended resolution: 1920x1080 or higher
 
 ### Step 2: Update Configuration
 1. Open `/src/config/hero-video.ts`
-2. Update the `videoSrc` field to point to your new video:
+2. Update the `videoSources` array to point to your new videos:
    ```typescript
    export const heroVideoConfig: HeroVideoConfig = {
-     videoSrc: "/videos/your-new-video.mp4", // Update this path
-     title: "Your New Title",                // Update title if needed
-     subtitle: "Your new subtitle text",     // Update subtitle if needed
-     fallbackImage: "/ainext-template/assets/img/bg.jpg"
+     videoSources: [
+       {
+         src: "/videos/your-video.webm",     // WebM first (progressive enhancement)
+         type: "video/webm"
+       },
+       {
+         src: "/videos/your-video.mp4",      // MP4 fallback
+         type: "video/mp4"
+       }
+     ],
+     title: "Your New Title",               // Update title if needed
+     subtitle: "Your new subtitle text",    // Update subtitle if needed
    };
    ```
 

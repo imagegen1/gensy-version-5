@@ -1,92 +1,201 @@
-"use client"
+"use client";
 
-import React from 'react'
-import { cn } from '@/lib/utils'
+import { useState, useEffect, useRef } from "react";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
-interface Feature {
-  id: string
-  title: string
-  description: string
-  icon: React.ReactNode
-  color?: string
-}
 
 interface FeaturesProps {
-  features: Feature[]
-  title?: string
-  subtitle?: string
-  description?: string
-  className?: string
-  columns?: 2 | 3 | 4
+  features: {
+    id: number;
+    icon: React.ElementType;
+    title: string;
+    description: string;
+    image: string;
+  }[];
+  primaryColor?: string;
+  progressGradientLight?: string;
+  progressGradientDark?: string;
 }
 
-export function Features({ 
-  features, 
-  title = "Features", 
-  subtitle,
-  description,
-  className,
-  columns = 3 
+export function Features({
+  features,
+  primaryColor,
+  progressGradientLight,
+  progressGradientDark,
 }: FeaturesProps) {
-  const gridCols = {
-    2: "grid-cols-1 md:grid-cols-2",
-    3: "grid-cols-1 md:grid-cols-2 lg:grid-cols-3", 
-    4: "grid-cols-1 md:grid-cols-2 lg:grid-cols-4"
-  }
+  const [currentFeature, setCurrentFeature] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => (prev >= 100 ? 100 : prev + 1));
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (progress >= 100) {
+      setTimeout(() => {
+        setCurrentFeature((prev) => (prev + 1) % features.length);
+        setProgress(0);
+      }, 200);
+    }
+  }, [progress]);
+
+  useEffect(() => {
+    const activeFeatureElement = featureRefs.current[currentFeature];
+    const container = containerRef.current;
+
+    if (activeFeatureElement && container) {
+      const containerRect = container.getBoundingClientRect();
+      const elementRect = activeFeatureElement.getBoundingClientRect();
+
+      container.scrollTo({
+        left:
+          activeFeatureElement.offsetLeft -
+          (containerRect.width - elementRect.width) / 2,
+        behavior: "smooth",
+      });
+    }
+  }, [currentFeature]);
+
+  const handleFeatureClick = (index: number) => {
+    setCurrentFeature(index);
+    setProgress(0);
+  };
 
   return (
-    <div className={cn("py-16 px-4", className)}>
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full py-8">
+      <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          {subtitle && (
-            <div className="text-sm font-semibold text-blue-600 uppercase tracking-wide mb-2">
-              {subtitle}
-            </div>
-          )}
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">{title}</h2>
-          {description && (
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-              {description}
-            </p>
-          )}
+        <div className="text-center mb-16">
+          <span
+            className={`text-cyan-400 font-semibold text-sm uppercase tracking-wider`}
+          >
+            AI-Powered Creation
+          </span>
+          <h2 className="text-4xl md:text-5xl font-bold text-white mt-4 mb-6">
+            Image Generation Models
+          </h2>
+          <p className="text-lg text-gray-300 max-w-3xl mx-auto">
+            Experience cutting-edge AI image generation with our premium model collection
+          </p>
         </div>
 
-        {/* Features Grid */}
-        <div className={cn("grid gap-8", gridCols[columns])}>
-          {features.map((feature, index) => (
-            <div
-              key={feature.id}
-              className="group relative"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <div className="flex flex-col items-center text-center p-6 rounded-xl border border-gray-200 bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-300 h-full">
-                {/* Icon */}
-                <div 
-                  className={cn(
-                    "flex h-16 w-16 items-center justify-center rounded-full mb-4 transition-transform duration-300 group-hover:scale-110",
-                    feature.color ? `bg-${feature.color}-100 text-${feature.color}-600` : "bg-blue-100 text-blue-600"
-                  )}
-                >
-                  {feature.icon}
-                </div>
+        <div className="grid lg:grid-cols-2 lg:gap-16 gap-8 items-center">
+          {/* Left Side - Features with Progress Lines */}
+          <div
+            ref={containerRef}
+            className="lg:space-y-6 space-y-4 lg:overflow-visible order-1"
+          >
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              const isActive = currentFeature === index;
 
-                {/* Content */}
-                <div className="space-y-3">
-                  <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-300">
-                    {feature.title}
-                  </h3>
-                  <p className="text-gray-600 leading-relaxed">
-                    {feature.description}
-                  </p>
+              return (
+                <div
+                  key={feature.id}
+                  ref={(el) => {
+                    featureRefs.current[index] = el;
+                  }}
+                  className="relative cursor-pointer"
+                  onClick={() => handleFeatureClick(index)}
+                >
+                  {/* Feature Content */}
+                  <div
+                    className={`
+                    flex items-start space-x-4 p-6 w-full transition-all duration-300 rounded-xl
+                    ${
+                      isActive
+                        ? "bg-white/20 backdrop-blur-sm shadow-lg border border-cyan-400/50"
+                        : "bg-white/10 backdrop-blur-sm hover:bg-white/15 border border-white/20"
+                    }
+                  `}
+                  >
+                    {/* Icon */}
+                    <div
+                      className={`
+                      p-4 rounded-full transition-all duration-300 flex-shrink-0
+                      ${
+                        isActive
+                          ? `bg-cyan-500 text-white`
+                          : `bg-cyan-500/20 text-cyan-400`
+                      }
+                    `}
+                    >
+                      <Icon size={28} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1">
+                      <h3
+                        className={`
+                        text-xl font-bold mb-3 transition-colors duration-300
+                        ${
+                          isActive
+                            ? "text-white"
+                            : "text-gray-300"
+                        }
+                      `}
+                      >
+                        {feature.title}
+                      </h3>
+                      <p
+                        className={`
+                        transition-colors duration-300 text-base leading-relaxed
+                        ${
+                          isActive
+                            ? "text-gray-200"
+                            : "text-gray-400"
+                        }
+                      `}
+                      >
+                        {feature.description}
+                      </p>
+                      <div className="mt-4 bg-white/20 rounded-full h-2 overflow-hidden">
+                        {isActive && (
+                          <motion.div
+                            className="h-full bg-gradient-to-r from-cyan-400 to-blue-500"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${progress}%` }}
+                            transition={{ duration: 0.1, ease: "linear" }}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
+
+          {/* Right Side - Image Display */}
+          <div className="relative order-2 lg:order-2">
+            <motion.div
+              key={currentFeature}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -30 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="relative"
+            >
+              <Image
+                className="rounded-2xl shadow-xl border border-gray-200 w-full h-auto"
+                src={features[currentFeature].image}
+                alt={features[currentFeature].title}
+                width={600}
+                height={400}
+              />
+            </motion.div>
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Example usage component
