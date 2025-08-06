@@ -1,6 +1,6 @@
 {
   "name": "gensy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Gensy AI Creative Suite - AI-powered image generation, upscaling, and video creation platform",
   "scripts": {
