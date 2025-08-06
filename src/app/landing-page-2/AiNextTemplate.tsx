@@ -467,7 +467,7 @@ export default function AiNextTemplate() {
               loop
               playsInline
               className="hero-video"
-              preload="auto"
+              preload="metadata"
               style={{
                 opacity: videoLoaded ? 1 : 0,
                 transition: 'opacity 0.5s ease'
@@ -604,7 +604,9 @@ export default function AiNextTemplate() {
                     controls
                     muted
                     loop
+                    playsInline
                     preload="none"
+                    loading="lazy"
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -738,7 +740,9 @@ export default function AiNextTemplate() {
                       controls
                       muted
                       loop
+                      playsInline
                       preload="none"
+                      loading="lazy"
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -792,7 +796,9 @@ export default function AiNextTemplate() {
                       controls
                       muted
                       loop
+                      playsInline
                       preload="none"
+                      loading="lazy"
                       style={{
                         position: 'absolute',
                         top: 0,
