@@ -5,11 +5,6 @@ import { ArrowRightIcon, SparklesIcon, PhotoIcon, VideoCameraIcon, Bars3Icon } f
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      {/* Deployment Confirmation - Remove after verification */}
-      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-center">
-        <strong>✅ Version 0.1.1 deployed via CLI - Latest changes active!</strong>
-      </div>
-
       {/* Header */}
       <header className="relative z-10">
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
