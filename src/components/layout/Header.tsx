@@ -65,7 +65,7 @@ export function Header({ onMenuClick, userCredits = 0 }: HeaderProps) {
                 avatarBox: "w-8 h-8"
               }
             }}
-            afterSignOutUrl="/"
+            signInUrl="/auth/sign-in"
           />
         </div>
       </div>
