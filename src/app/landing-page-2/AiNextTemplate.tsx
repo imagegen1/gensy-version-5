@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { heroVideoConfig } from '@/config/hero-video'
@@ -20,8 +20,77 @@ export default function AiNextTemplate() {
   const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
   const [videoLoaded, setVideoLoaded] = useState(false)
+  const [heroVideoReady, setHeroVideoReady] = useState(false)
+  const [showcaseVideosLoaded, setShowcaseVideosLoaded] = useState({
+    seedance: false,
+    veo: false,
+    minimax: false
+  })
+
+  // Refs for intersection observer
+  const seedanceVideoRef = useRef<HTMLVideoElement>(null)
+  const veoVideoRef = useRef<HTMLVideoElement>(null)
+  const minimaxVideoRef = useRef<HTMLVideoElement>(null)
 
 
+
+  // Progressive video loading strategy
+  const loadShowcaseVideo = useCallback((videoRef: React.RefObject<HTMLVideoElement>, videoKey: 'seedance' | 'veo' | 'minimax') => {
+    if (!videoRef.current || showcaseVideosLoaded[videoKey]) return
+
+    console.log(`🎬 Loading ${videoKey} video...`)
+    const video = videoRef.current
+
+    // Set preload to auto and load the video
+    video.preload = 'auto'
+    video.load()
+
+    const handleCanPlay = () => {
+      console.log(`✅ ${videoKey} video ready`)
+      setShowcaseVideosLoaded(prev => ({ ...prev, [videoKey]: true }))
+      video.removeEventListener('canplay', handleCanPlay)
+    }
+
+    video.addEventListener('canplay', handleCanPlay)
+  }, [showcaseVideosLoaded])
+
+  // Intersection Observer for lazy loading showcase videos
+  useEffect(() => {
+    if (!heroVideoReady) return // Wait for hero video to be ready first
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const target = entry.target as HTMLElement
+
+            if (target.dataset.video === 'seedance') {
+              loadShowcaseVideo(seedanceVideoRef, 'seedance')
+            } else if (target.dataset.video === 'veo') {
+              loadShowcaseVideo(veoVideoRef, 'veo')
+            } else if (target.dataset.video === 'minimax') {
+              loadShowcaseVideo(minimaxVideoRef, 'minimax')
+            }
+          }
+        })
+      },
+      {
+        rootMargin: '200px', // Start loading 200px before the video comes into view
+        threshold: 0.1
+      }
+    )
+
+    // Observe video containers
+    const seedanceContainer = document.querySelector('[data-video="seedance"]')
+    const veoContainer = document.querySelector('[data-video="veo"]')
+    const minimaxContainer = document.querySelector('[data-video="minimax"]')
+
+    if (seedanceContainer) observer.observe(seedanceContainer)
+    if (veoContainer) observer.observe(veoContainer)
+    if (minimaxContainer) observer.observe(minimaxContainer)
+
+    return () => observer.disconnect()
+  }, [heroVideoReady, loadShowcaseVideo])
 
   useEffect(() => {
     let isMounted = true
@@ -404,18 +473,23 @@ export default function AiNextTemplate() {
                 transition: 'opacity 0.5s ease'
               }}
               onLoadStart={() => {
-                console.log('🎬 Video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
+                console.log('🎬 Hero video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
                 setVideoLoaded(false)
+                setHeroVideoReady(false)
               }}
               onCanPlay={() => {
-                console.log('✅ Video can play')
+                console.log('✅ Hero video can play')
                 setVideoLoaded(true)
               }}
-              onPlay={() => console.log('▶️ Video started playing')}
+              onPlay={() => {
+                console.log('▶️ Hero video started playing')
+                setHeroVideoReady(true) // Signal that hero video is ready, showcase videos can start loading
+              }}
               onError={(e) => {
-                console.error('❌ Video error:', e);
+                console.error('❌ Hero video error:', e);
                 console.log('🔄 Falling back to gradient background');
                 setVideoLoaded(true) // Hide loading overlay even on error
+                setHeroVideoReady(true) // Allow showcase videos to load even if hero fails
                 // Fallback to gradient background if video fails to load
                 const videoElement = e.target as HTMLVideoElement;
                 videoElement.style.display = 'none';
@@ -425,8 +499,9 @@ export default function AiNextTemplate() {
                 }
               }}
               onLoadedData={() => {
-                console.log('📊 Video data loaded');
+                console.log('📊 Hero video data loaded');
                 setVideoLoaded(true)
+                setHeroVideoReady(true)
                 // Force play if autoplay didn't work
                 const video = document.querySelector('.hero-video') as HTMLVideoElement;
                 if (video && video.paused) {
@@ -504,7 +579,7 @@ export default function AiNextTemplate() {
         {/* Start Seedance 1.0 Showcase Area */}
         <BeamsBackground className="about-area ptb-50">
           <div className="container">
-            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" data-video="seedance" style={{
               display: 'flex',
               alignItems: 'center',
               minHeight: '500px'
@@ -525,10 +600,11 @@ export default function AiNextTemplate() {
                     overflow: 'hidden'
                   }}>
                   <video
+                    ref={seedanceVideoRef}
                     controls
-                    autoPlay
                     muted
                     loop
+                    preload="none"
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -539,6 +615,9 @@ export default function AiNextTemplate() {
                       boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                       objectFit: 'cover'
                     }}
+                    onLoadStart={() => console.log('🎬 Seedance video loading...')}
+                    onCanPlay={() => console.log('✅ Seedance video ready')}
+                    onError={(e) => console.error('❌ Seedance video error:', e)}
                   >
                     {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
                     <source src="/videos/seedream.webm" type="video/webm" />
@@ -596,7 +675,7 @@ export default function AiNextTemplate() {
         {/* Start Google Veo 3.0 Showcase Area */}
         <BeamsBackground className="about-area ptb-50">
           <div className="container">
-            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" data-video="veo" style={{
               display: 'flex',
               alignItems: 'center',
               minHeight: '500px'
@@ -655,10 +734,11 @@ export default function AiNextTemplate() {
                     overflow: 'hidden'
                   }}>
                     <video
+                      ref={veoVideoRef}
                       controls
-                      autoPlay
                       muted
                       loop
+                      preload="none"
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -669,6 +749,9 @@ export default function AiNextTemplate() {
                         boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                         objectFit: 'cover'
                       }}
+                      onLoadStart={() => console.log('🎬 Veo video loading...')}
+                      onCanPlay={() => console.log('✅ Veo video ready')}
+                      onError={(e) => console.error('❌ Veo video error:', e)}
                     >
                       <source src="/videos/veo 3.mp4.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
@@ -684,7 +767,7 @@ export default function AiNextTemplate() {
         {/* Start MiniMax Hailuo AI Showcase Area */}
         <BeamsBackground className="about-area ptb-50">
           <div className="container">
-            <div className="row" data-aos="fade-up" data-aos-duration="1500" style={{
+            <div className="row" data-aos="fade-up" data-aos-duration="1500" data-video="minimax" style={{
               display: 'flex',
               alignItems: 'center',
               minHeight: '500px'
@@ -705,10 +788,11 @@ export default function AiNextTemplate() {
                     overflow: 'hidden'
                   }}>
                     <video
+                      ref={minimaxVideoRef}
                       controls
-                      autoPlay
                       muted
                       loop
+                      preload="none"
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -719,6 +803,9 @@ export default function AiNextTemplate() {
                         boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
                         objectFit: 'cover'
                       }}
+                      onLoadStart={() => console.log('🎬 MiniMax video loading...')}
+                      onCanPlay={() => console.log('✅ MiniMax video ready')}
+                      onError={(e) => console.error('❌ MiniMax video error:', e)}
                     >
                       {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
                       <source src="/videos/minimax.webm" type="video/webm" />
