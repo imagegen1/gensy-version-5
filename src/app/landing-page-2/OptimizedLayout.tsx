@@ -8,30 +8,7 @@ interface OptimizedLayoutProps {
 
 export default function OptimizedLayout({ children }: OptimizedLayoutProps) {
   useEffect(() => {
-    // Preload critical resources
-    const preloadCriticalResources = () => {
-      const resources = [
-        { href: '/ainext-template/assets/css/bootstrap.min.css', as: 'style' },
-        { href: '/ainext-template/assets/css/style.css', as: 'style' },
-        { href: '/ainext-template/assets/js/jquery.min.js', as: 'script' },
-        { href: '/ainext-template/assets/js/bootstrap.bundle.min.js', as: 'script' }
-      ]
-
-      resources.forEach(({ href, as }) => {
-        const link = document.createElement('link')
-        link.rel = 'preload'
-        link.as = as
-        link.href = href
-        if (as === 'style') {
-          link.onload = () => {
-            link.rel = 'stylesheet'
-          }
-        }
-        document.head.appendChild(link)
-      })
-    }
-
-    // DNS prefetch for external resources
+    // Only DNS prefetch for external resources - CSS is already loaded by layout.tsx
     const dnsPrefetch = () => {
       const domains = [
         'fonts.googleapis.com',
@@ -39,14 +16,16 @@ export default function OptimizedLayout({ children }: OptimizedLayoutProps) {
       ]
 
       domains.forEach(domain => {
-        const link = document.createElement('link')
-        link.rel = 'dns-prefetch'
-        link.href = `//${domain}`
-        document.head.appendChild(link)
+        // Check if already prefetched
+        if (!document.querySelector(`link[href="//${domain}"][rel="dns-prefetch"]`)) {
+          const link = document.createElement('link')
+          link.rel = 'dns-prefetch'
+          link.href = `//${domain}`
+          document.head.appendChild(link)
+        }
       })
     }
 
-    preloadCriticalResources()
     dnsPrefetch()
   }, [])
 

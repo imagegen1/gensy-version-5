@@ -91,8 +91,8 @@ export default function RootLayout({
       publishableKey={effectiveKey}
       signInUrl="/auth/sign-in"
       signUpUrl="/auth/sign-up"
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/onboarding"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/onboarding"
     >
       <html lang="en" suppressHydrationWarning>
         <head>
@@ -102,10 +102,7 @@ export default function RootLayout({
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="manifest" href="/site.webmanifest" />
 
-          {/* Bootstrap Template CSS - Preloaded to prevent flash */}
-          <link rel="preload" href="/ainext-template/assets/css/bootstrap.min.css" as="style" />
-          <link rel="preload" href="/ainext-template/assets/css/style.css" as="style" />
-          <link rel="preload" href="/ainext-template/assets/css/responsive.css" as="style" />
+          {/* Bootstrap Template CSS - Let Next.js handle optimization */}
 
           <link rel="stylesheet" href="/ainext-template/assets/css/bootstrap.min.css" />
           <link rel="stylesheet" href="/ainext-template/assets/css/owl.carousel.min.css" />
