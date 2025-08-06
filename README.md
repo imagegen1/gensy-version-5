@@ -2,7 +2,7 @@
 
 A comprehensive AI-powered creative platform built with Next.js, featuring image generation, video creation, and image upscaling capabilities.
 
-<!-- Fix: Add author to history for Vercel deployment -->
+<!-- Fix: Correct Git author to match GitHub account for auto-deploy -->
 
 ![Gensy AI Creative Suite](https://via.placeholder.com/800x400/6366f1/ffffff?text=Gensy+AI+Creative+Suite)
 
