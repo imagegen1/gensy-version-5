@@ -1,5 +1,6 @@
 // Hero Video Configuration
 // This file controls the video displayed in the hero section of /landing-page-2
+// Updated: Trigger Vercel redeploy
 
 export interface VideoSource {
   src: string;
