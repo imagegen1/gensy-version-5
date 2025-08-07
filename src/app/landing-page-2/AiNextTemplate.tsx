@@ -757,7 +757,8 @@ export default function AiNextTemplate() {
                       onCanPlay={() => console.log('✅ Veo video ready')}
                       onError={(e) => console.error('❌ Veo video error:', e)}
                     >
-                      <source src="/videos/veo 3.mp4.mp4" type="video/mp4" />
+                      <source src="/videos/veo-3.webm" type="video/webm" />
+                      <source src="/videos/veo 3.mp4" type="video/mp4" />
                       Your browser does not support the video tag.
                     </video>
                   </div>
