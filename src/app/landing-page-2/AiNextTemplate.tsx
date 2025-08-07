@@ -26,42 +26,87 @@ export default function AiNextTemplate() {
     veo: false,
     minimax: false
   })
+  const [isMounted, setIsMounted] = useState(false)
 
   // Refs for intersection observer
   const seedanceVideoRef = useRef<HTMLVideoElement>(null)
   const veoVideoRef = useRef<HTMLVideoElement>(null)
   const minimaxVideoRef = useRef<HTMLVideoElement>(null)
 
+  // Component mount effect - reset all state on mount to fix navigation issues
+  useEffect(() => {
+    console.log('🔄 AiNextTemplate mounting - resetting all state')
+
+    // Reset all state to initial values
+    setIsLoaded(false)
+    setVideoLoaded(false)
+    setHeroVideoReady(false)
+    setShowcaseVideosLoaded({
+      seedance: false,
+      veo: false,
+      minimax: false
+    })
+    setIsMounted(true)
+
+    // Cleanup function
+    return () => {
+      console.log('🧹 AiNextTemplate unmounting - cleaning up')
+      setIsMounted(false)
+    }
+  }, []) // Empty dependency array - only run on mount/unmount
 
 
-  // Progressive video loading strategy
+
+  // Progressive video loading strategy with improved error handling
   const loadShowcaseVideo = useCallback((videoRef: React.RefObject<HTMLVideoElement>, videoKey: 'seedance' | 'veo' | 'minimax') => {
-    if (!videoRef.current || showcaseVideosLoaded[videoKey]) return
+    if (!isMounted || !videoRef.current || showcaseVideosLoaded[videoKey]) return
 
     console.log(`🎬 Loading ${videoKey} video...`)
     const video = videoRef.current
 
     // Set preload to auto and load the video
     video.preload = 'auto'
-    video.load()
 
     const handleCanPlay = () => {
+      if (!isMounted) return
       console.log(`✅ ${videoKey} video ready`)
       setShowcaseVideosLoaded(prev => ({ ...prev, [videoKey]: true }))
+      cleanup()
+    }
+
+    const handleError = (e: Event) => {
+      if (!isMounted) return
+      console.error(`❌ ${videoKey} video error:`, e)
+      // Still mark as loaded to prevent infinite loading
+      setShowcaseVideosLoaded(prev => ({ ...prev, [videoKey]: true }))
+      cleanup()
+    }
+
+    const cleanup = () => {
       video.removeEventListener('canplay', handleCanPlay)
+      video.removeEventListener('error', handleError)
     }
 
     video.addEventListener('canplay', handleCanPlay)
-  }, [showcaseVideosLoaded])
+    video.addEventListener('error', handleError)
+
+    // Load the video
+    video.load()
+
+    // Return cleanup function
+    return cleanup
+  }, [showcaseVideosLoaded, isMounted])
 
   // Intersection Observer for lazy loading showcase videos
   useEffect(() => {
-    if (!heroVideoReady) return // Wait for hero video to be ready first
+    if (!isMounted || !heroVideoReady) return // Wait for component mount and hero video
+
+    console.log('🔍 Setting up intersection observer for showcase videos')
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && isMounted) {
             const target = entry.target as HTMLElement
 
             if (target.dataset.video === 'seedance') {
@@ -80,20 +125,33 @@ export default function AiNextTemplate() {
       }
     )
 
-    // Observe video containers
-    const seedanceContainer = document.querySelector('[data-video="seedance"]')
-    const veoContainer = document.querySelector('[data-video="veo"]')
-    const minimaxContainer = document.querySelector('[data-video="minimax"]')
+    // Use a small delay to ensure DOM is ready
+    const setupObserver = () => {
+      const seedanceContainer = document.querySelector('[data-video="seedance"]')
+      const veoContainer = document.querySelector('[data-video="veo"]')
+      const minimaxContainer = document.querySelector('[data-video="minimax"]')
 
-    if (seedanceContainer) observer.observe(seedanceContainer)
-    if (veoContainer) observer.observe(veoContainer)
-    if (minimaxContainer) observer.observe(minimaxContainer)
+      if (seedanceContainer) observer.observe(seedanceContainer)
+      if (veoContainer) observer.observe(veoContainer)
+      if (minimaxContainer) observer.observe(minimaxContainer)
+    }
 
-    return () => observer.disconnect()
-  }, [heroVideoReady, loadShowcaseVideo])
+    // Setup observer after a small delay to ensure DOM is ready
+    const timeoutId = setTimeout(setupObserver, 100)
 
+    return () => {
+      clearTimeout(timeoutId)
+      observer.disconnect()
+      console.log('🧹 Intersection observer cleaned up')
+    }
+  }, [heroVideoReady, loadShowcaseVideo, isMounted])
+
+  // Page initialization effect - only run when component is mounted
   useEffect(() => {
-    let isMounted = true
+    if (!isMounted) return
+
+    let isInitializing = true
+    console.log('🚀 Initializing page resources')
 
     const initializePage = async () => {
       try {
@@ -102,23 +160,24 @@ export default function AiNextTemplate() {
           await loadCriticalResources()
         })
 
-        if (!isMounted) return
+        if (!isInitializing || !isMounted) return
 
         // Set initial load state
         setIsLoaded(true)
+        console.log('✅ Page initialization complete')
 
         // Load non-critical resources in the background
         runWhenIdle(() => {
-          measurePerformance('Non-Critical Resources Loading', () => {
-            loadNonCriticalResources()
-          })
+          if (isInitializing && isMounted) {
+            measurePerformance('Non-Critical Resources Loading', () => {
+              loadNonCriticalResources()
+            })
+          }
         })
 
-        // Resources loaded successfully
-
       } catch (error) {
-        console.error('Error initializing page:', error)
-        if (isMounted) {
+        console.error('❌ Error initializing page:', error)
+        if (isInitializing && isMounted) {
           setIsLoaded(true) // Don't block the UI on errors
         }
       }
@@ -127,9 +186,38 @@ export default function AiNextTemplate() {
     initializePage()
 
     return () => {
-      isMounted = false
+      isInitializing = false
     }
-  }, [])
+  }, [isMounted]) // Depend on isMounted to ensure proper initialization
+
+  // Don't render until component is properly mounted
+  if (!isMounted) {
+    return (
+      <div className="loading-container" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        fontSize: '18px',
+        fontWeight: '500'
+      }}>
+        <div className="loading-content">
+          <div className="spinner" style={{
+            width: '40px',
+            height: '40px',
+            border: '3px solid rgba(255,255,255,0.3)',
+            borderTop: '3px solid white',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            marginBottom: '16px'
+          }}></div>
+          Initializing...
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`landing-page ${isLoaded ? 'loaded' : 'loading'}`}>
@@ -473,19 +561,23 @@ export default function AiNextTemplate() {
                 transition: 'opacity 0.5s ease'
               }}
               onLoadStart={() => {
+                if (!isMounted) return
                 console.log('🎬 Hero video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
                 setVideoLoaded(false)
                 setHeroVideoReady(false)
               }}
               onCanPlay={() => {
+                if (!isMounted) return
                 console.log('✅ Hero video can play')
                 setVideoLoaded(true)
               }}
               onPlay={() => {
+                if (!isMounted) return
                 console.log('▶️ Hero video started playing')
                 setHeroVideoReady(true) // Signal that hero video is ready, showcase videos can start loading
               }}
               onError={(e) => {
+                if (!isMounted) return
                 console.error('❌ Hero video error:', e);
                 console.log('🔄 Falling back to gradient background');
                 setVideoLoaded(true) // Hide loading overlay even on error
@@ -499,6 +591,7 @@ export default function AiNextTemplate() {
                 }
               }}
               onLoadedData={() => {
+                if (!isMounted) return
                 console.log('📊 Hero video data loaded');
                 setVideoLoaded(true)
                 setHeroVideoReady(true)

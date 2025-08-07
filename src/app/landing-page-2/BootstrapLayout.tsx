@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 
@@ -10,14 +10,13 @@ interface BootstrapLayoutProps {
   currentPage?: string
 }
 
-// Global flag to track if assets are loaded
-let assetsLoaded = false
-
 export default function BootstrapLayout({ children, title, currentPage = '' }: BootstrapLayoutProps) {
   const { isSignedIn } = useAuth()
   const router = useRouter()
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
+
   useEffect(() => {
-    // Only load JavaScript assets once globally (CSS is now loaded in root layout)
+    // Load JavaScript assets for this component instance
     if (assetsLoaded) return
 
     // Load JavaScript files
@@ -46,7 +45,7 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
         await loadScript('/ainext-template/assets/js/owl.carousel.min.js')
         await loadScript('/ainext-template/assets/js/ainext.js')
 
-        assetsLoaded = true
+        setAssetsLoaded(true)
       } catch (error) {
         console.error('Error loading scripts:', error)
       }
