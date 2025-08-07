@@ -18,7 +18,6 @@ import {
 export default function AiNextTemplate() {
   const { isSignedIn } = useAuth()
   const router = useRouter()
-  const [isLoaded, setIsLoaded] = useState(false)
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [heroVideoReady, setHeroVideoReady] = useState(false)
   const [showcaseVideosLoaded, setShowcaseVideosLoaded] = useState({
@@ -26,40 +25,17 @@ export default function AiNextTemplate() {
     veo: false,
     minimax: false
   })
-  const [isMounted, setIsMounted] = useState(false)
 
   // Refs for intersection observer
   const seedanceVideoRef = useRef<HTMLVideoElement>(null)
   const veoVideoRef = useRef<HTMLVideoElement>(null)
   const minimaxVideoRef = useRef<HTMLVideoElement>(null)
 
-  // Component mount effect - reset all state on mount to fix navigation issues
-  useEffect(() => {
-    console.log('🔄 AiNextTemplate mounting - resetting all state')
-
-    // Reset all state to initial values
-    setIsLoaded(false)
-    setVideoLoaded(false)
-    setHeroVideoReady(false)
-    setShowcaseVideosLoaded({
-      seedance: false,
-      veo: false,
-      minimax: false
-    })
-    setIsMounted(true)
-
-    // Cleanup function
-    return () => {
-      console.log('🧹 AiNextTemplate unmounting - cleaning up')
-      setIsMounted(false)
-    }
-  }, []) // Empty dependency array - only run on mount/unmount
-
 
 
   // Progressive video loading strategy with improved error handling
   const loadShowcaseVideo = useCallback((videoRef: React.RefObject<HTMLVideoElement>, videoKey: 'seedance' | 'veo' | 'minimax') => {
-    if (!isMounted || !videoRef.current || showcaseVideosLoaded[videoKey]) return
+    if (!videoRef.current || showcaseVideosLoaded[videoKey]) return
 
     console.log(`🎬 Loading ${videoKey} video...`)
     const video = videoRef.current
@@ -68,14 +44,12 @@ export default function AiNextTemplate() {
     video.preload = 'auto'
 
     const handleCanPlay = () => {
-      if (!isMounted) return
       console.log(`✅ ${videoKey} video ready`)
       setShowcaseVideosLoaded(prev => ({ ...prev, [videoKey]: true }))
       cleanup()
     }
 
     const handleError = (e: Event) => {
-      if (!isMounted) return
       console.error(`❌ ${videoKey} video error:`, e)
       // Still mark as loaded to prevent infinite loading
       setShowcaseVideosLoaded(prev => ({ ...prev, [videoKey]: true }))
@@ -95,18 +69,18 @@ export default function AiNextTemplate() {
 
     // Return cleanup function
     return cleanup
-  }, [showcaseVideosLoaded, isMounted])
+  }, [showcaseVideosLoaded])
 
   // Intersection Observer for lazy loading showcase videos
   useEffect(() => {
-    if (!isMounted || !heroVideoReady) return // Wait for component mount and hero video
+    if (!heroVideoReady) return // Wait for hero video
 
     console.log('🔍 Setting up intersection observer for showcase videos')
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting && isMounted) {
+          if (entry.isIntersecting) {
             const target = entry.target as HTMLElement
 
             if (target.dataset.video === 'seedance') {
@@ -144,13 +118,10 @@ export default function AiNextTemplate() {
       observer.disconnect()
       console.log('🧹 Intersection observer cleaned up')
     }
-  }, [heroVideoReady, loadShowcaseVideo, isMounted])
+  }, [heroVideoReady, loadShowcaseVideo])
 
-  // Page initialization effect - only run when component is mounted
+  // Simplified page initialization - run immediately on mount
   useEffect(() => {
-    if (!isMounted) return
-
-    let isInitializing = true
     console.log('🚀 Initializing page resources')
 
     const initializePage = async () => {
@@ -160,79 +131,32 @@ export default function AiNextTemplate() {
           await loadCriticalResources()
         })
 
-        if (!isInitializing || !isMounted) return
-
-        // Set initial load state
-        setIsLoaded(true)
         console.log('✅ Page initialization complete')
 
         // Load non-critical resources in the background
         runWhenIdle(() => {
-          if (isInitializing && isMounted) {
-            measurePerformance('Non-Critical Resources Loading', () => {
-              loadNonCriticalResources()
-            })
-          }
+          measurePerformance('Non-Critical Resources Loading', () => {
+            loadNonCriticalResources()
+          })
         })
 
       } catch (error) {
         console.error('❌ Error initializing page:', error)
-        if (isInitializing && isMounted) {
-          setIsLoaded(true) // Don't block the UI on errors
-        }
       }
     }
 
     initializePage()
-
-    return () => {
-      isInitializing = false
-    }
-  }, [isMounted]) // Depend on isMounted to ensure proper initialization
-
-  // Don't render until component is properly mounted
-  if (!isMounted) {
-    return (
-      <div className="loading-container" style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        color: 'white',
-        fontSize: '18px',
-        fontWeight: '500'
-      }}>
-        <div className="loading-content">
-          <div className="spinner" style={{
-            width: '40px',
-            height: '40px',
-            border: '3px solid rgba(255,255,255,0.3)',
-            borderTop: '3px solid white',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            marginBottom: '16px'
-          }}></div>
-          Initializing...
-        </div>
-      </div>
-    )
-  }
+  }, []) // Run once on mount
 
   return (
-    <div className={`landing-page ${isLoaded ? 'loaded' : 'loading'}`}>
+    <div className="landing-page loaded">
       <PerformanceMonitor />
       <style dangerouslySetInnerHTML={{
         __html: `
-          .landing-page.loading {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-
-          .landing-page.loaded {
+          .landing-page {
             opacity: 1;
             transform: translateY(0);
-            transition: all 0.6s ease;
+            transition: all 0.3s ease;
           }
 
           @keyframes spin {
@@ -561,23 +485,19 @@ export default function AiNextTemplate() {
                 transition: 'opacity 0.5s ease'
               }}
               onLoadStart={() => {
-                if (!isMounted) return
                 console.log('🎬 Hero video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
                 setVideoLoaded(false)
                 setHeroVideoReady(false)
               }}
               onCanPlay={() => {
-                if (!isMounted) return
                 console.log('✅ Hero video can play')
                 setVideoLoaded(true)
               }}
               onPlay={() => {
-                if (!isMounted) return
                 console.log('▶️ Hero video started playing')
                 setHeroVideoReady(true) // Signal that hero video is ready, showcase videos can start loading
               }}
               onError={(e) => {
-                if (!isMounted) return
                 console.error('❌ Hero video error:', e);
                 console.log('🔄 Falling back to gradient background');
                 setVideoLoaded(true) // Hide loading overlay even on error
@@ -591,7 +511,6 @@ export default function AiNextTemplate() {
                 }
               }}
               onLoadedData={() => {
-                if (!isMounted) return
                 console.log('📊 Hero video data loaded');
                 setVideoLoaded(true)
                 setHeroVideoReady(true)

@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import ClientWrapper from './ClientWrapper'
+import AiNextTemplate from './AiNextTemplate'
 
 export const metadata: Metadata = {
   title: 'Gensy - AI Creative Suite',
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 }
 
 export default function LandingPage2() {
-  return <ClientWrapper />
+  return <AiNextTemplate />
 }
