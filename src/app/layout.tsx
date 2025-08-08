@@ -77,7 +77,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Check if we have a valid Clerk key or if we're in build mode
+  // Check if Clerk is disabled in development
+  const isClerkDisabled = process.env.NEXT_PUBLIC_CLERK_DISABLED === 'true'
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
   const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
                      process.env.CI === 'true' ||
@@ -87,6 +88,63 @@ export default function RootLayout({
   const buildTimeKey = 'pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA'
   const effectiveKey = clerkPublishableKey || buildTimeKey
 
+  // Content wrapper
+  const content = (
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+
+        {/* Critical CSS - Load immediately */}
+        <link rel="stylesheet" href="/ainext-template/assets/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/style.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/responsive.css" />
+
+        {/* Non-critical CSS - Load normally to avoid errors */}
+        <link rel="stylesheet" href="/ainext-template/assets/css/owl.carousel.min.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/owl.theme.default.min.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/remixicon.min.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/odometer.min.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/flaticon.css" />
+        <link rel="stylesheet" href="/ainext-template/assets/css/aos.css" />
+
+        {/* Preload critical resources */}
+        <link rel="preload" href="/ainext-template/assets/img/main logo.svg" as="image" />
+        <link rel="preload" href="/ainext-template/assets/js/jquery.min.js" as="script" />
+        <link rel="preload" href="/ainext-template/assets/js/bootstrap.bundle.min.js" as="script" />
+      </head>
+      <body className={inter.className}>
+        <NotificationProvider>
+          <ToastProvider>
+            <div id="root">
+              {children}
+            </div>
+            <div id="modal-root" />
+            <div id="toast-root" />
+            <div id="clerk-captcha" />
+          </ToastProvider>
+        </NotificationProvider>
+
+        {/* Defer JavaScript loading for better performance */}
+        <Script src="/ainext-template/assets/js/jquery.min.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/bootstrap.bundle.min.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/aos.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/appear.min.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/odometer.min.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/owl.carousel.min.js" strategy="lazyOnload" />
+        <Script src="/ainext-template/assets/js/ainext.js" strategy="lazyOnload" />
+      </body>
+    </html>
+  )
+
+  // Return with or without ClerkProvider based on configuration
+  if (isClerkDisabled) {
+    return content
+  }
+
   return (
     <ClerkProvider
       publishableKey={effectiveKey}
@@ -95,39 +153,7 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/onboarding"
     >
-      <html lang="en" suppressHydrationWarning>
-        <head>
-          <link rel="icon" href="/favicon.png" type="image/png" />
-          <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-          <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-          <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-          <link rel="manifest" href="/site.webmanifest" />
-
-          {/* Bootstrap Template CSS - Let Next.js handle optimization */}
-
-          <link rel="stylesheet" href="/ainext-template/assets/css/bootstrap.min.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/owl.carousel.min.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/owl.theme.default.min.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/remixicon.min.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/odometer.min.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/flaticon.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/aos.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/style.css" />
-          <link rel="stylesheet" href="/ainext-template/assets/css/responsive.css" />
-        </head>
-        <body className={inter.className}>
-          <NotificationProvider>
-            <ToastProvider>
-              <div id="root">
-                {children}
-              </div>
-              <div id="modal-root" />
-              <div id="toast-root" />
-              <div id="clerk-captcha" />
-            </ToastProvider>
-          </NotificationProvider>
-        </body>
-      </html>
+      {content}
     </ClerkProvider>
   )
 }

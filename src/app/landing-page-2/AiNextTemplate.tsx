@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
-import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { heroVideoConfig } from '@/config/hero-video'
 import { BeamsBackground } from '@/components/ui/beams-background'
@@ -16,7 +15,19 @@ import {
 } from '@/lib/performance'
 
 export default function AiNextTemplate() {
-  const { isSignedIn } = useAuth()
+  // Check if Clerk is disabled
+  const isClerkDisabled = process.env.NEXT_PUBLIC_CLERK_DISABLED === 'true'
+
+  // Mock auth state when Clerk is disabled
+  const isSignedIn = isClerkDisabled ? false : (() => {
+    try {
+      const { useAuth } = require('@clerk/nextjs')
+      return useAuth().isSignedIn
+    } catch {
+      return false
+    }
+  })()
+
   const router = useRouter()
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [heroVideoReady, setHeroVideoReady] = useState(false)
@@ -939,43 +950,43 @@ export default function AiNextTemplate() {
 
               <div className="gallery">
                 <div className="item-box All Brand">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image1.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image1.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image16.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image16.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image11.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image11.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Printing">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image2.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image2.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Printing">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image7.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image7.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Printing">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image3.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image3.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Printing">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image4.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image4.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Brand">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image6.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image6.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Motion">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image8.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image8.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image15.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image15.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image13.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image13.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image12.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image12.jpg" alt="image" loading="lazy" />
                 </div>
                 <div className="item-box All Design">
-                  <img src="/ainext-template/assets/img/gallery/gallery-image17.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/gallery-image17.jpg" alt="image" loading="lazy" />
                 </div>
               </div>
               <div className="gallery-btn">
@@ -1050,61 +1061,61 @@ export default function AiNextTemplate() {
             <div className="ins-gallery owl-carousel owl-theme">
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
               <div className="items">
                 <a href="https://www.instagram.com/" target="_blank" >
-                  <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="image" />
+                  <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="image" loading="lazy" />
                   <i className="ri-instagram-line"></i>
                 </a>
               </div>
