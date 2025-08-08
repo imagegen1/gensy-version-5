@@ -92,10 +92,21 @@ export default function RootLayout({
   const content = (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* PRIORITY: Hero video preload - Load before everything else */}
-        <link rel="preload" href="/videos/hailuo-ai-video-02.webm" as="video" type="video/webm" />
-        <link rel="preload" href="/videos/hailuo-ai-video-02.mp4" as="video" type="video/mp4" />
-        <link rel="preload" href="/images/hero-poster.jpg" as="image" />
+        {/* ABSOLUTE PRIORITY: Hero video preload - FIRST before everything else */}
+        <link rel="preload"
+              as="video"
+              href="/videos/hailuo-ai-video-02.webm"
+              type="video/webm"
+              crossOrigin="anonymous" />
+        <link rel="preload"
+              as="video"
+              href="/videos/hailuo-ai-video-02.mp4"
+              type="video/mp4"
+              crossOrigin="anonymous" />
+        <link rel="preload"
+              as="image"
+              href="/images/hero-poster.jpg"
+              crossOrigin="anonymous" />
 
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />

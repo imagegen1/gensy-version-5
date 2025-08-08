@@ -12,12 +12,16 @@ export interface VideoConfig {
   muted?: boolean
   playsInline?: boolean
   preload?: 'none' | 'metadata' | 'auto'
+  stubMp4?: string  // Ultra-compressed stub for instant loading
+  stubWebm?: string // Ultra-compressed stub for instant loading
 }
 
 export const videoConfigs: Record<string, VideoConfig> = {
   hero: {
     webm: '/videos/hailuo-ai-video-02.webm',
     mp4: '/videos/hailuo-ai-video-02.mp4',
+    stubMp4: '/videos/hero_stub.mp4',
+    stubWebm: '/videos/hero_stub.webm',
     poster: '/images/hero-poster.jpg',
     autoplay: true,
     loop: true,
@@ -199,16 +203,153 @@ export const createOptimizedVideo = (config: VideoConfig, options: Partial<Optim
 }
 
 /**
- * Force hero video playback on DOM ready
+ * Force hero video playback with aggressive loading
  */
 export const initializeHeroVideo = (): void => {
   const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement
   if (heroVideo) {
+    console.log('🎬 Force-initializing hero video...')
+
+    // Force preload and load
+    heroVideo.setAttribute('preload', 'auto')
+    heroVideo.load()
+
+    // Set up canplay listener for instant playback
+    const handleCanPlay = () => {
+      console.log('✅ Hero video can play - starting immediately')
+      heroVideo.play().catch((error) => {
+        console.warn('Hero video autoplay blocked:', error)
+        // Show play button overlay as fallback
+        showHeroPlayButton(heroVideo)
+      })
+      heroVideo.removeEventListener('canplay', handleCanPlay)
+    }
+
+    heroVideo.addEventListener('canplay', handleCanPlay)
+
+    // If already ready, play immediately
+    if (heroVideo.readyState >= 3) {
+      handleCanPlay()
+    }
+  }
+}
+
+/**
+ * Show play button overlay for hero video when autoplay is blocked
+ */
+const showHeroPlayButton = (video: HTMLVideoElement): void => {
+  const container = video.parentElement
+  if (!container) return
+
+  const playButton = document.createElement('div')
+  playButton.innerHTML = `
+    <div style="
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 50px;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    ">
+      ▶️ Play Video
+    </div>
+  `
+
+  playButton.onclick = () => {
+    video.play()
+    playButton.remove()
+  }
+
+  container.appendChild(playButton)
+}
+
+/**
+ * Implement stub video swap for ultra-fast hero loading
+ */
+export const initializeHeroWithStub = (config: VideoConfig): void => {
+  const heroVideo = document.getElementById('heroVideo') as HTMLVideoElement
+  if (!heroVideo || !config.stubMp4) return
+
+  console.log('🎬 Initializing hero with stub video for instant playback...')
+
+  // Start with stub video for instant loading
+  const stubSource = document.createElement('source')
+  stubSource.src = config.stubWebm || config.stubMp4
+  stubSource.type = config.stubWebm ? 'video/webm' : 'video/mp4'
+
+  // Clear existing sources and add stub
+  heroVideo.innerHTML = ''
+  heroVideo.appendChild(stubSource)
+
+  // Force load and play stub
+  heroVideo.setAttribute('preload', 'auto')
+  heroVideo.load()
+
+  // When stub starts playing, swap to full video
+  const handleStubPlaying = () => {
+    console.log('✅ Stub playing - swapping to full hero video...')
+
+    // Remove stub sources
+    heroVideo.innerHTML = ''
+
+    // Add full video sources
+    const webmSource = document.createElement('source')
+    webmSource.src = config.webm
+    webmSource.type = 'video/webm'
+    heroVideo.appendChild(webmSource)
+
+    const mp4Source = document.createElement('source')
+    mp4Source.src = config.mp4
+    mp4Source.type = 'video/mp4'
+    heroVideo.appendChild(mp4Source)
+
+    // Load and play full video
+    heroVideo.load()
     heroVideo.play().catch((error) => {
-      console.warn('Hero video autoplay blocked:', error)
-      // Could show a play button overlay as fallback
-      // showPlayButton(heroVideo)
+      console.warn('Full hero video play failed:', error)
     })
+
+    heroVideo.removeEventListener('playing', handleStubPlaying)
+  }
+
+  heroVideo.addEventListener('playing', handleStubPlaying, { once: true })
+
+  // Start stub playback
+  heroVideo.play().catch((error) => {
+    console.warn('Stub video play failed, falling back to full video:', error)
+    // Fallback to regular initialization
+    initializeHeroVideo()
+  })
+}
+
+/**
+ * Check if stub videos exist and use them, otherwise use regular initialization
+ */
+export const initializeHeroVideoAdvanced = (config: VideoConfig): void => {
+  // Try stub video first for ultra-fast loading
+  if (config.stubMp4 || config.stubWebm) {
+    // Check if stub files exist
+    fetch(config.stubMp4 || config.stubWebm || '', { method: 'HEAD' })
+      .then(response => {
+        if (response.ok) {
+          initializeHeroWithStub(config)
+        } else {
+          console.log('Stub video not found, using regular initialization')
+          initializeHeroVideo()
+        }
+      })
+      .catch(() => {
+        console.log('Stub video check failed, using regular initialization')
+        initializeHeroVideo()
+      })
+  } else {
+    initializeHeroVideo()
   }
 }
 
@@ -228,8 +369,8 @@ export const onDOMReady = (callback: () => void): void => {
  */
 export const initializeAllVideoOptimizations = (): void => {
   onDOMReady(() => {
-    // Force hero video playback first
-    initializeHeroVideo()
+    // Force hero video playback first with advanced techniques
+    initializeHeroVideoAdvanced(videoConfigs.hero)
 
     // Then initialize other videos
     initializeAllVideos()

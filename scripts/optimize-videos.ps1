@@ -10,8 +10,9 @@ param(
 # Configuration
 $ErrorActionPreference = "Stop"
 
-Write-Host "🎬 Video Optimization Script" -ForegroundColor Blue
-Write-Host "==============================" -ForegroundColor Blue
+Write-Host "🎬 ADVANCED Video Optimization Script" -ForegroundColor Blue
+Write-Host "=====================================" -ForegroundColor Blue
+Write-Host "Implements instant playback optimizations" -ForegroundColor Cyan
 
 # Create directories
 if (!(Test-Path $OutputDir)) { New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null }
@@ -100,6 +101,67 @@ function Optimize-WebM {
     }
 }
 
+# Function to create ultra-compressed stub video for instant loading
+function Create-StubVideo {
+    param($InputFile, $OutputFile, $Format)
+
+    Write-Host "🔄 Creating ultra-fast stub video: $(Split-Path $OutputFile -Leaf)" -ForegroundColor Magenta
+
+    if ($Format -eq "mp4") {
+        $arguments = @(
+            "-i", $InputFile,
+            "-t", "2",                    # Only first 2 seconds
+            "-vf", "scale=240:-2",        # Tiny resolution for speed
+            "-c:v", "libx264",
+            "-crf", "35",                 # High compression
+            "-preset", "ultrafast",
+            "-c:a", "aac",
+            "-b:a", "64k",
+            "-movflags", "+faststart",
+            "-y",
+            $OutputFile
+        )
+    } else {
+        $arguments = @(
+            "-i", $InputFile,
+            "-t", "2",                    # Only first 2 seconds
+            "-vf", "scale=240:-2",        # Tiny resolution for speed
+            "-c:v", "libvpx-vp9",
+            "-crf", "40",                 # High compression
+            "-b:v", "200k",               # Very low bitrate
+            "-c:a", "libopus",
+            "-b:a", "64k",
+            "-y",
+            $OutputFile
+        )
+    }
+
+    & ffmpeg @arguments 2>$null
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Stub video created: $(Split-Path $OutputFile -Leaf)" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Failed to create stub video: $(Split-Path $InputFile -Leaf)" -ForegroundColor Red
+    }
+}
+
+# Function to verify fast start metadata
+function Test-FastStartMetadata {
+    param($VideoFile)
+
+    Write-Host "🔍 Verifying fast start metadata: $(Split-Path $VideoFile -Leaf)" -ForegroundColor Cyan
+
+    $output = & ffmpeg -i $VideoFile -c copy -an -f null - 2>&1 | Select-String "moov"
+
+    if ($output) {
+        Write-Host "✅ Fast start metadata verified" -ForegroundColor Green
+        return $true
+    } else {
+        Write-Host "⚠️  Fast start metadata not found - will re-optimize" -ForegroundColor Yellow
+        return $false
+    }
+}
+
 # Function to create backup
 function Backup-File {
     param($File)
@@ -157,9 +219,22 @@ foreach ($file in $videoFiles) {
     }
     $outputFile = Join-Path $OutputDir "${filename}${suffix}.$extension"
 
+    # For hero videos, also create stub versions
+    if ($isHero) {
+        $stubFile = Join-Path $OutputDir "hero_stub.$extension"
+        Create-StubVideo $file.FullName $stubFile $extension
+    }
+
     # Optimize based on file type
     switch ($extension.ToLower()) {
         "mp4" {
+            # Verify existing fast start metadata first
+            if ($isHero -and (Test-Path $outputFile)) {
+                if (Test-FastStartMetadata $outputFile) {
+                    Write-Host "✅ Fast start already verified: $(Split-Path $outputFile -Leaf)" -ForegroundColor Green
+                    continue
+                }
+            }
             Optimize-MP4 $file.FullName $outputFile -IsHero:$isHero
         }
         "webm" {

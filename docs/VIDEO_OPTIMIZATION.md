@@ -75,7 +75,14 @@ const videoConfigs = {
 
 ### For Windows (PowerShell):
 ```powershell
+# Basic optimization
 .\scripts\optimize-videos.ps1
+
+# Create HLS segmented streaming
+.\scripts\create-hls-streaming.ps1
+
+# Test CDN range request support
+.\scripts\test-cdn-support.ps1 -VideoUrl "https://your-cdn.com/video.mp4"
 ```
 
 ### For macOS/Linux (Bash):
@@ -88,7 +95,11 @@ chmod +x scripts/optimize-videos.sh
 1. **Create backups** of original files
 2. **Optimize MP4** with `+faststart` flag for streaming
 3. **Optimize WebM** with clustered format for instant playback
-4. **Show file size comparisons** and compression ratios
+4. **Create ultra-fast stub videos** for instant loading
+5. **Generate HLS segments** for advanced streaming
+6. **Verify fast start metadata** with FFmpeg
+7. **Test CDN range request support**
+8. **Show file size comparisons** and compression ratios
 
 ## 📊 **Performance Results**
 
