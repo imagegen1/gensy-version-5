@@ -92,6 +92,11 @@ export default function RootLayout({
   const content = (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* PRIORITY: Hero video preload - Load before everything else */}
+        <link rel="preload" href="/videos/hailuo-ai-video-02.webm" as="video" type="video/webm" />
+        <link rel="preload" href="/videos/hailuo-ai-video-02.mp4" as="video" type="video/mp4" />
+        <link rel="preload" href="/images/hero-poster.jpg" as="image" />
+
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -115,6 +120,14 @@ export default function RootLayout({
         <link rel="preload" href="/ainext-template/assets/img/main logo.svg" as="image" />
         <link rel="preload" href="/ainext-template/assets/js/jquery.min.js" as="script" />
         <link rel="preload" href="/ainext-template/assets/js/bootstrap.bundle.min.js" as="script" />
+
+        {/* Preload showcase video files for lazy loading */}
+        <link rel="preload" href="/videos/seedream.webm" as="video" />
+        <link rel="preload" href="/videos/seedream.mp4" as="video" />
+        <link rel="preload" href="/videos/veo 3.webm" as="video" />
+        <link rel="preload" href="/videos/veo 3.mp4" as="video" />
+        <link rel="preload" href="/videos/minimax.webm" as="video" />
+        <link rel="preload" href="/videos/minimax.mp4" as="video" />
       </head>
       <body className={inter.className}>
         <NotificationProvider>

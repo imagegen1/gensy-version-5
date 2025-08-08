@@ -7,6 +7,8 @@ import { BeamsBackground } from '@/components/ui/beams-background'
 import PerformanceMonitor from '@/components/PerformanceMonitor'
 import InteractiveSelector from '@/components/ui/interactive-selector'
 import { DemoOne } from '@/components/features/DemoOne'
+import OptimizedVideo from '@/components/ui/OptimizedVideo'
+import { videoConfigs, initializeAllVideoOptimizations } from '@/lib/video-optimization'
 import {
   loadCriticalResources,
   loadNonCriticalResources,
@@ -150,6 +152,9 @@ export default function AiNextTemplate() {
             loadNonCriticalResources()
           })
         })
+
+        // Initialize optimized videos for instant playback
+        initializeAllVideoOptimizations()
 
       } catch (error) {
         console.error('❌ Error initializing page:', error)
@@ -484,28 +489,22 @@ export default function AiNextTemplate() {
               </div>
             )}
 
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
+            <OptimizedVideo
+              config={videoConfigs.hero}
               className="hero-video"
-              preload="metadata"
+              priority={true}
               style={{
                 opacity: videoLoaded ? 1 : 0,
                 transition: 'opacity 0.5s ease'
               }}
               onLoadStart={() => {
-                console.log('🎬 Hero video loading started:', heroVideoConfig.videoSources.map(s => s.src).join(', '))
+                console.log('🎬 Hero video loading started')
                 setVideoLoaded(false)
                 setHeroVideoReady(false)
               }}
               onCanPlay={() => {
                 console.log('✅ Hero video can play')
                 setVideoLoaded(true)
-              }}
-              onPlay={() => {
-                console.log('▶️ Hero video started playing')
                 setHeroVideoReady(true) // Signal that hero video is ready, showcase videos can start loading
               }}
               onError={(e) => {
@@ -513,30 +512,8 @@ export default function AiNextTemplate() {
                 console.log('🔄 Falling back to gradient background');
                 setVideoLoaded(true) // Hide loading overlay even on error
                 setHeroVideoReady(true) // Allow showcase videos to load even if hero fails
-                // Fallback to gradient background if video fails to load
-                const videoElement = e.target as HTMLVideoElement;
-                videoElement.style.display = 'none';
-                const container = videoElement.parentElement;
-                if (container) {
-                  container.style.background = 'linear-gradient(135deg, #050913 0%, #1a1a2e 50%, #16213e 100%)';
-                }
               }}
-              onLoadedData={() => {
-                console.log('📊 Hero video data loaded');
-                setVideoLoaded(true)
-                setHeroVideoReady(true)
-                // Force play if autoplay didn't work
-                const video = document.querySelector('.hero-video') as HTMLVideoElement;
-                if (video && video.paused) {
-                  video.play().catch(e => console.log('Manual play failed:', e));
-                }
-              }}
-            >
-              {heroVideoConfig.videoSources.map((source, index) => (
-                <source key={index} src={source.src} type={source.type} />
-              ))}
-              Your browser does not support the video tag.
-            </video>
+            />
             {/* Removed all text content - clean video background only */}
           </div>
           <div className="scroll-down">
@@ -622,14 +599,8 @@ export default function AiNextTemplate() {
                     height: 0,
                     overflow: 'hidden'
                   }}>
-                  <video
-                    ref={seedanceVideoRef}
-                    controls
-                    muted
-                    loop
-                    playsInline
-                    preload="none"
-                    loading="lazy"
+                  <OptimizedVideo
+                    config={videoConfigs.seedance}
                     style={{
                       position: 'absolute',
                       top: 0,
@@ -643,12 +614,7 @@ export default function AiNextTemplate() {
                     onLoadStart={() => console.log('🎬 Seedance video loading...')}
                     onCanPlay={() => console.log('✅ Seedance video ready')}
                     onError={(e) => console.error('❌ Seedance video error:', e)}
-                  >
-                    {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
-                    <source src="/videos/seedream.webm" type="video/webm" />
-                    <source src="/videos/seedream.mp4" type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
+                  />
                   </div>
                 </div>
               </div>
@@ -758,14 +724,8 @@ export default function AiNextTemplate() {
                     height: 0,
                     overflow: 'hidden'
                   }}>
-                    <video
-                      ref={veoVideoRef}
-                      controls
-                      muted
-                      loop
-                      playsInline
-                      preload="none"
-                      loading="lazy"
+                    <OptimizedVideo
+                      config={videoConfigs.veo}
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -779,11 +739,7 @@ export default function AiNextTemplate() {
                       onLoadStart={() => console.log('🎬 Veo video loading...')}
                       onCanPlay={() => console.log('✅ Veo video ready')}
                       onError={(e) => console.error('❌ Veo video error:', e)}
-                    >
-                      <source src="/videos/veo-3.webm" type="video/webm" />
-                      <source src="/videos/veo 3.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                    />
                   </div>
                 </div>
               </div>
@@ -815,14 +771,8 @@ export default function AiNextTemplate() {
                     height: 0,
                     overflow: 'hidden'
                   }}>
-                    <video
-                      ref={minimaxVideoRef}
-                      controls
-                      muted
-                      loop
-                      playsInline
-                      preload="none"
-                      loading="lazy"
+                    <OptimizedVideo
+                      config={videoConfigs.minimax}
                       style={{
                         position: 'absolute',
                         top: 0,
@@ -836,12 +786,7 @@ export default function AiNextTemplate() {
                       onLoadStart={() => console.log('🎬 MiniMax video loading...')}
                       onCanPlay={() => console.log('✅ MiniMax video ready')}
                       onError={(e) => console.error('❌ MiniMax video error:', e)}
-                    >
-                      {/* Progressive Enhancement: WebM first (better compression), MP4 fallback */}
-                      <source src="/videos/minimax.webm" type="video/webm" />
-                      <source src="/videos/minimax.mp4" type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
+                    />
                   </div>
                 </div>
               </div>
