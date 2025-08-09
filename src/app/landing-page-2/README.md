@@ -1,7 +1,7 @@
-# AiNext Landing Page 2 - Performance Optimized Implementation
+# Gensy Landing Page 2 - Performance Optimized Implementation
 
 ## Overview
-This is a performance-optimized implementation of the AiNext HTML template as a Next.js page. The page is accessible at `/landing-page-2` and provides the same visual experience with significantly improved loading performance through advanced optimization techniques.
+This is a performance-optimized implementation of the Gensy HTML template as a Next.js page. The page is accessible at `/landing-page-2` and provides the same visual experience with significantly improved loading performance through advanced optimization techniques.
 
 ## Implementation Details
 
@@ -11,7 +11,7 @@ This is a performance-optimized implementation of the AiNext HTML template as a 
 - **Status**: Fully functional with advanced performance optimizations
 
 ### Template Source
-- **Template**: AiNext - AI Agency & Startup HTML Template
+- **Template**: Gensy - AI Agency & Startup HTML Template
 - **Version**: 2024-02-14-08-05-16-utc
 - **Framework**: Bootstrap 5 based
 - **Features**: Responsive design, animations, carousels, modern UI

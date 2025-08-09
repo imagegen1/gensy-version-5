@@ -33,13 +33,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-1.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">The actual history of machine intelligence</a></h3>
+                  <h3><a href="/blog">The actual history of machine intelligence</a></h3>
                   <ul>
                     <li>March 18, 2022</li>
                     <li><span>0</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>
@@ -52,13 +52,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-2.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">How to create a machine learning model</a></h3>
+                  <h3><a href="/blog">How to create a machine learning model</a></h3>
                   <ul>
                     <li>March 20, 2022</li>
                     <li><span>2</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>
@@ -71,13 +71,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-3.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">Future of AI in Creative Industries</a></h3>
+                  <h3><a href="/blog">Future of AI in Creative Industries</a></h3>
                   <ul>
                     <li>March 22, 2022</li>
                     <li><span>5</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>
@@ -90,13 +90,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-4.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">Best Practices for AI Image Generation</a></h3>
+                  <h3><a href="/blog">Best Practices for AI Image Generation</a></h3>
                   <ul>
                     <li>March 25, 2022</li>
                     <li><span>3</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>
@@ -109,13 +109,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-5.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">Understanding Neural Networks</a></h3>
+                  <h3><a href="/blog">Understanding Neural Networks</a></h3>
                   <ul>
                     <li>March 28, 2022</li>
                     <li><span>7</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>
@@ -128,13 +128,13 @@ export default function BlogPage() {
               <div className="item" data-aos="fade-up" data-aos-duration="1500">
                 <img src="/ainext-template/assets/img/blogs/artical-6.jpg" alt="image" />
                 <div className="pop-content">
-                  <h3><a href="/blog-ainext">AI Ethics and Responsible Development</a></h3>
+                  <h3><a href="/blog">AI Ethics and Responsible Development</a></h3>
                   <ul>
                     <li>March 30, 2022</li>
                     <li><span>12</span>Comments</li>
                   </ul>
                 </div>
-                <a href="/blog-ainext">
+                <a href="/blog">
                   <div className="go-corner">
                     <div className="go-arrow">
                       <i className="ri-arrow-right-up-line"></i>

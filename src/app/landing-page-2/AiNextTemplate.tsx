@@ -16,7 +16,7 @@ import {
   measurePerformance
 } from '@/lib/performance'
 
-export default function AiNextTemplate() {
+export default function GensyTemplate() {
   // Check if Clerk is disabled
   const isClerkDisabled = process.env.NEXT_PUBLIC_CLERK_DISABLED === 'true'
 
@@ -194,6 +194,58 @@ export default function AiNextTemplate() {
             display: none !important;
           }
 
+          /* LAYOUT FIX - Resolve horizontal overflow and right-side whitespace */
+          html, body {
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+          }
+
+          /* Remove problematic max-width constraint */
+          @media only screen and (min-width: 992px) and (max-width: 1199px) {
+            .container-fluid {
+              max-width: none !important;
+              width: 100% !important;
+              padding-left: 15px !important;
+              padding-right: 15px !important;
+            }
+          }
+
+          /* Reduce excessive padding for large screens */
+          @media only screen and (min-width: 1750px) {
+            .container-fluid {
+              max-width: 100% !important;
+              padding-left: 50px !important;
+              padding-right: 50px !important;
+            }
+          }
+
+          /* Ensure container-fluid always uses full width */
+          .container-fluid {
+            width: 100% !important;
+            max-width: 100vw !important;
+          }
+
+          /* Video hero section fixes */
+          .video-hero-section {
+            width: 100vw !important;
+            max-width: 100vw !important;
+            overflow: hidden !important;
+          }
+
+          /* Section fixes */
+          section {
+            width: 100% !important;
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+          }
+
+          /* Bootstrap grid fixes */
+          .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            max-width: 100% !important;
+          }
+
           .gradient-signin-button {
             position: relative;
             width: 120px;
@@ -285,12 +337,12 @@ export default function AiNextTemplate() {
                       </a>
                     </li>
                     <li className="nav-item">
-                      <a href="/team-ainext" className="nav-link">
+                      <a href="/team" className="nav-link">
                         Team
                       </a>
                     </li>
                     <li className="nav-item">
-                      <a href="/pricing-ainext" className="nav-link">
+                      <a href="/pricing" className="nav-link">
                         Pricing
                       </a>
                     </li>
@@ -305,14 +357,14 @@ export default function AiNextTemplate() {
                       </a>
                     </li>
                     <li className="nav-item">
-                      <a href="/not-found-ainext" className="nav-link">
+                      <a href="/not-found" className="nav-link">
                         404 Error Page
                       </a>
                     </li>
                   </ul>
                 </li>
                 <li className="nav-item">
-                  <a href="/portfolio-ainext" className="nav-link">
+                  <a href="/portfolio" className="nav-link">
                     Portfolio
                   </a>
                 </li>
@@ -322,24 +374,24 @@ export default function AiNextTemplate() {
                   </a>
                   <ul className="dropdown-menu">
                     <li className="nav-item">
-                      <a href="/blog-ainext" className="nav-link">
+                      <a href="/blog" className="nav-link">
                         Blog Grid
                       </a>
                     </li>
                     <li className="nav-item">
-                      <a href="/blog-ainext" className="nav-link">
+                      <a href="/blog" className="nav-link">
                         Blog Right Sidebar
                       </a>
                     </li>
                     <li className="nav-item">
-                      <a href="/blog-ainext" className="nav-link">
+                      <a href="/blog" className="nav-link">
                         Blog Details
                       </a>
                     </li>
                   </ul>
                 </li>
                 <li className="nav-item">
-                  <a href="/contact-ainext" className="nav-link">
+                  <a href="/contact" className="nav-link">
                     Contact Us
                   </a>
                 </li>
@@ -394,26 +446,26 @@ export default function AiNextTemplate() {
               <li className="responsive-menu-list"><a href="javascript:void(0);" >Pages</a>
                 <ul className="responsive-menu-items">
                   <li><a href="/about">About</a></li>
-                  <li><a href="/team-ainext">Team</a></li>
-                  <li><a href="/pricing-ainext">Pricing</a></li>
+                  <li><a href="/team">Team</a></li>
+                  <li><a href="/pricing">Pricing</a></li>
                   <li><a href="/terms-conditions">Terms Conditions</a></li>
                   <li><a href="/privacy-policy">Privacy Policy</a></li>
-                  <li><a href="/not-found-ainext">404 Error Page</a></li>
+                  <li><a href="/not-found">404 Error Page</a></li>
                 </ul>
               </li>
               <li className="responsive-menu-list without-icon">
-                <a href="/portfolio-ainext">Portfolio</a>
+                <a href="/portfolio">Portfolio</a>
               </li>
 
               <li className="responsive-menu-list"><a href="javascript:void(0);">Blog</a>
                 <ul className="responsive-menu-items">
-                  <li><a href="/blog-ainext">Blog</a></li>
-                  <li><a href="/blog-ainext">Blog Right Sidebar</a></li>
-                  <li><a href="/blog-ainext">Blog Details</a></li>
+                  <li><a href="/blog">Blog</a></li>
+                  <li><a href="/blog">Blog Right Sidebar</a></li>
+                  <li><a href="/blog">Blog Details</a></li>
                 </ul>
               </li>
               <li className="responsive-menu-list without-icon">
-                <a href="/contact-ainext">Contact</a>
+                <a href="/contact">Contact</a>
               </li>
             </ul>
             <div className="others-option d-md-flex align-items-center">
@@ -935,7 +987,7 @@ export default function AiNextTemplate() {
                 </div>
               </div>
               <div className="gallery-btn">
-                <a className="main-btn" href="/portfolio-ainext"><span></span><i className="ri-function-line"></i> View All Images</a>
+                <a className="main-btn" href="/portfolio"><span></span><i className="ri-function-line"></i> View All Images</a>
               </div>
             </div>
           </div>
@@ -964,7 +1016,7 @@ export default function AiNextTemplate() {
                     <li>Unlimited Projects</li>
                     <li>Download prototypes</li>
                   </ul>
-                  <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                  <a href="/contact" className="cta_btn">Buy Now</a>
                 </div>
               </div>
               <div className="col-lg-4 col-md-6">
@@ -977,7 +1029,7 @@ export default function AiNextTemplate() {
                     <li>Unlimited Projects</li>
                     <li>Download prototypes</li>
                   </ul>
-                  <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                  <a href="/contact" className="cta_btn">Buy Now</a>
                 </div>
               </div>
               <div className="col-lg-4 col-md-6">
@@ -990,7 +1042,7 @@ export default function AiNextTemplate() {
                     <li>Unlimited Projects</li>
                     <li>Download prototypes</li>
                   </ul>
-                  <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                  <a href="/contact" className="cta_btn">Buy Now</a>
                 </div>
               </div>
             </div>
@@ -1079,7 +1131,7 @@ export default function AiNextTemplate() {
                     <a href="index.html" className="logo">
                       <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '130px', width: 'auto'}} />
                     </a>
-                    <p>Lorem ipsum amet, consectetur adipiscing elit. Suspendis varius enim eros elementum tristique. Duis cursus.</p>
+                    <p>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds</p>
                     <ul className="social-links">
                       <li><a href="https://www.facebook.com/" target="_blank"><i className="ri-facebook-fill"></i></a></li>
                       <li><a href="https://www.instagram.com/" target="_blank"><i className="ri-instagram-line"></i></a></li>
@@ -1094,9 +1146,9 @@ export default function AiNextTemplate() {
                     <ul className="links-list">
                       <li><a href="/landing-page-2">Home</a></li>
                       <li><a href="/about">About Us</a></li>
-                      <li><a href="/pricing-ainext">Pricing</a></li>
-                      <li><a href="/blog-ainext">Blog</a></li>
-                      <li><a href="/contact-ainext">Contact Us</a></li>
+                      <li><a href="/pricing">Pricing</a></li>
+                      <li><a href="/blog">Blog</a></li>
+                      <li><a href="/contact">Contact Us</a></li>
                     </ul>
                   </div>
                 </div>
@@ -1107,7 +1159,7 @@ export default function AiNextTemplate() {
                       <li><a href="/terms-conditions">Legal</a></li>
                       <li><a href="/terms-conditions">Terms of Use</a></li>
                       <li><a href="/terms-conditions">Terms & Conditions</a></li>
-                      <li><a href="/pricing-ainext">Payment Method</a></li>
+                      <li><a href="/pricing">Payment Method</a></li>
                       <li><a href="/privacy-policy">Privacy Policy</a></li>
                     </ul>
                   </div>
@@ -1130,7 +1182,7 @@ export default function AiNextTemplate() {
             </div>
             <div className="pr-line"></div>
             <div className="footer-bottom-area">
-              <p>© Copyright | <a href="https://alhikmahsoft.com" target="_blank">AlHikmahSoft</a>  | All Rights Reserved is Proudly </p>
+              <p>© Copyright | <a href="https://gensy.io" target="_blank">Gensy</a>  | All Rights Reserved is Proudly </p>
             </div>
           </div>
           <div className="lines">

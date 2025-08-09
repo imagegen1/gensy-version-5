@@ -1,0 +1,171 @@
+/* Layout Fix CSS - Resolves horizontal overflow and right-side whitespace issues */
+
+/* 1. GLOBAL OVERFLOW PREVENTION */
+html, body {
+  overflow-x: hidden !important;
+  max-width: 100vw !important;
+}
+
+/* 2. CONTAINER-FLUID FIXES */
+/* Remove problematic max-width constraint that prevents full-width layout */
+@media only screen and (min-width: 992px) and (max-width: 1199px) {
+  .container-fluid {
+    max-width: none !important; /* Remove the 960px constraint */
+    width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+  }
+}
+
+/* Reduce excessive padding for large screens */
+@media only screen and (min-width: 1750px) {
+  .container-fluid {
+    max-width: 100% !important; /* Remove 1920px constraint */
+    padding-left: 50px !important; /* Reduce from 100px */
+    padding-right: 50px !important; /* Reduce from 100px */
+  }
+}
+
+/* Ensure container-fluid always uses full width */
+.container-fluid {
+  width: 100% !important;
+  max-width: 100vw !important;
+}
+
+/* 3. VIDEO HERO SECTION FIXES */
+.video-hero-section {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+
+.video-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.hero-video {
+  width: 100% !important;
+  max-width: 100% !important;
+  object-fit: cover !important;
+}
+
+/* 4. NAVBAR FIXES */
+.navbar .container-fluid {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+/* 5. SECTION FIXES */
+/* Ensure all sections use full width */
+section {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* 6. BOOTSTRAP GRID FIXES */
+.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Prevent columns from overflowing */
+[class*="col-"] {
+  padding-left: 15px !important;
+  padding-right: 15px !important;
+}
+
+/* 7. FOOTER FIXES */
+.footer-area {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* 8. SPECIFIC COMPONENT FIXES */
+/* Gallery area */
+.gallery-area {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* Features area */
+.fetuses-area {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* Pricing area */
+.pricing-area {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* Blog area */
+.blog-area, .article-area {
+  width: 100% !important;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+/* 9. RESPONSIVE ADJUSTMENTS */
+/* Small screens */
+@media only screen and (max-width: 767px) {
+  .container-fluid {
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* Medium screens */
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  .container-fluid {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* Large screens */
+@media only screen and (min-width: 1200px) {
+  .container-fluid {
+    padding-left: 30px !important;
+    padding-right: 30px !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+  }
+}
+
+/* 10. UTILITY CLASSES */
+.full-width {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: calc(-50vw + 50%) !important;
+  margin-right: calc(-50vw + 50%) !important;
+}
+
+.no-overflow {
+  overflow-x: hidden !important;
+}
+
+/* 11. DEBUGGING HELPERS (remove in production) */
+/* Uncomment these to visualize layout issues */
+/*
+* {
+  outline: 1px solid red !important;
+}
+
+.container-fluid {
+  background: rgba(255, 0, 0, 0.1) !important;
+}
+*/

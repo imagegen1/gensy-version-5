@@ -45,7 +45,7 @@ export default function PricingPage() {
                   <li>Unlimited Projects</li>
                   <li>Download prototypes</li>
                 </ul>
-                <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                <a href="/contact" className="cta_btn">Buy Now</a>
               </div>
             </div>
             <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="1500">
@@ -58,7 +58,7 @@ export default function PricingPage() {
                   <li>Unlimited Projects</li>
                   <li>Download prototypes</li>
                 </ul>
-                <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                <a href="/contact" className="cta_btn">Buy Now</a>
               </div>
             </div>
             <div className="col-lg-4 col-md-6" data-aos="fade-up" data-aos-duration="1500">
@@ -71,7 +71,7 @@ export default function PricingPage() {
                   <li>Unlimited Projects</li>
                   <li>Download prototypes</li>
                 </ul>
-                <a href="/contact-ainext" className="cta_btn">Buy Now</a>
+                <a href="/contact" className="cta_btn">Buy Now</a>
               </div>
             </div>
           </div>
