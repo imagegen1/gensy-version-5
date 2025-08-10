@@ -1001,48 +1001,83 @@ export default function GensyTemplate() {
           <div className="section-title-center">
             <div className="width">
               <div className="sub-t">Best Pricing Plans</div>
-              <h2>Our Pricing Plans</h2>
+              <h2>Choose Your Creative Journey</h2>
+              <p>Transparent yearly pricing with no hidden fees. Start creating with AI today!</p>
             </div>
           </div>
           <div className="container">
             <div className="row justify-content-center">
-              <div className="col-lg-4 col-md-6">
+              <div className="col-lg-3 col-md-6">
                 <div className="card">
-                  <h2 className="card_title"><i className="ri-vip-crown-line"></i> Student</h2>
-                  <h3 className="pricing">$20<span className="small">/per month</span></h3>
+                  <h2 className="card_title"><i className="ri-seedling-line"></i> Starter</h2>
+                  <h3 className="pricing">₹360<span className="small">/per year</span></h3>
+                  <div className="credits-info">
+                    <p className="credits">18,000 Credits</p>
+                    <p className="monthly-avg">~1,500/month</p>
+                  </div>
                   <hr />
                   <ul className="features">
-                    <li>One account</li>
-                    <li>Unlimited Projects</li>
-                    <li>Download prototypes</li>
+                    <li>Image Generation</li>
+                    <li>Video Generation</li>
+                    <li>Image Upscaling</li>
+                    <li>Email Support</li>
                   </ul>
-                  <a href="/contact" className="cta_btn">Buy Now</a>
+                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6">
+              <div className="col-lg-3 col-md-6">
                 <div className="card active">
-                  <h2 className="card_title"><i className="ri-vip-crown-line"></i> Personal</h2>
-                  <h3 className="pricing">$39<span className="small">/per month</span></h3>
+                  <div className="popular-badge">Most Popular</div>
+                  <h2 className="card_title"><i className="ri-vip-crown-line"></i> Pro</h2>
+                  <h3 className="pricing">₹937<span className="small">/per year</span></h3>
+                  <div className="credits-info">
+                    <p className="credits">46,850 Credits</p>
+                    <p className="monthly-avg">~3,904/month</p>
+                  </div>
                   <hr />
                   <ul className="features">
-                    <li>One account</li>
-                    <li>Unlimited Projects</li>
-                    <li>Download prototypes</li>
+                    <li>Advanced Models</li>
+                    <li>Priority Processing</li>
+                    <li>Priority Support</li>
+                    <li>Analytics</li>
                   </ul>
-                  <a href="/contact" className="cta_btn">Buy Now</a>
+                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6">
+              <div className="col-lg-3 col-md-6">
                 <div className="card">
-                  <h2 className="card_title"><i className="ri-vip-crown-line"></i> Family</h2>
-                  <h3 className="pricing">$60<span className="small">/per month</span></h3>
+                  <h2 className="card_title"><i className="ri-building-line"></i> Business</h2>
+                  <h3 className="pricing">₹4,185<span className="small">/per year</span></h3>
+                  <div className="credits-info">
+                    <p className="credits">209,250 Credits</p>
+                    <p className="monthly-avg">~17,437/month</p>
+                  </div>
                   <hr />
                   <ul className="features">
-                    <li>One account</li>
-                    <li>Unlimited Projects</li>
-                    <li>Download prototypes</li>
+                    <li>Premium Models</li>
+                    <li>API Access</li>
+                    <li>Team Features</li>
+                    <li>Dedicated Support</li>
                   </ul>
-                  <a href="/contact" className="cta_btn">Buy Now</a>
+                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
+                </div>
+              </div>
+              <div className="col-lg-3 col-md-6">
+                <div className="card">
+                  <h2 className="card_title"><i className="ri-rocket-line"></i> Enterprise</h2>
+                  <h3 className="pricing">₹8,850<span className="small">/per year</span></h3>
+                  <div className="credits-info">
+                    <p className="credits">442,500 Credits</p>
+                    <p className="monthly-avg">~36,875/month</p>
+                  </div>
+                  <hr />
+                  <ul className="features">
+                    <li>Unlimited Premium</li>
+                    <li>White Label</li>
+                    <li>Custom Integration</li>
+                    <li>24/7 Support</li>
+                  </ul>
+                  <a href="/contact-ainext" className="cta_btn">Contact Sales</a>
                 </div>
               </div>
             </div>

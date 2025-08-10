@@ -118,7 +118,50 @@ export class CreditService {
   }
 
   /**
-   * Deduct credits from user account
+   * Deduct credits from user account with service-specific pricing
+   */
+  static async deductCreditsForService(
+    provider: string,
+    modelName: string,
+    description: string,
+    generationId?: string,
+    clerkUserId?: string
+  ): Promise<{ success: boolean; newBalance: number; creditsDeducted: number; error?: string }> {
+    try {
+      const userId = clerkUserId || (await auth()).userId
+      if (!userId) throw new Error('User not authenticated')
+
+      // Import ServicePricingManager dynamically to avoid circular imports
+      const { ServicePricingManager } = await import('@/lib/pricing/service-pricing')
+
+      // Get credit cost for the specific service
+      const creditsRequired = await ServicePricingManager.getCreditsForModel(provider, modelName)
+      if (creditsRequired === 0) {
+        throw new Error(`Pricing not found for ${provider} - ${modelName}`)
+      }
+
+      // Use the existing deductCredits method
+      const result = await this.deductCredits(creditsRequired, description, generationId, clerkUserId)
+
+      return {
+        success: result.success,
+        newBalance: result.newBalance,
+        creditsDeducted: creditsRequired,
+        error: result.error
+      }
+    } catch (error) {
+      console.error('Error deducting credits for service:', error)
+      return {
+        success: false,
+        newBalance: 0,
+        creditsDeducted: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
+    }
+  }
+
+  /**
+   * Deduct credits from user account (legacy method)
    */
   static async deductCredits(
     amount: number,

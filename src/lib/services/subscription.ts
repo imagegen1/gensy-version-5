@@ -36,9 +36,20 @@ export interface CreditPackage {
   id: string
   name: string
   credits: number
-  price: number
+  price: number // Price in INR
   bonus_percentage: number
   description: string
+}
+
+export interface PricingTier {
+  id: string
+  name: string
+  description: string
+  price_yearly: number // Price in INR
+  credits_total: number // Total credits for the year
+  credits_per_month: number // Average credits per month
+  features: string[]
+  popular?: boolean
 }
 
 export class SubscriptionService {
@@ -267,41 +278,114 @@ export class SubscriptionService {
   }
 
   /**
-   * Get available credit packages
+   * Get available credit packages (Pay-as-you-go) - INR pricing
    */
   static getCreditPackages(): CreditPackage[] {
     return [
       {
-        id: 'starter',
-        name: 'Starter Pack',
-        credits: 25,
-        price: 4.99,
+        id: 'small',
+        name: 'Small Pack',
+        credits: 500,
+        price: 10, // ₹10 for 500 credits
         bonus_percentage: 0,
         description: 'Perfect for trying out premium features'
       },
       {
-        id: 'value',
-        name: 'Value Pack',
-        credits: 60,
-        price: 9.99,
-        bonus_percentage: 20,
-        description: 'Great value with 20% bonus credits'
+        id: 'medium',
+        name: 'Medium Pack',
+        credits: 1250,
+        price: 25, // ₹25 for 1250 credits (25% bonus)
+        bonus_percentage: 25,
+        description: 'Great value with 25% bonus credits'
       },
       {
-        id: 'power',
-        name: 'Power Pack',
-        credits: 150,
-        price: 19.99,
-        bonus_percentage: 50,
-        description: 'Best for heavy users with 50% bonus'
+        id: 'large',
+        name: 'Large Pack',
+        credits: 2750,
+        price: 50, // ₹50 for 2750 credits (37.5% bonus)
+        bonus_percentage: 37.5,
+        description: 'Best for regular users with 37.5% bonus'
       },
       {
         id: 'mega',
         name: 'Mega Pack',
-        credits: 350,
-        price: 39.99,
-        bonus_percentage: 75,
-        description: 'Maximum value with 75% bonus credits'
+        credits: 6000,
+        price: 100, // ₹100 for 6000 credits (50% bonus)
+        bonus_percentage: 50,
+        description: 'Maximum value with 50% bonus credits'
+      }
+    ]
+  }
+
+  /**
+   * Get pricing tiers (Yearly subscriptions) - INR pricing
+   */
+  static getPricingTiers(): PricingTier[] {
+    return [
+      {
+        id: 'starter',
+        name: 'Starter',
+        description: 'Great for beginners exploring AI creativity',
+        price_yearly: 360, // ₹360 per year
+        credits_total: 18000, // 18,000 credits per year
+        credits_per_month: 1500, // 1,500 credits per month average
+        features: [
+          'Image Generation (Basic Models)',
+          'Video Generation (Basic Models)',
+          'Image Upscaling',
+          'Email Support',
+          'Community Access'
+        ]
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        description: 'Perfect for regular creators and professionals',
+        price_yearly: 937, // ₹937 per year
+        credits_total: 46850, // 46,850 credits per year
+        credits_per_month: 3904, // 3,904 credits per month average
+        features: [
+          'All Starter Features',
+          'Advanced Image Models',
+          'Advanced Video Models',
+          'Priority Processing',
+          'Priority Support',
+          'Advanced Analytics'
+        ],
+        popular: true
+      },
+      {
+        id: 'business',
+        name: 'Business',
+        description: 'For professionals and small teams',
+        price_yearly: 4185, // ₹4,185 per year
+        credits_total: 209250, // 209,250 credits per year
+        credits_per_month: 17437, // 17,437 credits per month average
+        features: [
+          'All Pro Features',
+          'Premium Models Access',
+          'API Access',
+          'Team Collaboration',
+          'Custom Branding',
+          'Dedicated Support'
+        ]
+      },
+      {
+        id: 'enterprise',
+        name: 'Enterprise',
+        description: 'For large teams and businesses',
+        price_yearly: 8850, // ₹8,850 per year
+        credits_total: 442500, // 442,500 credits per year
+        credits_per_month: 36875, // 36,875 credits per month average
+        features: [
+          'All Business Features',
+          'Unlimited Premium Models',
+          'White Label Solution',
+          'Custom Integrations',
+          'SLA Guarantee',
+          '24/7 Phone Support',
+          'Custom Training'
+        ]
       }
     ]
   }
