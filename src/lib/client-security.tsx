@@ -26,8 +26,11 @@ export function sanitizeHtml(dirty: string): string {
         .replace(/vbscript\s*:/gi, '') // Remove vbscript: protocol
         .replace(/data\s*:/gi, '') // Remove data: protocol
 
-      // Remove event handlers
-      sanitized = sanitized.replace(/on\w+\s*=/gi, '') // Remove event handlers
+      // Remove event handlers with comprehensive patterns
+      sanitized = sanitized
+        .replace(/\bon\w+\s*=/gi, '') // Remove event handlers (word boundary)
+        .replace(/\s+on\w+\s*=/gi, '') // Remove spaced event handlers
+        .replace(/on[a-z]+\s*=/gi, '') // Remove lowercase event handlers
 
       // Remove dangerous tags using simple character-based approach
       sanitized = sanitized
@@ -39,6 +42,13 @@ export function sanitizeHtml(dirty: string): string {
         .replace(/<\s*\/\s*object\s*>/gi, '&lt;/object&gt;') // Neutralize object closing tags
         .replace(/<\s*embed\b/gi, '&lt;embed') // Neutralize embed opening tags
         .replace(/<\s*\/\s*embed\s*>/gi, '&lt;/embed&gt;') // Neutralize embed closing tags
+
+      // Additional comprehensive sanitization
+      sanitized = sanitized
+        .replace(/script/gi, 'scr1pt') // Neutralize script text
+        .replace(/iframe/gi, '1frame') // Neutralize iframe text
+        .replace(/object/gi, '0bject') // Neutralize object text
+        .replace(/embed/gi, '3mbed') // Neutralize embed text
 
     } while (sanitized !== previous)
 
@@ -71,10 +81,13 @@ export function sanitizeText(text: string): string {
     previous = sanitized
     sanitized = sanitized
       .replace(/[<>]/g, '') // Remove potential HTML tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-      .replace(/data:/gi, '') // Remove data: protocol
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+      .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
+      .replace(/vbscript\s*:/gi, '') // Remove vbscript: protocol
+      .replace(/data\s*:/gi, '') // Remove data: protocol
+      .replace(/\bon\w+\s*=/gi, '') // Remove event handlers (word boundary)
+      .replace(/\s+on\w+\s*=/gi, '') // Remove spaced event handlers
+      .replace(/script/gi, 'scr1pt') // Neutralize script text
+      .replace(/iframe/gi, '1frame') // Neutralize iframe text
   } while (sanitized !== previous)
 
   return sanitized
@@ -97,10 +110,13 @@ export function sanitizeAttribute(value: string): string {
     previous = sanitized
     sanitized = sanitized
       .replace(/[<>"'`]/g, '') // Remove HTML-sensitive characters including backticks
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-      .replace(/data:/gi, '') // Remove data: protocol
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+      .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
+      .replace(/vbscript\s*:/gi, '') // Remove vbscript: protocol
+      .replace(/data\s*:/gi, '') // Remove data: protocol
+      .replace(/\bon\w+\s*=/gi, '') // Remove event handlers (word boundary)
+      .replace(/\s+on\w+\s*=/gi, '') // Remove spaced event handlers
+      .replace(/script/gi, 'scr1pt') // Neutralize script text
+      .replace(/iframe/gi, '1frame') // Neutralize iframe text
   } while (sanitized !== previous)
 
   return sanitized

@@ -897,7 +897,7 @@ export function ImageGeneratorInterface() {
                     <div className="flex flex-wrap gap-2 p-0 pb-1 transition-all duration-300">
                       {files.map((file, index) => (
                         <div key={index} className="relative group">
-                          {file.type.startsWith("image/") && filePreviews[file.name] && (
+                          {file.type.startsWith("image/") && filePreviews[sanitizeAttribute(file.name)] && (
                             <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
                               <img
                                 src={filePreviews[sanitizeAttribute(file.name)] || ''}

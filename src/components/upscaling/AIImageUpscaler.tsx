@@ -198,7 +198,7 @@ const AssetGallery: React.FC<{
           >
             <ImageWithFallback
               src={asset.thumbnail}
-              alt={asset.name}
+              alt={sanitizeText(asset.name)}
               className="w-full h-full"
               onError={() => console.log(`🖼️ Failed to load thumbnail for asset: ${asset.id}`)}
             />
@@ -254,7 +254,7 @@ const SidebarImageViewer: React.FC<{
             <div className="flex-1 flex items-center justify-center min-w-0 bg-gray-100">
               <ImageWithFallback
                 src={asset.thumbnail}
-                alt={asset.name}
+                alt={sanitizeText(asset.name)}
                 className="max-w-full max-h-[70vh] object-contain"
               />
             </div>
@@ -456,7 +456,7 @@ const MainInteractionArea: React.FC<{
               <div className="relative">
                 <ImageWithFallback
                   src={selectedAsset.thumbnail}
-                  alt={selectedAsset.name}
+                  alt={sanitizeText(selectedAsset.name)}
                   className="w-20 h-20 object-cover rounded-lg border"
                 />
               </div>
