@@ -6,6 +6,7 @@
 import { headers } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import bcrypt from 'bcrypt'
 import { z } from 'zod'
 import { env } from './env'
 
@@ -346,7 +347,14 @@ export class APIKeyValidator {
   }
 
   static hashAPIKey(apiKey: string): string {
-    return crypto.createHash('sha256').update(apiKey).digest('hex')
+    // Use bcrypt for secure password/API key hashing
+    const saltRounds = 12
+    return bcrypt.hashSync(apiKey, saltRounds)
+  }
+
+  static verifyAPIKey(apiKey: string, hashedKey: string): boolean {
+    // Verify API key against bcrypt hash
+    return bcrypt.compareSync(apiKey, hashedKey)
   }
 }
 

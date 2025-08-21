@@ -12,17 +12,26 @@ import DOMPurify from 'dompurify'
  */
 export function sanitizeHtml(dirty: string): string {
   if (typeof window === 'undefined') {
-    // Server-side: comprehensive sanitization
-    return dirty
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
-      .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
-      .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
-      .replace(/javascript:/gi, '') // Remove javascript: protocol
-      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-      .replace(/data:/gi, '') // Remove data: protocol
-      .replace(/on\w+\s*=/gi, '') // Remove event handlers
-      .replace(/<[^>]*>/g, '') // Remove remaining HTML tags
+    // Server-side: comprehensive sanitization with iterative replacement
+    let sanitized = dirty
+    let previous: string
+
+    // Apply sanitization repeatedly until no more changes occur
+    do {
+      previous = sanitized
+      sanitized = sanitized
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
+        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
+        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
+        .replace(/javascript:/gi, '') // Remove javascript: protocol
+        .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+        .replace(/data:/gi, '') // Remove data: protocol
+        .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    } while (sanitized !== previous)
+
+    // Final cleanup - remove remaining HTML tags
+    return sanitized.replace(/<[^>]*>/g, '')
   }
 
   return DOMPurify.sanitize(dirty, {
@@ -42,12 +51,21 @@ export function sanitizeHtml(dirty: string): string {
 export function sanitizeText(text: string): string {
   if (!text) return ''
 
-  return text
-    .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-    .replace(/data:/gi, '') // Remove data: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+  let sanitized = text
+  let previous: string
+
+  // Apply sanitization repeatedly until no more changes occur
+  do {
+    previous = sanitized
+    sanitized = sanitized
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+      .replace(/data:/gi, '') // Remove data: protocol
+      .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+  } while (sanitized !== previous)
+
+  return sanitized
     .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim()
@@ -59,12 +77,21 @@ export function sanitizeText(text: string): string {
 export function sanitizeAttribute(value: string): string {
   if (!value) return ''
 
-  return value
-    .replace(/[<>"'`]/g, '') // Remove HTML-sensitive characters including backticks
-    .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-    .replace(/data:/gi, '') // Remove data: protocol
-    .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+  let sanitized = value
+  let previous: string
+
+  // Apply sanitization repeatedly until no more changes occur
+  do {
+    previous = sanitized
+    sanitized = sanitized
+      .replace(/[<>"'`]/g, '') // Remove HTML-sensitive characters including backticks
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+      .replace(/data:/gi, '') // Remove data: protocol
+      .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+  } while (sanitized !== previous)
+
+  return sanitized
     .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
     .replace(/\s+/g, ' ') // Normalize whitespace
     .trim()

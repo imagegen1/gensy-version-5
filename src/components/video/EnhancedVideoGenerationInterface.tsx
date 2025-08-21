@@ -1334,7 +1334,7 @@ ${errorMessage}
                       <div className="relative group">
                         <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
                           <img
-                            src={URL.createObjectURL(startFrameFile)}
+                            src={startFrameFile ? URL.createObjectURL(startFrameFile) : ''}
                             alt="Start frame"
                             className="h-full w-full object-cover"
                           />
@@ -1355,7 +1355,7 @@ ${errorMessage}
                       <div className="relative group">
                         <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
                           <img
-                            src={URL.createObjectURL(endFrameFile)}
+                            src={endFrameFile ? URL.createObjectURL(endFrameFile) : ''}
                             alt="End frame"
                             className="h-full w-full object-cover"
                           />

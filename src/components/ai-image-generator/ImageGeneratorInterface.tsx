@@ -899,7 +899,7 @@ export function ImageGeneratorInterface() {
                           {file.type.startsWith("image/") && filePreviews[file.name] && (
                             <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
                               <img
-                                src={filePreviews[file.name]}
+                                src={filePreviews[file.name] || ''}
                                 alt={file.name}
                                 className="h-full w-full object-cover"
                               />

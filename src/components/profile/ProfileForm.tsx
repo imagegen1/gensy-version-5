@@ -187,10 +187,24 @@ export function ProfileForm({ onSave, className = '' }: ProfileFormProps) {
           current = current[key]
         }
 
-        // Set the final value with sanitization
+        // Set the final value with sanitization and additional protection
         const finalKey = keys[keys.length - 1]
+
+        // Additional protection against prototype pollution for final key
+        if (dangerousKeys.includes(finalKey)) {
+          console.warn('Blocked potential prototype pollution attempt on final key:', finalKey)
+          return prev
+        }
+
         const sanitizedValue = typeof value === 'string' ? value.trim() : value
-        current[finalKey] = sanitizedValue
+
+        // Use Object.defineProperty for safer assignment
+        Object.defineProperty(current, finalKey, {
+          value: sanitizedValue,
+          writable: true,
+          enumerable: true,
+          configurable: true
+        })
 
         return newData
       }

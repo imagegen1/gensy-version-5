@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { cn } from "@/lib/utils"
 import { Button, Badge, Card } from "@/components/ui"
+import { validateUrl } from "@/lib/client-security"
 import {
   Upload,
   Image as ImageIcon,
@@ -34,10 +35,17 @@ const ImageWithFallback: React.FC<{
   const [hasError, setHasError] = useState(false)
 
   useEffect(() => {
-    setCurrentSrc(src)
+    // Validate URL before setting
+    const validation = validateUrl(src)
+    if (validation.isValid && validation.sanitizedUrl) {
+      setCurrentSrc(validation.sanitizedUrl)
+    } else {
+      console.warn('Invalid image URL, using fallback:', src)
+      setCurrentSrc(fallbackSrc)
+    }
     setIsLoading(true)
     setHasError(false)
-  }, [src])
+  }, [src, fallbackSrc])
 
   const handleError = () => {
     if (currentSrc !== fallbackSrc) {

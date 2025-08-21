@@ -14,9 +14,9 @@ const options = {
   headers: {
     'Content-Type': 'application/json',
     'Content-Length': data.length
-  },
-  // For localhost development, allow self-signed certificates
-  rejectUnauthorized: false
+  }
+  // Certificate validation enabled by default for security
+  // For development with self-signed certs, use NODE_TLS_REJECT_UNAUTHORIZED=0 environment variable
 };
 
 const req = https.request(options, (res) => {
