@@ -102,9 +102,16 @@ async function migrateVideoUrls() {
         continue
       }
 
-      // Skip if not a GCS signed URL
-      if (!result_url.includes('storage.googleapis.com') && !result_url.includes('storage.cloud.google.com')) {
-        console.log(`⏭️  Skipping ${id}: Not a GCS URL (${result_url.substring(0, 50)}...)`)
+      // Skip if not a GCS signed URL - use proper URL parsing
+      try {
+        const parsedUrl = new URL(result_url)
+        if (parsedUrl.hostname !== 'storage.googleapis.com' && parsedUrl.hostname !== 'storage.cloud.google.com') {
+          console.log(`⏭️  Skipping ${id}: Not a GCS URL (${parsedUrl.hostname})`)
+          skippedCount++
+          continue
+        }
+      } catch (error) {
+        console.log(`⏭️  Skipping ${id}: Invalid URL format`)
         skippedCount++
         continue
       }

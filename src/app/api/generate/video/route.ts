@@ -572,17 +572,28 @@ export async function POST(request: NextRequest) {
 
         console.log(`🎥 [${requestId}] VIDEO GENERATION: Completed with video URL:`, primaryVideoUrl)
 
-        // Store GCS path instead of full signed URL
+        // Store GCS path instead of full signed URL with proper validation
         let resultUrl = primaryVideoUrl
-        if (primaryVideoUrl.includes('storage.googleapis.com') || primaryVideoUrl.includes('storage.cloud.google.com')) {
-          // Extract GCS path from signed URL
-          try {
-            const url = new URL(primaryVideoUrl)
-            const pathParts = url.pathname.substring(1).split('/') // Remove leading '/'
+        try {
+          const parsedUrl = new URL(primaryVideoUrl)
+
+          // Validate that it's actually a GCS URL
+          if (parsedUrl.hostname === 'storage.googleapis.com' || parsedUrl.hostname === 'storage.cloud.google.com') {
+            // Extract GCS path from signed URL
+            const pathParts = parsedUrl.pathname.substring(1).split('/') // Remove leading '/'
             if (pathParts.length >= 2) {
               resultUrl = `gs://${pathParts[0]}/${pathParts.slice(1).join('/')}`
               console.log(`🔄 [${requestId}] VIDEO GENERATION: Converted signed URL to GCS path: ${resultUrl}`)
+            } else {
+              console.warn(`⚠️ [${requestId}] VIDEO GENERATION: Invalid GCS URL structure: ${primaryVideoUrl}`)
             }
+          } else {
+            console.log(`📋 [${requestId}] VIDEO GENERATION: Not a GCS URL, using as-is: ${parsedUrl.hostname}`)
+          }
+        } catch (error) {
+          console.error(`❌ [${requestId}] VIDEO GENERATION: Invalid URL format: ${primaryVideoUrl}`, error)
+          // Use original URL if parsing fails
+        }
           } catch (error) {
             console.warn(`⚠️ [${requestId}] VIDEO GENERATION: Failed to convert URL to GCS path, using original:`, error)
           }

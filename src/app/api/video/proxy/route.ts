@@ -295,10 +295,31 @@ export async function GET(request: NextRequest) {
         }
       } else {
         // Not a GCS URL, use as-is (e.g., R2 URLs, MiniMax URLs)
-        videoUrl = generation.result_url
-        const urlType = generation.result_url.includes('r2.cloudflarestorage.com') ? 'R2' :
-                       generation.result_url.includes('minimax.io') ? 'MiniMax' : 'Direct'
-        console.log(`📋 [${requestId}] VIDEO PROXY: Using stored URL directly (${urlType}): ${generation.result_url.substring(0, 100)}...`)
+        // Validate URL before using
+        try {
+          const parsedUrl = new URL(generation.result_url)
+          const allowedHosts = [
+            'r2.cloudflarestorage.com',
+            'pub-b73a86bd5ccf4cc7bba9daf3c7fb363e.r2.dev',
+            'minimax.io',
+            'api.minimax.chat'
+          ]
+
+          if (!allowedHosts.some(host => parsedUrl.hostname === host || parsedUrl.hostname.endsWith('.' + host))) {
+            throw new Error(`Unauthorized host: ${parsedUrl.hostname}`)
+          }
+
+          videoUrl = generation.result_url
+          const urlType = parsedUrl.hostname.includes('r2.') ? 'R2' :
+                         parsedUrl.hostname.includes('minimax') ? 'MiniMax' : 'Direct'
+          console.log(`📋 [${requestId}] VIDEO PROXY: Using validated URL (${urlType}): ${generation.result_url.substring(0, 100)}...`)
+        } catch (error) {
+          console.error(`❌ [${requestId}] VIDEO PROXY: Invalid URL:`, error)
+          return NextResponse.json(
+            { error: 'Invalid video URL' },
+            { status: 400 }
+          )
+        }
       }
     } else {
       // Use the provided URL directly with robust security validation

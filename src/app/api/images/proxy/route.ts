@@ -133,9 +133,34 @@ export async function GET(request: NextRequest) {
         )
       }
 
-      // Extract the key from the file_path (remove the signed URL parameters)
-      const url = new URL(mediaFile.file_path)
-      fileKey = url.pathname.substring(1) // Remove leading slash
+      // Extract the key from the file_path with proper validation
+      try {
+        const url = new URL(mediaFile.file_path)
+
+        // Validate that it's from an allowed host
+        const allowedHosts = [
+          'r2.cloudflarestorage.com',
+          'pub-b73a86bd5ccf4cc7bba9daf3c7fb363e.r2.dev',
+          'storage.googleapis.com',
+          'storage.cloud.google.com'
+        ]
+
+        if (!allowedHosts.some(host => url.hostname === host || url.hostname.endsWith('.' + host))) {
+          console.log(`❌ [${requestId}] IMAGE PROXY: Unauthorized host: ${url.hostname}`)
+          return NextResponse.json(
+            { error: 'Unauthorized file source' },
+            { status: 403 }
+          )
+        }
+
+        fileKey = url.pathname.substring(1) // Remove leading slash
+      } catch (error) {
+        console.log(`❌ [${requestId}] IMAGE PROXY: Invalid file path URL: ${mediaFile.file_path}`)
+        return NextResponse.json(
+          { error: 'Invalid file path' },
+          { status: 400 }
+        )
+      }
     } else {
       // Use the provided key directly
       fileKey = key!

@@ -12,10 +12,19 @@ import DOMPurify from 'dompurify'
  */
 export function sanitizeHtml(dirty: string): string {
   if (typeof window === 'undefined') {
-    // Server-side: return empty string or basic text sanitization
-    return dirty.replace(/<[^>]*>/g, '')
+    // Server-side: comprehensive sanitization
+    return dirty
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+      .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
+      .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
+      .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
+      .replace(/javascript:/gi, '') // Remove javascript: protocol
+      .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+      .replace(/data:/gi, '') // Remove data: protocol
+      .replace(/on\w+\s*=/gi, '') // Remove event handlers
+      .replace(/<[^>]*>/g, '') // Remove remaining HTML tags
   }
-  
+
   return DOMPurify.sanitize(dirty, {
     ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
     ALLOWED_ATTR: [],
@@ -32,11 +41,15 @@ export function sanitizeHtml(dirty: string): string {
  */
 export function sanitizeText(text: string): string {
   if (!text) return ''
-  
+
   return text
     .replace(/[<>]/g, '') // Remove potential HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
     .trim()
 }
 
@@ -45,11 +58,15 @@ export function sanitizeText(text: string): string {
  */
 export function sanitizeAttribute(value: string): string {
   if (!value) return ''
-  
+
   return value
-    .replace(/[<>"']/g, '') // Remove HTML-sensitive characters
+    .replace(/[<>"'`]/g, '') // Remove HTML-sensitive characters including backticks
     .replace(/javascript:/gi, '') // Remove javascript: protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+    .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers (improved pattern)
+    .replace(/[\x00-\x1F\x7F]/g, '') // Remove control characters
+    .replace(/\s+/g, ' ') // Normalize whitespace
     .trim()
     .substring(0, 200) // Limit length for attributes
 }
@@ -142,6 +159,54 @@ export function SafeHtml({ html, className, tag: Tag = 'div' }: SafeHtmlProps) {
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
   )
+}
+
+/**
+ * Comprehensive URL validation and sanitization
+ */
+export function validateUrl(url: string, allowedHosts?: string[]): { isValid: boolean; sanitizedUrl?: string; error?: string } {
+  if (!url || typeof url !== 'string') {
+    return { isValid: false, error: 'URL is required and must be a string' }
+  }
+
+  try {
+    // Remove dangerous protocols and characters
+    const cleanUrl = url
+      .replace(/javascript:/gi, '')
+      .replace(/vbscript:/gi, '')
+      .replace(/data:/gi, '')
+      .replace(/[\x00-\x1F\x7F]/g, '')
+      .trim()
+
+    // Parse URL
+    const parsedUrl = new URL(cleanUrl)
+
+    // Only allow HTTP and HTTPS protocols
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return { isValid: false, error: `Invalid protocol: ${parsedUrl.protocol}` }
+    }
+
+    // Check against allowed hosts if provided
+    if (allowedHosts && allowedHosts.length > 0) {
+      const isAllowed = allowedHosts.some(host =>
+        parsedUrl.hostname === host ||
+        parsedUrl.hostname.endsWith('.' + host)
+      )
+
+      if (!isAllowed) {
+        return { isValid: false, error: `Host not allowed: ${parsedUrl.hostname}` }
+      }
+    }
+
+    // Additional security checks
+    if (parsedUrl.hostname === 'localhost' || parsedUrl.hostname === '127.0.0.1') {
+      return { isValid: false, error: 'Localhost URLs not allowed' }
+    }
+
+    return { isValid: true, sanitizedUrl: parsedUrl.toString() }
+  } catch (error) {
+    return { isValid: false, error: `Invalid URL format: ${error}` }
+  }
 }
 
 /**
