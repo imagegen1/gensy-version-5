@@ -165,3 +165,6 @@ check-*.js
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Sentry Config File
+.env.sentry-build-plugin

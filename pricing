@@ -1,0 +1,22 @@
+**Generations per yearly plan (55 % margin, 1 credit = ₹0.02)**
+
+| Model Name                           | Credits / Generation | 360 ₹ (Y) <br>(18 000 cr) | 937 ₹ (Y) <br>(46 850 cr) | 4 185 ₹ (Y) <br>(209 250 cr) | 8 850 ₹ (Y) <br>(442 500 cr) |
+| ------------------------------------ | -------------------: | ------------------------: | ------------------------: | ---------------------------: | ---------------------------: |
+| Imagen 4 Fast / 3 Fast               |              **197** |                        91 |                       237 |                        1 062 |                        2 246 |
+| FLUX.1 \[dev]                        |                  246 |                        73 |                       190 |                          850 |                        1 798 |
+| SeeDream 3.0 (t2i)                   |                  295 |                        61 |                       158 |                          709 |                        1 500 |
+| Imagen 4 / 3 (Standard)              |                  393 |                        45 |                       119 |                          532 |                        1 125 |
+| FLUX 1.1 \[pro] / Kontext \[pro]     |                  393 |                        45 |                       119 |                          532 |                        1 125 |
+| FLUX.1 \[pro] / Fill / Canny / Depth |                  490 |                        36 |                        95 |                          427 |                          903 |
+| FLUX 1.1 \[pro] Ultra                |                  588 |                        30 |                        79 |                          356 |                          752 |
+| Imagen 4 Ultra                       |                  588 |                        30 |                        79 |                          356 |                          752 |
+| FLUX.1 Kontext \[max]                |                  784 |                        22 |                        59 |                          267 |                          564 |
+| T2V/I2V-Director & I2V-live          |                4 210 |                         4 |                        11 |                           49 |                          105 |
+| S2V-01                               |                6 362 |                         2 |                         7 |                           32 |                           69 |
+| Hailuo-02 (10 s 1080p)               |                8 024 |                         2 |                         5 |                           26 |                           55 |
+| SeeDance Lite (10 s 1080p)           |                8 610 |                         2 |                         5 |                           24 |                           51 |
+| SeeDance Pro (10 s 1080p)            |               11 935 |                         1 |                         3 |                           17 |                           37 |
+| Veo 3 Fast (10 s 1080p)              |               39 155 |                         0 |                         1 |                            5 |                           11 |
+| Veo 3 (10 s 1080p)                   |               73 377 |                         0 |                         0 |                            2 |                            6 |
+
+*Generations are whole numbers (rounded down), assuming users spend their entire yearly credit pool on a single model.*

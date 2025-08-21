@@ -5,15 +5,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getBaseUrl() {
-  if (typeof window !== 'undefined') {
-    // Browser should use relative url
-    return ''
+// Get absolute base URL for the app (server and client safe)
+export function getBaseUrl(): string {
+  // Prefer explicit environment configuration
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL
+  if (envUrl && /^https?:\/\//i.test(envUrl)) return envUrl
+
+  // Fallback to window origin on the client
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin
   }
-  if (process.env.VERCEL_URL) {
-    // SSR should use vercel url
-    return `https://${process.env.VERCEL_URL}`
-  }
-  // dev SSR should use localhost
-  return `http://localhost:${process.env.PORT ?? 3000}`
+
+  // Final fallback for server/build environments
+  return 'http://localhost:3000'
 }
