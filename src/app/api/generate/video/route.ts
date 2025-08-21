@@ -429,6 +429,7 @@ export async function POST(request: NextRequest) {
               result = await GoogleVeoService.generateVideo(prompt, fallbackOptions, generation.id)
 
               // Update the generation record to reflect the fallback
+              const supabase = createServiceRoleClient()
               await supabase
                 .from('generations')
                 .update({
@@ -439,7 +440,7 @@ export async function POST(request: NextRequest) {
                     original_model_requested: modelId
                   }
                 })
-                .eq('id', generation.id)
+                .eq('id', generation.id);
             } else {
               throw error
             }
@@ -510,7 +511,7 @@ export async function POST(request: NextRequest) {
               processing_time_ms: result.metadata?.generationTime,
               updated_at: new Date().toISOString()
             })
-            .eq('id', generation.id)
+            .eq('id', generation.id);
         }
 
         return NextResponse.json(
@@ -594,10 +595,6 @@ export async function POST(request: NextRequest) {
           console.error(`❌ [${requestId}] VIDEO GENERATION: Invalid URL format: ${primaryVideoUrl}`, error)
           // Use original URL if parsing fails
         }
-          } catch (error) {
-            console.warn(`⚠️ [${requestId}] VIDEO GENERATION: Failed to convert URL to GCS path, using original:`, error)
-          }
-        }
 
         // Update generation record with video URL
         await supabase
@@ -608,7 +605,7 @@ export async function POST(request: NextRequest) {
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('id', generation.id)
+          .eq('id', generation.id);
 
         // Create media file record
         await supabase
@@ -627,7 +624,7 @@ export async function POST(request: NextRequest) {
               provider: finalProvider
             },
             is_public: false
-          })
+          });
 
         // Deduct credits
         if (!isTestMode) {
@@ -666,7 +663,7 @@ export async function POST(request: NextRequest) {
             completed_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
-          .eq('id', generation.id)
+          .eq('id', generation.id);
 
         console.log(`✅ [${requestId}] VIDEO GENERATION: Database updated with MiniMax result`)
 
@@ -700,7 +697,7 @@ export async function POST(request: NextRequest) {
               },
               updated_at: new Date().toISOString()
             })
-            .eq('id', generation.id)
+            .eq('id', generation.id);
         }
 
         // Deduct credits immediately for async operations
@@ -749,7 +746,7 @@ export async function POST(request: NextRequest) {
             error_message: error instanceof Error ? error.message : 'Unknown error',
             updated_at: new Date().toISOString()
           })
-          .eq('id', generation.id)
+          .eq('id', generation.id);
       }
 
       return NextResponse.json(
@@ -822,7 +819,7 @@ async function handleVideoCompletion(
               duration: 5 // This would come from actual video metadata
             },
             is_public: false
-          })
+          });
 
         return uploadResult.url || null
       } else {

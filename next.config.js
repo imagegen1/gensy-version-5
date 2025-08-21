@@ -12,6 +12,15 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.externals.push('replicate');
+    } else {
+      // Handle Node.js modules in client-side code
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        os: false,
+        path: false,
+        crypto: false,
+      };
     }
     return config;
   },
