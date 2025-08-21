@@ -87,14 +87,14 @@ export class Encryption {
 
   static encrypt(text: string): { encrypted: string; iv: string; tag: string } {
     const iv = crypto.randomBytes(16)
-    const cipher = crypto.createCipher(this.algorithm, this.key)
+    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv)
     cipher.setAAD(Buffer.from('gensy-ai', 'utf8'))
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex')
     encrypted += cipher.final('hex')
-    
+
     const tag = cipher.getAuthTag()
-    
+
     return {
       encrypted,
       iv: iv.toString('hex'),
@@ -103,13 +103,14 @@ export class Encryption {
   }
 
   static decrypt(encryptedData: { encrypted: string; iv: string; tag: string }): string {
-    const decipher = crypto.createDecipher(this.algorithm, this.key)
+    const iv = Buffer.from(encryptedData.iv, 'hex')
+    const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv)
     decipher.setAAD(Buffer.from('gensy-ai', 'utf8'))
     decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'))
-    
+
     let decrypted = decipher.update(encryptedData.encrypted, 'hex', 'utf8')
     decrypted += decipher.final('utf8')
-    
+
     return decrypted
   }
 }

@@ -159,7 +159,27 @@ export async function runMigrations() {
  */
 async function readSQLFile(filename: string): Promise<string> {
   try {
-    const filePath = path.join(process.cwd(), 'src/lib/database', filename)
+    // Validate filename to prevent path traversal
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      throw new Error(`Invalid filename: ${filename}`)
+    }
+
+    // Only allow .sql files
+    if (!filename.endsWith('.sql')) {
+      throw new Error(`Only .sql files are allowed: ${filename}`)
+    }
+
+    const databaseDir = path.join(process.cwd(), 'src/lib/database')
+    const filePath = path.join(databaseDir, filename)
+
+    // Ensure the resolved path is within the database directory
+    const resolvedPath = path.resolve(filePath)
+    const resolvedDatabaseDir = path.resolve(databaseDir)
+
+    if (!resolvedPath.startsWith(resolvedDatabaseDir)) {
+      throw new Error(`Path traversal attempt detected: ${filename}`)
+    }
+
     return fs.readFileSync(filePath, 'utf-8')
   } catch (error) {
     throw new Error(`Failed to read SQL file ${filename}: ${error}`)

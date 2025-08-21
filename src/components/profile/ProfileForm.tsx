@@ -157,8 +157,9 @@ export function ProfileForm({ onSave, className = '' }: ProfileFormProps) {
       const keys = field.split('.')
 
       // Security: Block prototype pollution attempts
+      const dangerousKeys = ['__proto__', 'constructor', 'prototype', 'hasOwnProperty', 'toString', 'valueOf']
       for (const key of keys) {
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        if (dangerousKeys.includes(key)) {
           console.warn('Blocked potential prototype pollution attempt:', field)
           return prev
         }
@@ -167,17 +168,21 @@ export function ProfileForm({ onSave, className = '' }: ProfileFormProps) {
       if (keys.length === 1) {
         // Single level property update
         const sanitizedValue = typeof value === 'string' ? value.trim() : value
-        return { ...prev, [field]: sanitizedValue }
+        // Use Object.create(null) to avoid prototype pollution
+        const safeUpdate = Object.create(null)
+        safeUpdate[field] = sanitizedValue
+        return { ...prev, ...safeUpdate }
       } else {
         // Nested property update with protection
         const newData = { ...prev }
         let current: any = newData
 
-        // Navigate to the parent object
+        // Navigate to the parent object with additional safety checks
         for (let i = 0; i < keys.length - 1; i++) {
           const key = keys[i]
           if (!current[key] || typeof current[key] !== 'object') {
-            current[key] = {}
+            // Create object without prototype
+            current[key] = Object.create(null)
           }
           current = current[key]
         }

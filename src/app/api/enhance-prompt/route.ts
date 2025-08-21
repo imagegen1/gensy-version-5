@@ -53,10 +53,10 @@ export async function POST(request: NextRequest) {
         )
       }
       userId = authUserId
-      console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
+      console.log('✅ Authentication successful - userId:', userId, 'requestId:', requestId)
     }
 
-    console.log(`📋 [${requestId}] Request body received:`, {
+    console.log('📋 Request body received - requestId:', requestId, {
       prompt: body.prompt?.substring(0, 100) + (body.prompt?.length > 100 ? '...' : ''),
       promptLength: body.prompt?.length,
       testMode: isTestMode
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     const validationResult = enhancePromptSchema.safeParse(body)
 
     if (!validationResult.success) {
-      console.log(`❌ [${requestId}] Request validation failed:`, validationResult.error.errors)
+      console.log('❌ Request validation failed - requestId:', requestId, validationResult.error.errors)
       return NextResponse.json(
         {
           success: false,

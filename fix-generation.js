@@ -1,5 +1,5 @@
 // Fix generation record
-const http = require('http');
+const https = require('https');
 
 const data = JSON.stringify({
   generationId: 'a0c42389-d045-43bf-b436-2b7fbe0ffd33',
@@ -8,16 +8,18 @@ const data = JSON.stringify({
 
 const options = {
   hostname: 'localhost',
-  port: 3001,
+  port: 3443, // Use HTTPS port
   path: '/api/admin/fix-generation',
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
     'Content-Length': data.length
-  }
+  },
+  // For localhost development, allow self-signed certificates
+  rejectUnauthorized: false
 };
 
-const req = http.request(options, (res) => {
+const req = https.request(options, (res) => {
   console.log(`Status: ${res.statusCode}`);
   
   res.on('data', (d) => {

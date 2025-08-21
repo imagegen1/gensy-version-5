@@ -81,9 +81,9 @@ export async function POST(request: NextRequest) {
           { status: 401 }
         )
       }
-      console.log(`✅ [${requestId}] Authentication successful - userId: ${userId}`)
+      console.log('✅ Authentication successful - requestId:', requestId, 'userId:', userId)
     }
-    console.log(`📋 [${requestId}] Request body received:`, {
+    console.log('📋 Request body received - requestId:', requestId, {
       prompt: body.prompt?.substring(0, 100) + (body.prompt?.length > 100 ? '...' : ''),
       aspectRatio: body.aspectRatio,
       style: body.style,

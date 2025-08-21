@@ -120,10 +120,24 @@ export interface SafeHtmlProps {
 }
 
 export function SafeHtml({ html, className, tag: Tag = 'div' }: SafeHtmlProps) {
-  const sanitizedHtml = sanitizeHtml(html)
-  
+  // Additional validation before sanitization
+  if (!html || typeof html !== 'string') {
+    return <Tag className={className} />
+  }
+
+  // Limit HTML length to prevent DoS attacks
+  const maxLength = 10000
+  const truncatedHtml = html.length > maxLength ? html.substring(0, maxLength) + '...' : html
+
+  const sanitizedHtml = sanitizeHtml(truncatedHtml)
+
+  // Double-check that sanitization worked
+  if (!sanitizedHtml || sanitizedHtml.trim() === '') {
+    return <Tag className={className} />
+  }
+
   return (
-    <Tag 
+    <Tag
       className={className}
       dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
     />
