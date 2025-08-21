@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useAuth } from '@clerk/nextjs'
 import { cn } from "@/lib/utils"
 import { Button, Badge, Card } from "@/components/ui"
-import { validateUrl } from "@/lib/client-security"
+import { validateUrl, sanitizeText } from "@/lib/client-security"
 import {
   Upload,
   Image as ImageIcon,
@@ -75,7 +75,7 @@ const ImageWithFallback: React.FC<{
       )}
       <img
         src={currentSrc}
-        alt={alt}
+        alt={sanitizeText(alt)}
         className={cn("w-full h-full object-cover transition-opacity duration-200", isLoading && "opacity-0")}
         onError={handleError}
         onLoad={handleLoad}

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { PlayIcon } from '@heroicons/react/24/outline'
 import { useToast } from '@/components/ui/Toast'
+import { sanitizeText, sanitizeAttribute } from '@/lib/client-security'
 import { StyleSelector, DEFAULT_STYLES } from '@/components/ui/StyleSelector'
 import { RainbowButton } from '@/components/magicui/rainbow-button'
 
@@ -899,8 +900,8 @@ export function ImageGeneratorInterface() {
                           {file.type.startsWith("image/") && filePreviews[file.name] && (
                             <div className="w-16 h-16 rounded-xl overflow-hidden cursor-pointer transition-all duration-300">
                               <img
-                                src={filePreviews[file.name] || ''}
-                                alt={file.name}
+                                src={filePreviews[sanitizeAttribute(file.name)] || ''}
+                                alt={sanitizeText(file.name)}
                                 className="h-full w-full object-cover"
                               />
                               <button

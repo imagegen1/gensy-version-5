@@ -19,15 +19,27 @@ export function sanitizeHtml(dirty: string): string {
     // Apply sanitization repeatedly until no more changes occur
     do {
       previous = sanitized
+
+      // Remove dangerous protocols first
       sanitized = sanitized
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-        .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
-        .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
-        .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
-        .replace(/javascript:/gi, '') // Remove javascript: protocol
-        .replace(/vbscript:/gi, '') // Remove vbscript: protocol
-        .replace(/data:/gi, '') // Remove data: protocol
-        .replace(/on\w+\s*=/gi, '') // Remove event handlers
+        .replace(/javascript\s*:/gi, '') // Remove javascript: protocol
+        .replace(/vbscript\s*:/gi, '') // Remove vbscript: protocol
+        .replace(/data\s*:/gi, '') // Remove data: protocol
+
+      // Remove event handlers
+      sanitized = sanitized.replace(/on\w+\s*=/gi, '') // Remove event handlers
+
+      // Remove dangerous tags using simple character-based approach
+      sanitized = sanitized
+        .replace(/<\s*script\b/gi, '&lt;script') // Neutralize script opening tags
+        .replace(/<\s*\/\s*script\s*>/gi, '&lt;/script&gt;') // Neutralize script closing tags
+        .replace(/<\s*iframe\b/gi, '&lt;iframe') // Neutralize iframe opening tags
+        .replace(/<\s*\/\s*iframe\s*>/gi, '&lt;/iframe&gt;') // Neutralize iframe closing tags
+        .replace(/<\s*object\b/gi, '&lt;object') // Neutralize object opening tags
+        .replace(/<\s*\/\s*object\s*>/gi, '&lt;/object&gt;') // Neutralize object closing tags
+        .replace(/<\s*embed\b/gi, '&lt;embed') // Neutralize embed opening tags
+        .replace(/<\s*\/\s*embed\s*>/gi, '&lt;/embed&gt;') // Neutralize embed closing tags
+
     } while (sanitized !== previous)
 
     // Final cleanup - remove remaining HTML tags
