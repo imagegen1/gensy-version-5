@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { CreditManager } from '@/lib/credits'
+import { CreditService } from '@/lib/credits'
 import { SubscriptionService } from '@/lib/services/subscription'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
@@ -21,17 +21,41 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { packageId, customAmount, customCredits, testPurchase = false } = body
+    const { packageId, customAmount, customCredits, amount, credits, type, testPurchase = false } = body
 
     let creditsToAdd = 0
     let amountPaid = 0
     let packageName = ''
 
-    if (packageId) {
+    if (type === 'pay-as-you-go' && amount && credits) {
+      // Pay-as-you-go purchase
+      const CREDIT_VALUE_INR = 0.02 // ₹0.02 per credit
+      const MIN_AMOUNT = 50 // Minimum ₹50
+
+      if (amount < MIN_AMOUNT) {
+        return NextResponse.json(
+          { error: `Minimum amount is ₹${MIN_AMOUNT}` },
+          { status: 400 }
+        )
+      }
+
+      // Validate credit calculation
+      const expectedCredits = Math.floor(amount / CREDIT_VALUE_INR)
+      if (Math.abs(credits - expectedCredits) > 1) { // Allow 1 credit tolerance for rounding
+        return NextResponse.json(
+          { error: 'Invalid credit calculation' },
+          { status: 400 }
+        )
+      }
+
+      creditsToAdd = credits
+      amountPaid = amount
+      packageName = 'Pay-as-you-go'
+    } else if (packageId) {
       // Purchase predefined credit package
       const packages = SubscriptionService.getCreditPackages()
       const selectedPackage = packages.find(pkg => pkg.id === packageId)
-      
+
       if (!selectedPackage) {
         return NextResponse.json(
           { error: 'Invalid package ID' },
@@ -49,15 +73,16 @@ export async function POST(request: NextRequest) {
       packageName = 'Custom Purchase'
     } else {
       return NextResponse.json(
-        { error: 'Either packageId or customAmount/customCredits is required' },
+        { error: 'Either packageId, customAmount/customCredits, or amount/credits is required' },
         { status: 400 }
       )
     }
 
-    // Validate minimum purchase
-    if (creditsToAdd < 100) {
+    // Validate minimum purchase (different for pay-as-you-go vs packages)
+    const minCredits = type === 'pay-as-you-go' ? 2500 : 100 // 2500 credits = ₹50 for pay-as-you-go
+    if (creditsToAdd < minCredits) {
       return NextResponse.json(
-        { error: 'Minimum purchase is 100 credits' },
+        { error: `Minimum purchase is ${minCredits} credits` },
         { status: 400 }
       )
     }
@@ -75,9 +100,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Add credits to user account
-    const result = await CreditManager.addCredits(
+    const result = await CreditService.addCredits(
       creditsToAdd,
       `Credit purchase: ${packageName} (₹${amountPaid})`,
+      'purchase',
+      undefined,
       userId
     )
 

@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import PayAsYouGo from '@/components/pay-as-you-go';
 
 // Monthly pricing data with exact generation counts based on credit economics
 // Credit Value: 1 credit = ₹0.02
@@ -618,6 +619,9 @@ export default function PricingNewPage() {
           </div>
         </div>
       </section>
+
+      {/* Pay-As-You-Go Section */}
+      <PayAsYouGo className="bg-gray-50" />
 
       {/* Start Footer Area */}
       <footer className="footer-area">
