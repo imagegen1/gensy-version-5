@@ -621,7 +621,7 @@ export default function PricingNewPage() {
       </section>
 
       {/* Pay-As-You-Go Section */}
-      <PayAsYouGo className="bg-gray-50" />
+      <PayAsYouGo />
 
       {/* Start Footer Area */}
       <footer className="footer-area">
