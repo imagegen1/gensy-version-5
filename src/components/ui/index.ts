@@ -12,16 +12,14 @@ export { Input, inputVariants } from './Input'
 export type { InputProps } from './Input'
 
 // Card components
-export { 
-  Card, 
-  CardHeader, 
-  CardFooter, 
-  CardTitle, 
-  CardDescription, 
-  CardContent,
-  cardVariants 
-} from './Card'
-export type { CardProps } from './Card'
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardDescription,
+  CardContent
+} from './card'
 
 // Badge components
 export { Badge, badgeVariants } from './Badge'

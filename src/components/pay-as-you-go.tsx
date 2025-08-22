@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { Wallet, Calculator, CreditCard, AlertCircle, CheckCircle } from 'lucide-react'
 import { useAuth } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 
 interface PayAsYouGoProps {
   className?: string
@@ -128,195 +129,178 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
         <div className="row justify-content-center">
           <div className="col-lg-6 col-md-12">
-            <div className="single-pricing-table">
-              <div className="pricing-header">
-                <div className="popular-text">
-                  <i className="ri-vip-crown-line"></i>
-                  <span>Flexible</span>
-                </div>
-                <h3>Custom Amount</h3>
-                <div className="price">
-                  <span className="currency">₹</span>
-                  <span className="amount">{amount || '0'}</span>
-                  <span className="duration">/ {credits.toLocaleString()} credits</span>
-                </div>
-                <p>Enter any amount above ₹{MIN_AMOUNT} and get credits instantly</p>
+            <Card className="relative border-2 border-violet-200 shadow-lg bg-card/50 backdrop-blur-sm">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
+                  Flexible
+                </span>
               </div>
 
-              <div className="pricing-features">
-                <div className="form-group mb-4">
-                  <label htmlFor="amount" className="form-label">
+              <CardHeader className="text-center pt-8">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100">
+                  <Wallet className="h-6 w-6 text-violet-600" />
+                </div>
+                <CardTitle className="text-2xl font-bold">Custom Amount</CardTitle>
+                <CardDescription>
+                  Enter any amount above ₹{MIN_AMOUNT} and get credits instantly
+                </CardDescription>
+                <div className="mt-4">
+                  <div className="text-3xl font-bold text-violet-600">
+                    ₹{amount || '0'}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {credits.toLocaleString()} credits
+                  </div>
+                </div>
+              </CardHeader>
+
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <label htmlFor="amount" className="text-sm font-medium">
                     Amount (₹)
                   </label>
-                  <div className="input-group">
-                    <span className="input-group-text">₹</span>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                      ₹
+                    </span>
                     <input
                       id="amount"
                       type="text"
-                      className="form-control"
+                      className="w-full pl-8 pr-4 py-3 text-lg border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:outline-none transition-colors"
                       placeholder="Enter amount"
                       value={amount}
                       onChange={handleAmountChange}
                       disabled={isLoading}
-                      style={{
-                        fontSize: '1.1rem',
-                        padding: '12px 16px',
-                        border: '2px solid rgba(255, 255, 255, 0.1)',
-                        backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                        color: 'white',
-                        borderRadius: '8px'
-                      }}
                     />
                   </div>
-                  <small className="form-text text-muted">
+                  <p className="text-xs text-gray-500">
                     Minimum amount: ₹{MIN_AMOUNT}
-                  </small>
+                  </p>
                 </div>
 
-                <div className="credit-calculation-box" style={{
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderRadius: '12px',
-                  padding: '20px',
-                  marginBottom: '20px'
-                }}>
-                  <div className="d-flex align-items-center mb-3">
-                    <Calculator className="me-2" style={{width: '16px', height: '16px'}} />
-                    <span className="fw-medium">Credit Calculation</span>
+                {/* Credit Calculation Display */}
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Calculator className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700">Credit Calculation</span>
                   </div>
-                  
-                  <div className="calculation-details">
-                    <div className="d-flex justify-content-between mb-2">
+
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
                       <span>Amount:</span>
-                      <span className="fw-medium">₹{amount || '0'}</span>
+                      <span className="font-medium">₹{amount || '0'}</span>
                     </div>
-                    <div className="d-flex justify-content-between mb-2">
+                    <div className="flex justify-between text-sm">
                       <span>Rate:</span>
-                      <span className="fw-medium">₹{CREDIT_VALUE_INR} per credit</span>
+                      <span className="font-medium">₹{CREDIT_VALUE_INR} per credit</span>
                     </div>
-                    <hr style={{borderColor: 'rgba(255, 255, 255, 0.2)'}} />
-                    <div className="d-flex justify-content-between">
-                      <span className="fs-5 fw-bold">Credits:</span>
-                      <span className="fs-5 fw-bold text-primary">{credits.toLocaleString()}</span>
+                    <hr className="border-gray-200" />
+                    <div className="flex justify-between text-lg font-bold text-violet-600">
+                      <span>Credits:</span>
+                      <span>{credits.toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
 
+                {/* Error/Success Messages */}
                 {error && (
-                  <div className="alert alert-danger d-flex align-items-center" role="alert">
-                    <AlertCircle className="me-2" style={{width: '16px', height: '16px'}} />
+                  <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                    <AlertCircle className="h-4 w-4" />
                     <span>{error}</span>
                   </div>
                 )}
-                
+
                 {success && (
-                  <div className="alert alert-success d-flex align-items-center" role="alert">
-                    <CheckCircle className="me-2" style={{width: '16px', height: '16px'}} />
+                  <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                    <CheckCircle className="h-4 w-4" />
                     <span>{success}</span>
                   </div>
                 )}
-              </div>
+              </CardContent>
 
-              <div className="pricing-btn">
+              <CardFooter>
                 <button
                   onClick={handlePurchase}
                   disabled={isLoading || !amount || parseFloat(amount) < MIN_AMOUNT}
-                  className="default-btn w-100"
-                  style={{
-                    opacity: (isLoading || !amount || parseFloat(amount) < MIN_AMOUNT) ? 0.6 : 1,
-                    cursor: (isLoading || !amount || parseFloat(amount) < MIN_AMOUNT) ? 'not-allowed' : 'pointer'
-                  }}
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
-                    <>
-                      <div className="spinner-border spinner-border-sm me-2" role="status">
-                        <span className="visually-hidden">Loading...</span>
-                      </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                       Processing...
-                    </>
+                    </div>
                   ) : (
-                    <>
-                      <CreditCard className="me-2" style={{width: '16px', height: '16px'}} />
+                    <div className="flex items-center justify-center gap-2">
+                      <CreditCard className="h-4 w-4" />
                       {isSignedIn ? 'Purchase Credits' : 'Sign In to Purchase'}
-                      <i className="ri-arrow-right-line"></i>
-                    </>
+                    </div>
                   )}
                 </button>
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           </div>
 
           <div className="col-lg-6 col-md-12">
-            <div className="single-pricing-table">
-              <div className="pricing-header">
-                <h3>Quick Examples</h3>
-                <div className="price">
-                  <span className="currency">₹</span>
-                  <span className="amount">50+</span>
-                  <span className="duration">/ any amount</span>
+            <Card className="border shadow-lg bg-card/50 backdrop-blur-sm">
+              <CardHeader className="text-center">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                  <Calculator className="h-6 w-6 text-blue-600" />
                 </div>
-                <p>See how much you get for common amounts</p>
-              </div>
+                <CardTitle className="text-2xl font-bold">Quick Examples</CardTitle>
+                <CardDescription>
+                  See how much you get for common amounts
+                </CardDescription>
+                <div className="mt-4">
+                  <div className="text-3xl font-bold text-blue-600">
+                    ₹50+
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    any amount
+                  </div>
+                </div>
+              </CardHeader>
 
-              <div className="pricing-features">
-                <div className="examples-list">
-                  {[
-                    { amount: 50, description: 'Starter amount' },
-                    { amount: 100, description: 'Popular choice' },
-                    { amount: 250, description: 'Great value' },
-                    { amount: 500, description: 'Power user' },
-                  ].map((example) => (
-                    <div
-                      key={example.amount}
-                      className="example-item d-flex justify-content-between align-items-center p-3 mb-3 cursor-pointer"
-                      onClick={() => setAmount(example.amount.toString())}
-                      style={{
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        border: '1px solid rgba(255, 255, 255, 0.1)',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-                      }}
-                    >
-                      <div>
-                        <div className="fw-medium">₹{example.amount}</div>
-                        <div className="text-muted small">{example.description}</div>
-                      </div>
-                      <div className="text-end">
-                        <div className="fw-bold text-primary">
-                          {getExampleCredits(example.amount).toLocaleString()}
-                        </div>
-                        <div className="text-muted small">credits</div>
-                      </div>
+              <CardContent className="space-y-4">
+                {[
+                  { amount: 50, description: 'Starter amount' },
+                  { amount: 100, description: 'Popular choice' },
+                  { amount: 250, description: 'Great value' },
+                  { amount: 500, description: 'Power user' },
+                ].map((example) => (
+                  <div
+                    key={example.amount}
+                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                    onClick={() => setAmount(example.amount.toString())}
+                  >
+                    <div>
+                      <div className="font-medium">₹{example.amount}</div>
+                      <div className="text-sm text-gray-500">{example.description}</div>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="text-right">
+                      <div className="font-bold text-blue-600">
+                        {getExampleCredits(example.amount).toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500">credits</div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
 
-              <div className="pricing-btn">
-                <div className="text-center text-muted small">
+              <CardFooter>
+                <div className="w-full text-center text-sm text-gray-500">
                   Click any example to use that amount
                 </div>
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           </div>
         </div>
 
+        {/* Credit Value Information */}
         <div className="row">
           <div className="col-12">
             <div className="text-center mt-5">
-              <div className="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill" style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.2)',
-                color: 'rgba(255, 255, 255, 0.9)'
-              }}>
-                <Calculator style={{width: '16px', height: '16px'}} />
+              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm">
+                <Calculator className="h-4 w-4" />
                 <span>1 Credit = ₹{CREDIT_VALUE_INR} • Transparent pricing with no hidden fees</span>
               </div>
             </div>
