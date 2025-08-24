@@ -129,7 +129,7 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
         <div className="row justify-content-center">
           <div className="col-lg-6 col-md-12">
-            <Card className="relative border-2 border-violet-200 shadow-lg bg-card/50 backdrop-blur-sm">
+            <Card className="relative border-2 border-gray-700 shadow-2xl bg-gray-800 backdrop-blur-sm">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                 <span className="bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium">
                   Flexible
@@ -137,18 +137,18 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
               </div>
 
               <CardHeader className="text-center pt-8">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-violet-100">
-                  <Wallet className="h-6 w-6 text-violet-600" />
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700">
+                  <Wallet className="h-6 w-6 text-violet-400" />
                 </div>
-                <CardTitle className="text-2xl font-bold">Custom Amount</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-2xl font-bold text-white">Custom Amount</CardTitle>
+                <CardDescription className="text-gray-400">
                   Enter any amount above ₹{MIN_AMOUNT} and get credits instantly
                 </CardDescription>
                 <div className="mt-4">
-                  <div className="text-3xl font-bold text-violet-600">
+                  <div className="text-3xl font-bold text-violet-400">
                     ₹{amount || '0'}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-400">
                     {credits.toLocaleString()} credits
                   </div>
                 </div>
@@ -156,46 +156,46 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="amount" className="text-sm font-medium">
+                  <label htmlFor="amount" className="text-sm font-medium text-gray-300">
                     Amount (₹)
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
                       ₹
                     </span>
                     <input
                       id="amount"
                       type="text"
-                      className="w-full pl-8 pr-4 py-3 text-lg border-2 border-gray-200 rounded-lg focus:border-violet-500 focus:outline-none transition-colors"
+                      className="w-full pl-8 pr-4 py-3 text-lg border-2 border-gray-600 bg-gray-700 text-white rounded-lg focus:border-violet-500 focus:outline-none transition-colors placeholder-gray-400"
                       placeholder="Enter amount"
                       value={amount}
                       onChange={handleAmountChange}
                       disabled={isLoading}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-400">
                     Minimum amount: ₹{MIN_AMOUNT}
                   </p>
                 </div>
 
                 {/* Credit Calculation Display */}
-                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div className="bg-gray-700 rounded-lg p-4 space-y-3">
                   <div className="flex items-center gap-2">
-                    <Calculator className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm font-medium text-gray-700">Credit Calculation</span>
+                    <Calculator className="h-4 w-4 text-gray-300" />
+                    <span className="text-sm font-medium text-gray-300">Credit Calculation</span>
                   </div>
 
                   <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-gray-300">
                       <span>Amount:</span>
                       <span className="font-medium">₹{amount || '0'}</span>
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm text-gray-300">
                       <span>Rate:</span>
                       <span className="font-medium">₹{CREDIT_VALUE_INR} per credit</span>
                     </div>
-                    <hr className="border-gray-200" />
-                    <div className="flex justify-between text-lg font-bold text-violet-600">
+                    <hr className="border-gray-600" />
+                    <div className="flex justify-between text-lg font-bold text-violet-400">
                       <span>Credits:</span>
                       <span>{credits.toLocaleString()}</span>
                     </div>
@@ -204,14 +204,14 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
                 {/* Error/Success Messages */}
                 {error && (
-                  <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-400 text-sm bg-red-900/30 p-3 rounded-lg border border-red-700">
                     <AlertCircle className="h-4 w-4" />
                     <span>{error}</span>
                   </div>
                 )}
 
                 {success && (
-                  <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-400 text-sm bg-green-900/30 p-3 rounded-lg border border-green-700">
                     <CheckCircle className="h-4 w-4" />
                     <span>{success}</span>
                   </div>
@@ -222,7 +222,7 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
                 <button
                   onClick={handlePurchase}
                   disabled={isLoading || !amount || parseFloat(amount) < MIN_AMOUNT}
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-violet-600 hover:bg-violet-700 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-0"
                 >
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-2">
@@ -241,20 +241,20 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
           </div>
 
           <div className="col-lg-6 col-md-12">
-            <Card className="border shadow-lg bg-card/50 backdrop-blur-sm">
+            <Card className="border-2 border-gray-700 shadow-2xl bg-gray-800 backdrop-blur-sm">
               <CardHeader className="text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                  <Calculator className="h-6 w-6 text-blue-600" />
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-700">
+                  <Calculator className="h-6 w-6 text-violet-400" />
                 </div>
-                <CardTitle className="text-2xl font-bold">Quick Examples</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-2xl font-bold text-white">Quick Examples</CardTitle>
+                <CardDescription className="text-gray-400">
                   See how much you get for common amounts
                 </CardDescription>
                 <div className="mt-4">
-                  <div className="text-3xl font-bold text-blue-600">
+                  <div className="text-3xl font-bold text-violet-400">
                     ₹50+
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-gray-400">
                     any amount
                   </div>
                 </div>
@@ -269,25 +269,25 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
                 ].map((example) => (
                   <div
                     key={example.amount}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600"
                     onClick={() => setAmount(example.amount.toString())}
                   >
                     <div>
-                      <div className="font-medium">₹{example.amount}</div>
-                      <div className="text-sm text-gray-500">{example.description}</div>
+                      <div className="font-medium text-white">₹{example.amount}</div>
+                      <div className="text-sm text-gray-400">{example.description}</div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-blue-600">
+                      <div className="font-bold text-violet-400">
                         {getExampleCredits(example.amount).toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-500">credits</div>
+                      <div className="text-sm text-gray-400">credits</div>
                     </div>
                   </div>
                 ))}
               </CardContent>
 
               <CardFooter>
-                <div className="w-full text-center text-sm text-gray-500">
+                <div className="w-full text-center text-sm text-gray-400">
                   Click any example to use that amount
                 </div>
               </CardFooter>
@@ -299,7 +299,7 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
         <div className="row">
           <div className="col-12">
             <div className="text-center mt-5">
-              <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm">
+              <div className="inline-flex items-center gap-2 bg-gray-800 text-violet-400 px-4 py-2 rounded-full text-sm border border-gray-700">
                 <Calculator className="h-4 w-4" />
                 <span>1 Credit = ₹{CREDIT_VALUE_INR} • Transparent pricing with no hidden fees</span>
               </div>

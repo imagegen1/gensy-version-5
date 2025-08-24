@@ -199,16 +199,54 @@ export default function PricingNewPage() {
     }
   };
 
-  // Convert model data to features format
-  const FEATURES: FeatureItem[] = PRICING_DATA.models.map((model) => ({
-    label: model.model,
-    values: [
-      model.per_plan.starter,
-      model.per_plan.pro,
-      model.per_plan.business,
-      model.per_plan.enterprise,
-    ]
-  }));
+  // Convert model data to features format with section headers
+  const FEATURES: FeatureItem[] = [];
+
+  // Add Images section header
+  FEATURES.push({
+    label: "Images",
+    values: ["", "", "", ""],
+    isHeader: true
+  });
+
+  // Add image models
+  PRICING_DATA.models
+    .filter(model => model.unit === "image")
+    .forEach(model => {
+      FEATURES.push({
+        label: model.model,
+        values: [
+          model.per_plan.starter,
+          model.per_plan.pro,
+          model.per_plan.business,
+          model.per_plan.enterprise,
+        ],
+        isHeader: false
+      });
+    });
+
+  // Add Video Models section header
+  FEATURES.push({
+    label: "Video Models",
+    values: ["", "", "", ""],
+    isHeader: true
+  });
+
+  // Add video models
+  PRICING_DATA.models
+    .filter(model => model.unit === "10s clip")
+    .forEach(model => {
+      FEATURES.push({
+        label: model.model,
+        values: [
+          model.per_plan.starter,
+          model.per_plan.pro,
+          model.per_plan.business,
+          model.per_plan.enterprise,
+        ],
+        isHeader: false
+      });
+    });
 
   // Fixed function with proper null checking - Fixes JAVASCRIPT-NEXTJS-3
   const safeFunction = () => {
@@ -717,10 +755,10 @@ function PricingTableComponent({
 }) {
   return (
     <div className="w-100">
-      <PricingTable className="bg-gray-900 rounded-lg overflow-hidden border border-gray-700 shadow-2xl mx-auto" style={{maxWidth: '1200px'}}>
+      <PricingTable className="bg-card rounded-lg overflow-hidden border border-border shadow-2xl mx-auto" style={{maxWidth: '1200px'}}>
         <PricingTableHeader>
           <PricingTableRow>
-            <th className="bg-gray-900" />
+            <th className="bg-card" />
             <th className="p-2">
               <PricingTablePlan
                 name="Starter"
@@ -731,7 +769,7 @@ function PricingTableComponent({
               >
                 <Button
                   variant="outline"
-                  className="w-full rounded-lg bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   size="sm"
                 >
                   Get Started
@@ -748,7 +786,7 @@ function PricingTableComponent({
                 isPopular={true}
               >
                 <Button
-                  className="w-full rounded-lg bg-violet-600 text-white hover:bg-violet-700 border-0"
+                  className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border-0"
                   size="sm"
                 >
                   Get Started
@@ -765,7 +803,7 @@ function PricingTableComponent({
               >
                 <Button
                   variant="outline"
-                  className="w-full rounded-lg bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   size="sm"
                 >
                   Get Started
@@ -782,7 +820,7 @@ function PricingTableComponent({
               >
                 <Button
                   variant="outline"
-                  className="w-full rounded-lg bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+                  className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                   size="sm"
                 >
                   Contact Sales
@@ -795,15 +833,22 @@ function PricingTableComponent({
           {features.map((feature, index) => (
             <PricingTableRow key={index}>
               <PricingTableHead className="min-w-[250px]">
-                <div className="flex flex-col">
-                  <span className="font-medium text-white">{feature.label}</span>
-                  <span className="text-xs text-gray-500">
-                    {PRICING_DATA.models[index]?.unit}
-                  </span>
-                </div>
+                {feature.isHeader ? (
+                  <div className="py-3">
+                    <span className="font-bold text-lg text-foreground bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
+                      {feature.label}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    <span className="font-medium text-foreground">{feature.label}</span>
+                  </div>
+                )}
               </PricingTableHead>
               {feature.values.map((value, index) => (
-                <PricingTableCell key={index}>{value}</PricingTableCell>
+                <PricingTableCell key={index}>
+                  {feature.isHeader ? "" : value}
+                </PricingTableCell>
               ))}
             </PricingTableRow>
           ))}

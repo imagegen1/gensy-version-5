@@ -65,7 +65,7 @@ function PricingTableHead({ className, ...props }: React.ComponentProps<'th'>) {
 		<th
 			data-slot="table-head"
 			className={cn(
-				'p-3 text-left align-middle font-medium whitespace-nowrap bg-gray-900 text-gray-300',
+				'p-3 text-left align-middle font-medium whitespace-nowrap bg-card text-foreground',
 				className,
 			)}
 			{...props}
@@ -87,25 +87,25 @@ function PricingTablePlan({
 	return (
 		<div
 			className={cn(
-				'bg-gray-800 relative overflow-hidden rounded-lg border border-gray-700 p-4 font-normal text-center',
-				isPopular && 'ring-2 ring-violet-500 border-violet-500',
+				'bg-card relative overflow-hidden rounded-lg border border-border p-4 font-normal text-center',
+				isPopular && 'ring-2 ring-primary border-primary',
 				className,
 			)}
 			{...props}
 		>
 			<div className="flex items-center justify-center gap-2 mb-2">
-				{Icon && <Icon className="h-4 w-4 text-gray-400" />}
-				<h3 className="text-gray-400 text-sm capitalize">{name}</h3>
+				{Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+				<h3 className="text-muted-foreground text-sm capitalize">{name}</h3>
 			</div>
 
 			{badge && (
-				<div className="text-xs text-gray-500 mb-3">{badge}</div>
+				<div className="text-xs text-muted-foreground mb-3">{badge}</div>
 			)}
 
 			<div className="mb-4">
-				<div className="text-2xl font-bold text-white">{price}</div>
+				<div className="text-2xl font-bold text-foreground">{price}</div>
 				{compareAt && (
-					<div className="text-sm text-gray-400 line-through mt-1">
+					<div className="text-sm text-muted-foreground line-through mt-1">
 						{compareAt}
 					</div>
 				)}
@@ -130,6 +130,7 @@ type FeatureValue = boolean | string | number;
 type FeatureItem = {
 	label: string;
 	values: FeatureValue[];
+	isHeader?: boolean;
 };
 
 export {

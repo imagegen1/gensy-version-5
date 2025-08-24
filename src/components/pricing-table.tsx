@@ -16,6 +16,7 @@ export interface PricingFeature {
   name: string
   unit?: string
   included: PlanLevel | null
+  isHeader?: boolean
   counts?: {
     yearly: {
       starter: number
@@ -178,16 +179,19 @@ export function PricingTable({
                   key={feature.name}
                   className={cn(
                     "flex items-center p-4 transition-colors",
-                    feature.included === selectedPlan &&
-                      "bg-blue-50/50 dark:bg-blue-900/20",
+                    feature.isHeader
+                      ? "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-t border-b border-blue-200 dark:border-blue-700"
+                      : feature.included === selectedPlan &&
+                        "bg-blue-50/50 dark:bg-blue-900/20",
                   )}
                 >
                   <div className="flex-1 text-sm">
-                    <div className="font-medium">{feature.name}</div>
-                    {feature.unit && (
-                      <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-                        {feature.unit}
+                    {feature.isHeader ? (
+                      <div className="font-bold text-lg bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        {feature.name}
                       </div>
+                    ) : (
+                      <div className="font-medium">{feature.name}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-8 text-sm">
@@ -199,7 +203,9 @@ export function PricingTable({
                           plan.level === selectedPlan && "font-medium",
                         )}
                       >
-                        {(() => {
+                        {feature.isHeader ? (
+                          <span></span>
+                        ) : (() => {
                           const period = isYearly ? 'yearly' : 'monthly'
                           const count = feature.counts?.[period]?.[plan.level as keyof typeof feature.counts.yearly] || 0
                           return count > 0 ? (

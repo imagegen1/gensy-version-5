@@ -159,28 +159,72 @@ const pricingPlans: PricingPlan[] = [
   },
 ]
 
-// Features for the new pricing table - simplified to show only model names
+// Features for the new pricing table with section headers
 // Both billing options show the same monthly generation counts
 // The PRICING_DATA already contains correct monthly calculations based on credit economics
-const pricingFeatures: PricingFeature[] = PRICING_DATA.models.map((model) => ({
-  name: model.model,
-  unit: model.unit,
-  included: "starter", // All models are available from starter tier
-  counts: {
-    yearly: {
-      starter: model.per_plan.starter,
-      pro: model.per_plan.pro,
-      business: model.per_plan.business,
-      enterprise: model.per_plan.enterprise,
-    },
-    monthly: {
-      starter: model.per_plan.starter,
-      pro: model.per_plan.pro,
-      business: model.per_plan.business,
-      enterprise: model.per_plan.enterprise,
-    }
-  }
-}))
+const pricingFeatures: PricingFeature[] = [];
+
+// Add Images section header
+pricingFeatures.push({
+  name: "Images",
+  included: null,
+  isHeader: true
+});
+
+// Add image models
+PRICING_DATA.models
+  .filter(model => model.unit === "image")
+  .forEach(model => {
+    pricingFeatures.push({
+      name: model.model,
+      included: "starter", // All models are available from starter tier
+      counts: {
+        yearly: {
+          starter: model.per_plan.starter,
+          pro: model.per_plan.pro,
+          business: model.per_plan.business,
+          enterprise: model.per_plan.enterprise,
+        },
+        monthly: {
+          starter: model.per_plan.starter,
+          pro: model.per_plan.pro,
+          business: model.per_plan.business,
+          enterprise: model.per_plan.enterprise,
+        }
+      }
+    });
+  });
+
+// Add Video Models section header
+pricingFeatures.push({
+  name: "Video Models",
+  included: null,
+  isHeader: true
+});
+
+// Add video models
+PRICING_DATA.models
+  .filter(model => model.unit === "10s clip")
+  .forEach(model => {
+    pricingFeatures.push({
+      name: model.model,
+      included: "starter", // All models are available from starter tier
+      counts: {
+        yearly: {
+          starter: model.per_plan.starter,
+          pro: model.per_plan.pro,
+          business: model.per_plan.business,
+          enterprise: model.per_plan.enterprise,
+        },
+        monthly: {
+          starter: model.per_plan.starter,
+          pro: model.per_plan.pro,
+          business: model.per_plan.business,
+          enterprise: model.per_plan.enterprise,
+        }
+      }
+    });
+  });
 
 function formatNumber(n: number) {
   return n.toLocaleString('en-IN')
