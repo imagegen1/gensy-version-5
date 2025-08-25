@@ -1062,11 +1062,11 @@ export default function GensyTemplate() {
         {/* Start Footer Area */}
         <footer className="footer-area">
           <div className="container">
-            <div className="footer-top-area pt-100">
-              <div className="row">
-                <div className="col-lg-4 col-md-6 col-sm-6">
+            <div className="footer-top-area pt-100 pb-70">
+              <div className="row align-items-start">
+                <div className="col-lg-4 col-md-6 col-sm-12">
                   <div className="single-footer-widget">
-                    <a href="index.html" className="logo">
+                    <a href="/" className="logo">
                       <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '130px', width: 'auto'}} />
                     </a>
                     <p>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds</p>
@@ -1078,8 +1078,8 @@ export default function GensyTemplate() {
                     </ul>
                   </div>
                 </div>
-                <div className="col-lg-4 col-md-6 col-sm-6">
-                  <div className="single-footer-widget pl-5">
+                <div className="col-lg-4 col-md-3 col-sm-6">
+                  <div className="single-footer-widget">
                     <h3>Links</h3>
                     <ul className="links-list">
                       <li><a href="/">Home</a></li>
@@ -1088,7 +1088,7 @@ export default function GensyTemplate() {
                     </ul>
                   </div>
                 </div>
-                <div className="col-lg-4 col-md-6 col-sm-6">
+                <div className="col-lg-4 col-md-3 col-sm-6">
                   <div className="single-footer-widget">
                     <h3>Legal</h3>
                     <ul className="links-list">
