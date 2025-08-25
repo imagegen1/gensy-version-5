@@ -321,80 +321,7 @@ export default function GensyTemplate() {
             </button>
             <div className="collapse navbar-collapse" id="navbarSupportedContent">
               <ul className="navbar-nav me-auto">
-                <li className="nav-item">
-                  <a href="/landing-page-2" className="nav-link active">
-                    Home
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a href="javascript:void(0)" className="dropdown-toggle nav-link">
-                    Pages
-                  </a>
-                  <ul className="dropdown-menu">
-                    <li className="nav-item">
-                      <a href="/about" className="nav-link">
-                        About Us
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/team" className="nav-link">
-                        Team
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/pricing" className="nav-link">
-                        Pricing
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/terms-conditions" className="nav-link">
-                        Terms & Conditions
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/privacy-policy" className="nav-link">
-                        Privacy Policy
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/not-found" className="nav-link">
-                        404 Error Page
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-                <li className="nav-item">
-                  <a href="/portfolio" className="nav-link">
-                    Portfolio
-                  </a>
-                </li>
-                <li className="nav-item">
-                  <a href="javascript:void(0)" className="dropdown-toggle nav-link">
-                    Blog
-                  </a>
-                  <ul className="dropdown-menu">
-                    <li className="nav-item">
-                      <a href="/blog" className="nav-link">
-                        Blog Grid
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/blog" className="nav-link">
-                        Blog Right Sidebar
-                      </a>
-                    </li>
-                    <li className="nav-item">
-                      <a href="/blog" className="nav-link">
-                        Blog Details
-                      </a>
-                    </li>
-                  </ul>
-                </li>
-                <li className="nav-item">
-                  <a href="/contact" className="nav-link">
-                    Contact Us
-                  </a>
-                </li>
+                {/* All menu items removed - only Sign In and Sign Up buttons remain */}
               </ul>
               <div className="nav-btn">
                 {isSignedIn ? (
@@ -440,33 +367,7 @@ export default function GensyTemplate() {
           </div>
           <div className="offcanvas-body">
             <ul className="responsive-menu">
-              <li className="responsive-menu-list without-icon">
-                <a href="/landing-page-2" className="active">Home</a>
-              </li>
-              <li className="responsive-menu-list"><a href="javascript:void(0);" >Pages</a>
-                <ul className="responsive-menu-items">
-                  <li><a href="/about">About</a></li>
-                  <li><a href="/team">Team</a></li>
-                  <li><a href="/pricing">Pricing</a></li>
-                  <li><a href="/terms-conditions">Terms Conditions</a></li>
-                  <li><a href="/privacy-policy">Privacy Policy</a></li>
-                  <li><a href="/not-found">404 Error Page</a></li>
-                </ul>
-              </li>
-              <li className="responsive-menu-list without-icon">
-                <a href="/portfolio">Portfolio</a>
-              </li>
-
-              <li className="responsive-menu-list"><a href="javascript:void(0);">Blog</a>
-                <ul className="responsive-menu-items">
-                  <li><a href="/blog">Blog</a></li>
-                  <li><a href="/blog">Blog Right Sidebar</a></li>
-                  <li><a href="/blog">Blog Details</a></li>
-                </ul>
-              </li>
-              <li className="responsive-menu-list without-icon">
-                <a href="/contact">Contact</a>
-              </li>
+              {/* All menu items removed - only Sign In and Sign Up buttons remain below */}
             </ul>
             <div className="others-option d-md-flex align-items-center">
               <div className="option-item">
