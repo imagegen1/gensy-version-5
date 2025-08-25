@@ -214,6 +214,22 @@ body {
     --shadow-xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.16), 0px 8px 10px -1px hsl(0 0% 0% / 0.16);
     --shadow-2xl: 0px 2px 3px 0px hsl(0 0% 0% / 0.40);
     --tracking-normal: -0.025em;
+    
+    /* Dashboard-specific gradient definitions */
+    --dashboard-gradient-blue: linear-gradient(0deg, rgba(208,227,241,1) 0%, rgba(41,73,98,1) 100%);
+    --dashboard-gradient-orange: #ffa700;
+    --dashboard-gradient-cyan: linear-gradient(0deg, rgba(229,229,229,1) 0%, rgba(0,210,255,1) 35%, rgba(0,157,241,1) 100%);
+    --dashboard-gradient-dark: linear-gradient(0deg, rgba(136,136,136,1) 0%, rgba(0,0,0,1) 100%);
+    --dashboard-gradient-purple: linear-gradient(0deg, rgba(174,145,202,1) 0%, rgba(89,42,133,1) 60%, rgba(24,7,40,1) 100%);
+    --dashboard-gradient-green: linear-gradient(0deg, rgba(187,202,145,1) 0%, rgba(60,135,143,1) 60%, rgba(7,40,15,1) 100%);
+    --dashboard-dark-bg: #1b1c1d;
+    --dashboard-overlay-dark: rgba(0, 0, 0, 0.70);
+    --dashboard-overlay-gradient: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 50%);
+    --dashboard-blur-bg: rgba(245, 245, 245, 0.75);
+    --dashboard-border-light: #e5e5e5;
+    --dashboard-shadow-card: 0px 8px 10px rgba(0, 0, 0, 0.10), 0px 20px 25px rgba(0, 0, 0, 0.10);
+    --dashboard-shadow-float: 0px 0px 0px 10px #f1f1f1;
+    --dashboard-shadow-inset: inset 0px 1px 5px rgba(255, 255, 255, 0.10), inset 0px 1px 1px rgba(255, 255, 255, 0.10), inset 0px 0px 0px 0.5px rgba(0, 0, 0, 0.10);
   }
   .dark {
     --background: oklch(0.2223 0.0060 271.1393);
