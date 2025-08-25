@@ -680,42 +680,24 @@ export default function PricingPage() {
                   </ul>
                 </div>
               </div>
-              <div className="col-lg-2 col-md-6 col-sm-6">
+              <div className="col-lg-4 col-md-6 col-sm-6">
                 <div className="single-footer-widget pl-5">
                   <h3>Links</h3>
                   <ul className="links-list">
-                    <li><a href="/landing-page-2">Home</a></li>
+                    <li><a href="/">Home</a></li>
                     <li><a href="/about">About Us</a></li>
                     <li><a href="/pricing">Pricing</a></li>
-                    <li><a href="/blog">Blog</a></li>
-                    <li><a href="/contact">Contact Us</a></li>
-                  </ul>
-                </div>
-              </div>
-              <div className="col-lg-2 col-md-6 col-sm-6">
-                <div className="single-footer-widget">
-                  <h3>Legal</h3>
-                  <ul className="links-list">
-                    <li><a href="/terms-conditions">Legal</a></li>
-                    <li><a href="/terms-conditions">Terms of Use</a></li>
-                    <li><a href="/terms-conditions">Terms & Conditions</a></li>
-                    <li><a href="/pricing">Payment Method</a></li>
-                    <li><a href="/privacy-policy">Privacy Policy</a></li>
                   </ul>
                 </div>
               </div>
               <div className="col-lg-4 col-md-6 col-sm-6">
                 <div className="single-footer-widget">
-                  <h3>Newsletter</h3>
-                  <div className="footer-newsletter-info">
-                    <p>Join over <span>68,000</span> people getting our emails Lorem ipsum dolor sit amet consectet </p>
-                    <form className="newsletter-form" data-toggle="validator">
-                      <label><i className='bx bx-envelope-open'></i></label>
-                      <input type="text" className="input-newsletter" placeholder="Enter your email address" name="EMAIL" required autoComplete="off" />
-                      <button type="submit" className="default-btn"><i className="ri-send-plane-line"></i> Subscribe Now</button>
-                      <div id="validator-newsletter2" className="form-result"></div>
-                    </form>
-                  </div>
+                  <h3>Legal</h3>
+                  <ul className="links-list">
+                    <li><a href="/terms-conditions">Terms & Conditions</a></li>
+                    <li><a href="/pricing">Payment Method</a></li>
+                    <li><a href="/privacy-policy">Privacy Policy</a></li>
+                  </ul>
                 </div>
               </div>
             </div>
