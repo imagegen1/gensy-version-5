@@ -15,6 +15,7 @@ import {
   runWhenIdle,
   measurePerformance
 } from '@/lib/performance'
+import PayAsYouGo from '@/components/pay-as-you-go'
 
 export default function GensyTemplate() {
   // Check if Clerk is disabled
@@ -895,7 +896,8 @@ export default function GensyTemplate() {
         </div>
         {/* End Gallery Area */}
 
-
+        {/* Pay-As-You-Go Section */}
+        <PayAsYouGo />
 
         {/* Start Pricing Area */}
         <div className="pricing-area pt-100 section-bg">
