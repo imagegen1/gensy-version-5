@@ -63,107 +63,7 @@ export default function TermsConditionsPage() {
             </div>
           </div>
 
-          <div className="legal-toc">
-            <h2><i className="ri-list-check legal-icon"></i>TABLE OF CONTENTS</h2>
-            <div className="legal-toc-grid">
-              <a href="#section-1" className="legal-toc-item">
-                <span className="legal-toc-number">1</span>
-                OUR SERVICES
-              </a>
-              <a href="#section-2" className="legal-toc-item">
-                <span className="legal-toc-number">2</span>
-                INTELLECTUAL PROPERTY RIGHTS
-              </a>
-              <a href="#section-3" className="legal-toc-item">
-                <span className="legal-toc-number">3</span>
-                USER REPRESENTATIONS
-              </a>
-              <a href="#section-4" className="legal-toc-item">
-                <span className="legal-toc-number">4</span>
-                USER REGISTRATION
-              </a>
-              <a href="#section-5" className="legal-toc-item">
-                <span className="legal-toc-number">5</span>
-                PURCHASES AND PAYMENT
-              </a>
-              <a href="#section-6" className="legal-toc-item">
-                <span className="legal-toc-number">6</span>
-                SUBSCRIPTIONS
-              </a>
-              <a href="#section-7" className="legal-toc-item">
-                <span className="legal-toc-number">7</span>
-                PROHIBITED ACTIVITIES
-              </a>
-              <a href="#section-8" className="legal-toc-item">
-                <span className="legal-toc-number">8</span>
-                USER GENERATED CONTRIBUTIONS
-              </a>
-              <a href="#section-9" className="legal-toc-item">
-                <span className="legal-toc-number">9</span>
-                CONTRIBUTION LICENCE
-              </a>
-              <a href="#section-10" className="legal-toc-item">
-                <span className="legal-toc-number">10</span>
-                GUIDELINES FOR REVIEWS
-              </a>
-              <a href="#section-11" className="legal-toc-item">
-                <span className="legal-toc-number">11</span>
-                SERVICES MANAGEMENT
-              </a>
-              <a href="#section-12" className="legal-toc-item">
-                <span className="legal-toc-number">12</span>
-                PRIVACY POLICY
-              </a>
-              <a href="#section-13" className="legal-toc-item">
-                <span className="legal-toc-number">13</span>
-                TERM AND TERMINATION
-              </a>
-              <a href="#section-14" className="legal-toc-item">
-                <span className="legal-toc-number">14</span>
-                MODIFICATIONS AND INTERRUPTIONS
-              </a>
-              <a href="#section-15" className="legal-toc-item">
-                <span className="legal-toc-number">15</span>
-                GOVERNING LAW
-              </a>
-              <a href="#section-16" className="legal-toc-item">
-                <span className="legal-toc-number">16</span>
-                DISPUTE RESOLUTION
-              </a>
-              <a href="#section-17" className="legal-toc-item">
-                <span className="legal-toc-number">17</span>
-                CORRECTIONS
-              </a>
-              <a href="#section-18" className="legal-toc-item">
-                <span className="legal-toc-number">18</span>
-                DISCLAIMER
-              </a>
-              <a href="#section-19" className="legal-toc-item">
-                <span className="legal-toc-number">19</span>
-                LIMITATIONS OF LIABILITY
-              </a>
-              <a href="#section-20" className="legal-toc-item">
-                <span className="legal-toc-number">20</span>
-                INDEMNIFICATION
-              </a>
-              <a href="#section-21" className="legal-toc-item">
-                <span className="legal-toc-number">21</span>
-                USER DATA
-              </a>
-              <a href="#section-22" className="legal-toc-item">
-                <span className="legal-toc-number">22</span>
-                ELECTRONIC COMMUNICATIONS, TRANSACTIONS, AND SIGNATURES
-              </a>
-              <a href="#section-23" className="legal-toc-item">
-                <span className="legal-toc-number">23</span>
-                MISCELLANEOUS
-              </a>
-              <a href="#section-24" className="legal-toc-item">
-                <span className="legal-toc-number">24</span>
-                CONTACT US
-              </a>
-            </div>
-          </div>
+
 
           <h2 id="section-1"><span className="legal-toc-number">1</span>OUR SERVICES</h2>
           <div className="legal-warning-box">
@@ -302,6 +202,12 @@ export default function TermsConditionsPage() {
               <i className="ri-phone-line legal-icon-success"></i>Phone: (+91)9943764364<br />
               <i className="ri-mail-line legal-icon-success"></i><a href="mailto:info@gensy.io">info@gensy.io</a>
             </p>
+          </div>
+
+          <div className="legal-section mt-4">
+            <div className="legal-info-box">
+              <p className="text-center"><i className="ri-building-line legal-icon"></i><strong>This website is owned by Abirich Vaithiyalingam.</strong></p>
+            </div>
           </div>
         </div>
       </div>
