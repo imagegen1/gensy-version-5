@@ -40,6 +40,9 @@ export default function GensyTemplate() {
     minimax: false
   })
 
+  // Pricing state for monthly/yearly toggle
+  const [isYearly, setIsYearly] = useState(true)
+
   // Refs for intersection observer
   const seedanceVideoRef = useRef<HTMLVideoElement>(null)
   const veoVideoRef = useRef<HTMLVideoElement>(null)
@@ -304,6 +307,69 @@ export default function GensyTemplate() {
 
           .gradient-signin-button:active::before {
             scale: 0.7;
+          }
+
+          /* Pricing toggle styles */
+          .pricing-toggle-wrap {
+            display: inline-block;
+            position: relative;
+          }
+
+          .pricing-toggle {
+            position: relative;
+            display: inline-block;
+          }
+
+          .pricing-toggle input[type="checkbox"] {
+            display: none;
+          }
+
+          .pricing-toggle-label {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50px;
+            padding: 8px;
+            cursor: pointer;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+          }
+
+          .pricing-toggle-label .left-text,
+          .pricing-toggle-label .right-text {
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+          }
+
+          .pricing-toggle-label::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: calc(50% - 8px);
+            height: calc(100% - 16px);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            z-index: 1;
+          }
+
+          .pricing-toggle input[type="checkbox"]:checked + .pricing-toggle-label::before {
+            transform: translateX(100%);
+          }
+
+          .pricing-toggle input[type="checkbox"]:checked + .pricing-toggle-label .right-text {
+            color: white;
+          }
+
+          .pricing-toggle input[type="checkbox"]:not(:checked) + .pricing-toggle-label .left-text {
+            color: white;
           }
         `
       }} />
@@ -905,18 +971,40 @@ export default function GensyTemplate() {
             <div className="width">
               <div className="sub-t">Best Pricing Plans</div>
               <h2>Choose Your Creative Journey</h2>
-              <p>Transparent yearly pricing with no hidden fees. Start creating with AI today!</p>
+              <p>Transparent pricing with no hidden fees. Start creating with AI today!</p>
             </div>
           </div>
+
+          {/* Billing Toggle */}
+          <div className="text-center mb-5">
+            <div className="pricing-toggle-wrap">
+              <div className="pricing-toggle">
+                <input
+                  type="checkbox"
+                  id="pricing-toggle-home"
+                  checked={isYearly}
+                  onChange={(e) => setIsYearly(e.target.checked)}
+                />
+                <label htmlFor="pricing-toggle-home" className="pricing-toggle-label">
+                  <span className="left-text">Monthly billing</span>
+                  <span className="right-text">Annual billing</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
           <div className="container">
             <div className="row justify-content-center">
               <div className="col-lg-3 col-md-6">
                 <div className="card">
                   <h2 className="card_title"><i className="ri-seedling-line"></i> Starter</h2>
-                  <h3 className="pricing">₹360<span className="small">/per year</span></h3>
+                  <h3 className="pricing" style={{fontSize: '1.8rem'}}>
+                    ₹{isYearly ? '360' : '30'}
+                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                  </h3>
                   <div className="credits-info">
-                    <p className="credits">18,000 Credits</p>
-                    <p className="monthly-avg">~1,500/month</p>
+                    <p className="credits">{isYearly ? '18,000' : '1,500'} Credits</p>
+                    <p className="monthly-avg">{isYearly ? '~1,500/month' : 'Monthly'}</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -925,17 +1013,20 @@ export default function GensyTemplate() {
                     <li>Image Upscaling</li>
                     <li>Email Support</li>
                   </ul>
-                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
+                  <a href="/pricing" className="cta_btn">Get Started</a>
                 </div>
               </div>
               <div className="col-lg-3 col-md-6">
                 <div className="card active">
                   <div className="popular-badge">Most Popular</div>
                   <h2 className="card_title"><i className="ri-vip-crown-line"></i> Pro</h2>
-                  <h3 className="pricing">₹937<span className="small">/per year</span></h3>
+                  <h3 className="pricing" style={{fontSize: '1.8rem'}}>
+                    ₹{isYearly ? '937' : '78'}
+                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                  </h3>
                   <div className="credits-info">
-                    <p className="credits">46,850 Credits</p>
-                    <p className="monthly-avg">~3,904/month</p>
+                    <p className="credits">{isYearly ? '46,850' : '3,904'} Credits</p>
+                    <p className="monthly-avg">{isYearly ? '~3,904/month' : 'Monthly'}</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -944,16 +1035,19 @@ export default function GensyTemplate() {
                     <li>Priority Support</li>
                     <li>Analytics</li>
                   </ul>
-                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
+                  <a href="/pricing" className="cta_btn">Get Started</a>
                 </div>
               </div>
               <div className="col-lg-3 col-md-6">
                 <div className="card">
                   <h2 className="card_title"><i className="ri-building-line"></i> Business</h2>
-                  <h3 className="pricing">₹4,185<span className="small">/per year</span></h3>
+                  <h3 className="pricing" style={{fontSize: '1.8rem'}}>
+                    ₹{isYearly ? '4,185' : '349'}
+                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                  </h3>
                   <div className="credits-info">
-                    <p className="credits">209,250 Credits</p>
-                    <p className="monthly-avg">~17,437/month</p>
+                    <p className="credits">{isYearly ? '209,250' : '17,437'} Credits</p>
+                    <p className="monthly-avg">{isYearly ? '~17,437/month' : 'Monthly'}</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -962,16 +1056,19 @@ export default function GensyTemplate() {
                     <li>Team Features</li>
                     <li>Dedicated Support</li>
                   </ul>
-                  <a href="/pricing-ainext" className="cta_btn">Get Started</a>
+                  <a href="/pricing" className="cta_btn">Get Started</a>
                 </div>
               </div>
               <div className="col-lg-3 col-md-6">
                 <div className="card">
                   <h2 className="card_title"><i className="ri-rocket-line"></i> Enterprise</h2>
-                  <h3 className="pricing">₹8,850<span className="small">/per year</span></h3>
+                  <h3 className="pricing" style={{fontSize: '1.8rem'}}>
+                    ₹{isYearly ? '8,850' : '738'}
+                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                  </h3>
                   <div className="credits-info">
-                    <p className="credits">442,500 Credits</p>
-                    <p className="monthly-avg">~36,875/month</p>
+                    <p className="credits">{isYearly ? '442,500' : '36,875'} Credits</p>
+                    <p className="monthly-avg">{isYearly ? '~36,875/month' : 'Monthly'}</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -980,7 +1077,7 @@ export default function GensyTemplate() {
                     <li>Custom Integration</li>
                     <li>24/7 Support</li>
                   </ul>
-                  <a href="/contact-ainext" className="cta_btn">Contact Sales</a>
+                  <a href="/pricing" className="cta_btn">Get Started</a>
                 </div>
               </div>
             </div>
