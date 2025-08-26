@@ -999,12 +999,12 @@ export default function GensyTemplate() {
                 <div className="card">
                   <h2 className="card_title"><i className="ri-seedling-line"></i> Starter</h2>
                   <h3 className="pricing" style={{fontSize: '1.8rem'}}>
-                    ₹{isYearly ? '360' : '30'}
-                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                    ₹{isYearly ? '360' : '450'}
+                    <span className="small">/per month</span>
                   </h3>
                   <div className="credits-info">
-                    <p className="credits">{isYearly ? '18,000' : '1,500'} Credits</p>
-                    <p className="monthly-avg">{isYearly ? '~1,500/month' : 'Monthly'}</p>
+                    <p className="credits">18,000 Credits</p>
+                    <p className="monthly-avg">~1,500/month</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -1021,12 +1021,12 @@ export default function GensyTemplate() {
                   <div className="popular-badge">Most Popular</div>
                   <h2 className="card_title"><i className="ri-vip-crown-line"></i> Pro</h2>
                   <h3 className="pricing" style={{fontSize: '1.8rem'}}>
-                    ₹{isYearly ? '937' : '78'}
-                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                    ₹{isYearly ? '937' : '1,171'}
+                    <span className="small">/per month</span>
                   </h3>
                   <div className="credits-info">
-                    <p className="credits">{isYearly ? '46,850' : '3,904'} Credits</p>
-                    <p className="monthly-avg">{isYearly ? '~3,904/month' : 'Monthly'}</p>
+                    <p className="credits">46,850 Credits</p>
+                    <p className="monthly-avg">~3,904/month</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -1042,12 +1042,12 @@ export default function GensyTemplate() {
                 <div className="card">
                   <h2 className="card_title"><i className="ri-building-line"></i> Business</h2>
                   <h3 className="pricing" style={{fontSize: '1.8rem'}}>
-                    ₹{isYearly ? '4,185' : '349'}
-                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                    ₹{isYearly ? '4,185' : '5,231'}
+                    <span className="small">/per month</span>
                   </h3>
                   <div className="credits-info">
-                    <p className="credits">{isYearly ? '209,250' : '17,437'} Credits</p>
-                    <p className="monthly-avg">{isYearly ? '~17,437/month' : 'Monthly'}</p>
+                    <p className="credits">209,250 Credits</p>
+                    <p className="monthly-avg">~17,437/month</p>
                   </div>
                   <hr />
                   <ul className="features">
@@ -1063,12 +1063,12 @@ export default function GensyTemplate() {
                 <div className="card">
                   <h2 className="card_title"><i className="ri-rocket-line"></i> Enterprise</h2>
                   <h3 className="pricing" style={{fontSize: '1.8rem'}}>
-                    ₹{isYearly ? '8,850' : '738'}
-                    <span className="small">/{isYearly ? 'per year' : 'per month'}</span>
+                    ₹{isYearly ? '8,850' : '11,063'}
+                    <span className="small">/per month</span>
                   </h3>
                   <div className="credits-info">
-                    <p className="credits">{isYearly ? '442,500' : '36,875'} Credits</p>
-                    <p className="monthly-avg">{isYearly ? '~36,875/month' : 'Monthly'}</p>
+                    <p className="credits">442,500 Credits</p>
+                    <p className="monthly-avg">~36,875/month</p>
                   </div>
                   <hr />
                   <ul className="features">
