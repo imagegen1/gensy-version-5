@@ -64,67 +64,7 @@ export default function PrivacyPolicyPage() {
             </div>
           </div>
 
-          <div className="legal-toc">
-            <h2><i className="ri-list-check legal-icon"></i>TABLE OF CONTENTS</h2>
-            <div className="legal-toc-grid">
-              <a href="#section-1" className="legal-toc-item">
-                <span className="legal-toc-number">1</span>
-                WHAT INFORMATION DO WE COLLECT?
-              </a>
-              <a href="#section-2" className="legal-toc-item">
-                <span className="legal-toc-number">2</span>
-                HOW DO WE PROCESS YOUR INFORMATION?
-              </a>
-              <a href="#section-3" className="legal-toc-item">
-                <span className="legal-toc-number">3</span>
-                WHEN AND WITH WHOM DO WE SHARE YOUR PERSONAL INFORMATION?
-              </a>
-              <a href="#section-4" className="legal-toc-item">
-                <span className="legal-toc-number">4</span>
-                DO WE USE COOKIES AND OTHER TRACKING TECHNOLOGIES?
-              </a>
-              <a href="#section-5" className="legal-toc-item">
-                <span className="legal-toc-number">5</span>
-                DO WE OFFER ARTIFICIAL INTELLIGENCE-BASED PRODUCTS?
-              </a>
-              <a href="#section-6" className="legal-toc-item">
-                <span className="legal-toc-number">6</span>
-                HOW DO WE HANDLE YOUR SOCIAL LOGINS?
-              </a>
-              <a href="#section-7" className="legal-toc-item">
-                <span className="legal-toc-number">7</span>
-                HOW LONG DO WE KEEP YOUR INFORMATION?
-              </a>
-              <a href="#section-8" className="legal-toc-item">
-                <span className="legal-toc-number">8</span>
-                HOW DO WE KEEP YOUR INFORMATION SAFE?
-              </a>
-              <a href="#section-9" className="legal-toc-item">
-                <span className="legal-toc-number">9</span>
-                DO WE COLLECT INFORMATION FROM MINORS?
-              </a>
-              <a href="#section-10" className="legal-toc-item">
-                <span className="legal-toc-number">10</span>
-                WHAT ARE YOUR PRIVACY RIGHTS?
-              </a>
-              <a href="#section-11" className="legal-toc-item">
-                <span className="legal-toc-number">11</span>
-                CONTROLS FOR DO-NOT-TRACK FEATURES
-              </a>
-              <a href="#section-12" className="legal-toc-item">
-                <span className="legal-toc-number">12</span>
-                DO WE MAKE UPDATES TO THIS NOTICE?
-              </a>
-              <a href="#section-13" className="legal-toc-item">
-                <span className="legal-toc-number">13</span>
-                HOW CAN YOU CONTACT US ABOUT THIS NOTICE?
-              </a>
-              <a href="#section-14" className="legal-toc-item">
-                <span className="legal-toc-number">14</span>
-                HOW CAN YOU REVIEW, UPDATE, OR DELETE THE DATA WE COLLECT FROM YOU?
-              </a>
-            </div>
-          </div>
+
 
           <h2 id="section-1"><span className="legal-toc-number">1</span>WHAT INFORMATION DO WE COLLECT?</h2>
           <h3><i className="ri-user-settings-line legal-icon"></i>Personal information you disclose to us</h3>
