@@ -353,7 +353,6 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
                   <h3>Links</h3>
                   <ul className="links-list">
                     <li><a href="/">Home</a></li>
-                    <li><a href="/about">About Us</a></li>
                     <li><a href="/pricing">Pricing</a></li>
                   </ul>
                 </div>
