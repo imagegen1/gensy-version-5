@@ -14,9 +14,11 @@ import {
 	PricingTablePlan,
 } from '@/components/ui/pricing-table-new';
 import { Button } from '@/components/ui/Button';
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useAuth, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
+import { useRouter, useSearchParams } from 'next/navigation';
 import PayAsYouGo from '@/components/pay-as-you-go';
+import TestBuyButton from '@/components/test-buy-button';
+import { toast } from 'react-hot-toast';
 
 // Monthly pricing data with exact generation counts based on credit economics
 // Credit Value: 1 credit = ₹0.02
@@ -140,8 +142,95 @@ function formatNumber(n: number) {
 export default function PricingPage() {
   const [isYearly, setIsYearly] = useState(true);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
   const { isSignedIn } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Handle post-authentication purchase continuation
+  useEffect(() => {
+    if (isSignedIn && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const planId = urlParams.get('plan');
+      const action = urlParams.get('action');
+
+      if (planId && action === 'purchase') {
+        // Find the plan details and trigger purchase
+        const plan = PRICING_DATA.plans.find(p => p.id === planId);
+        if (plan) {
+          // Clear URL parameters
+          window.history.replaceState({}, '', '/pricing');
+
+          // Show welcome back message and trigger purchase
+          toast.success('Welcome back! Continuing with your purchase...');
+
+          // Delay to show the message, then trigger purchase
+          setTimeout(() => {
+            handlePlanPurchase(plan.id, plan.name, plan.price_inr);
+          }, 1500);
+        }
+      }
+    }
+  }, [isSignedIn]);
+
+  // Handle subscription plan purchase (only called when user is signed in)
+  const handlePlanPurchase = async (planId: string, planName: string, price: number) => {
+    setIsProcessing(planId);
+
+    try {
+      // Show loading toast
+      toast.loading('Initiating payment...', { id: 'payment-init' });
+
+      const response = await fetch('/api/payments/initiate', {
+        method: 'POST',
+        credentials: 'include', // Ensure Clerk cookies are sent
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          type: 'subscription',
+          planId: planId,
+          amount: price,
+          description: `${planName} Plan - ${isYearly ? 'Yearly' : 'Monthly'} Subscription`
+        }),
+      });
+
+      // Handle 401 - session expired, redirect to sign-in
+      if (response.status === 401) {
+        toast.dismiss('payment-init');
+        toast.error('Session expired. Please sign in again.');
+        router.push(`/auth/sign-in?redirect=${encodeURIComponent(window.location.href)}`);
+        return;
+      }
+
+      // Handle other errors
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.checkoutUrl) {
+        // Dismiss loading toast and show success
+        toast.dismiss('payment-init');
+        toast.success('Redirecting to payment gateway...');
+
+        // Small delay to show the success message
+        setTimeout(() => {
+          window.location.href = data.checkoutUrl;
+        }, 1000);
+      } else {
+        throw new Error('Payment URL not received');
+      }
+
+    } catch (error) {
+      console.error('Payment initiation error:', error);
+      toast.dismiss('payment-init');
+      toast.error(error instanceof Error ? error.message : 'Payment failed to start');
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
   useEffect(() => {
     // Load JavaScript assets for this component instance
@@ -629,6 +718,23 @@ export default function PricingPage() {
             </p>
           </div>
 
+          {/* Authentication Notice for Unauthenticated Users */}
+          {!isSignedIn && (
+            <div className="text-center mb-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+                <div className="flex items-center justify-center gap-2 text-blue-800">
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">Sign in required to purchase plans</span>
+                </div>
+                <p className="text-blue-600 text-sm mt-1">
+                  You'll be redirected to sign in when you click "Get Started" on any plan
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Billing Toggle */}
           <div className="text-center mb-5">
             <div className="pricing-toggle-wrap">
@@ -653,10 +759,46 @@ export default function PricingPage() {
               getPlanPrice={getPlanPrice}
               getComparePrice={getComparePrice}
               features={FEATURES}
+              handlePlanPurchase={handlePlanPurchase}
+              isProcessing={isProcessing}
+              isSignedIn={isSignedIn}
             />
           </div>
         </div>
       </section>
+
+      {/* TEST AUTHENTICATION SECTION */}
+      <section className="pricing-area ptb-100 bg-f9f6f6">
+        <div className="container">
+          <div className="section-title">
+            <h2>🧪 Authentication Test</h2>
+            <p>Test the authentication flow with simplified buttons</p>
+          </div>
+          <div className="row justify-content-center">
+            <div className="col-lg-4 col-md-6">
+              <div className="single-pricing-table">
+                <div className="pricing-header">
+                  <h3>Test Starter</h3>
+                </div>
+                <div className="pricing-body">
+                  <TestBuyButton planId="starter" />
+                </div>
+              </div>
+            </div>
+            <div className="col-lg-4 col-md-6">
+              <div className="single-pricing-table">
+                <div className="pricing-header">
+                  <h3>Test Pro</h3>
+                </div>
+                <div className="pricing-body">
+                  <TestBuyButton planId="pro" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* END TEST SECTION */}
 
       {/* Pay-As-You-Go Section */}
       <PayAsYouGo />
@@ -727,12 +869,18 @@ function PricingTableComponent({
   isYearly,
   getPlanPrice,
   getComparePrice,
-  features
+  features,
+  handlePlanPurchase,
+  isProcessing,
+  isSignedIn
 }: {
   isYearly: boolean;
   getPlanPrice: (price: number) => string;
   getComparePrice: (price: number) => string | undefined;
   features: FeatureItem[];
+  handlePlanPurchase: (planId: string, planName: string, price: number) => void;
+  isProcessing: string | null;
+  isSignedIn: boolean;
 }) {
   return (
     <div className="w-100">
@@ -748,13 +896,33 @@ function PricingTableComponent({
                 compareAt={getComparePrice(360)}
                 icon={Sparkles}
               >
-                <Button
-                  variant="outline"
-                  className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  size="sm"
-                >
-                  Get Started
-                </Button>
+                {/* Signed Out - Show Sign In Button */}
+                <SignedOut>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    size="sm"
+                    onClick={() => {
+                      const redirectUrl = `/pricing?plan=starter&action=purchase`;
+                      router.push(`/auth/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`);
+                    }}
+                  >
+                    Sign In & Get Started
+                  </Button>
+                </SignedOut>
+
+                {/* Signed In - Show Purchase Button */}
+                <SignedIn>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    size="sm"
+                    onClick={() => handlePlanPurchase('starter', 'Starter', 360)}
+                    disabled={isProcessing === 'starter'}
+                  >
+                    {isProcessing === 'starter' ? 'Processing...' : 'Get Started'}
+                  </Button>
+                </SignedIn>
               </PricingTablePlan>
             </th>
             <th className="p-2">
@@ -766,12 +934,31 @@ function PricingTableComponent({
                 icon={Crown}
                 isPopular={true}
               >
-                <Button
-                  className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border-0"
-                  size="sm"
-                >
-                  Get Started
-                </Button>
+                {/* Signed Out - Show Sign In Button */}
+                <SignedOut>
+                  <Button
+                    className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border-0"
+                    size="sm"
+                    onClick={() => {
+                      const redirectUrl = `/pricing?plan=pro&action=purchase`;
+                      router.push(`/auth/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`);
+                    }}
+                  >
+                    Sign In & Get Started
+                  </Button>
+                </SignedOut>
+
+                {/* Signed In - Show Purchase Button */}
+                <SignedIn>
+                  <Button
+                    className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 border-0"
+                    size="sm"
+                    onClick={() => handlePlanPurchase('pro', 'Pro', 937)}
+                    disabled={isProcessing === 'pro'}
+                  >
+                    {isProcessing === 'pro' ? 'Processing...' : 'Get Started'}
+                  </Button>
+                </SignedIn>
               </PricingTablePlan>
             </th>
             <th className="p-2">
@@ -782,13 +969,33 @@ function PricingTableComponent({
                 compareAt={getComparePrice(4185)}
                 icon={Building2}
               >
-                <Button
-                  variant="outline"
-                  className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  size="sm"
-                >
-                  Get Started
-                </Button>
+                {/* Signed Out - Show Sign In Button */}
+                <SignedOut>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    size="sm"
+                    onClick={() => {
+                      const redirectUrl = `/pricing?plan=business&action=purchase`;
+                      router.push(`/auth/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`);
+                    }}
+                  >
+                    Sign In & Get Started
+                  </Button>
+                </SignedOut>
+
+                {/* Signed In - Show Purchase Button */}
+                <SignedIn>
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-lg bg-transparent border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    size="sm"
+                    onClick={() => handlePlanPurchase('business', 'Business', 4185)}
+                    disabled={isProcessing === 'business'}
+                  >
+                    {isProcessing === 'business' ? 'Processing...' : 'Get Started'}
+                  </Button>
+                </SignedIn>
               </PricingTablePlan>
             </th>
             <th className="p-2">

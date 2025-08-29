@@ -116,9 +116,9 @@ export function CreditPurchase({ onPurchaseComplete, currentBalance = 0 }: Credi
         throw new Error(data.error || 'Payment initiation failed')
       }
 
-      if (data.paymentUrl) {
+      if (data.checkoutUrl) {
         // Redirect to payment page
-        window.location.href = data.paymentUrl
+        window.location.href = data.checkoutUrl
       } else {
         throw new Error('Payment URL not received')
       }

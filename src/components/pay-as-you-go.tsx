@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Wallet, Calculator, CreditCard, AlertCircle, CheckCircle } from 'lucide-react'
-import { useAuth } from '@clerk/nextjs'
+import { Wallet, Calculator, CreditCard, AlertCircle, CheckCircle, Loader2 } from 'lucide-react'
+import { useAuth, SignedIn, SignedOut, SignInButton } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
+import { toast } from 'react-hot-toast'
 
 interface PayAsYouGoProps {
   className?: string
@@ -34,6 +35,32 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
     }
   }, [amount])
 
+  // Handle post-authentication credit purchase continuation
+  useEffect(() => {
+    if (isSignedIn && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlAmount = urlParams.get('amount');
+      const action = urlParams.get('action');
+
+      if (urlAmount && action === 'purchase-credits') {
+        // Set the amount and clear URL parameters
+        setAmount(urlAmount);
+        window.history.replaceState({}, '', '/pricing');
+
+        // Show welcome back message
+        toast.success('Welcome back! You can now complete your credit purchase.');
+
+        // Scroll to the pay-as-you-go section
+        setTimeout(() => {
+          const payAsYouGoSection = document.getElementById('pay-as-you-go-section');
+          if (payAsYouGoSection) {
+            payAsYouGoSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 1000);
+      }
+    }
+  }, [isSignedIn])
+
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     // Only allow numbers and decimal point
@@ -61,61 +88,76 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
   }
 
   const handlePurchase = async () => {
-    if (!isSignedIn) {
-      router.push('/auth/sign-in')
-      return
-    }
-
     if (!validateAmount()) {
-      return
+      return;
     }
 
-    setIsLoading(true)
-    setError('')
-    setSuccess('')
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
 
     try {
-      // Check if payment gateway is integrated
-      const response = await fetch('/api/credits/purchase', {
+      // Show loading toast
+      toast.loading('Initiating payment...', { id: 'credit-payment-init' });
+
+      // Initiate PhonePe payment for credits
+      const response = await fetch('/api/payments/initiate', {
         method: 'POST',
+        credentials: 'include', // Ensure Clerk cookies are sent
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          type: 'credits',
           amount: parseFloat(amount),
-          credits: credits,
-          type: 'pay-as-you-go',
-          testPurchase: true // For testing until payment gateway is integrated
+          description: `Purchase ${credits.toLocaleString()} credits - Pay as you go`
         }),
-      })
-      
-      const result = await response.json()
-      
-      if (!response.ok) {
-        if (result.testMode) {
-          // Payment gateway not integrated yet
-          setSuccess(`🚧 Payment gateway integration pending. You would purchase ${credits.toLocaleString()} credits for ₹${amount}. This will work once payment gateway is integrated.`)
-        } else {
-          throw new Error(result.error || 'Payment failed')
-        }
-      } else {
-        setSuccess(`✅ Successfully purchased ${credits.toLocaleString()} credits!`)
-        setAmount('')
+      });
+
+      // Handle 401 - session expired, redirect to sign-in
+      if (response.status === 401) {
+        toast.dismiss('credit-payment-init');
+        toast.error('Session expired. Please sign in again.');
+        router.push(`/auth/sign-in?redirect=${encodeURIComponent(window.location.href)}`);
+        return;
       }
-      
+
+      // Handle other errors
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.checkoutUrl) {
+        // Dismiss loading toast and show success
+        toast.dismiss('credit-payment-init');
+        toast.success('Redirecting to payment gateway...');
+
+        // Small delay to show the success message
+        setTimeout(() => {
+          window.location.href = result.checkoutUrl;
+        }, 1000);
+      } else {
+        throw new Error('Payment URL not received');
+      }
+
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment failed')
+      const errorMessage = err instanceof Error ? err.message : 'Payment failed to start';
+      setError(errorMessage);
+      toast.dismiss('credit-payment-init');
+      toast.error(errorMessage);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const getExampleCredits = (exampleAmount: number) => {
     return Math.floor(exampleAmount / CREDIT_VALUE_INR)
   }
 
   return (
-    <section className={`pricing-area pt-100 pb-70 ${className}`}>
+    <section id="pay-as-you-go-section" className={`pricing-area pt-100 pb-70 ${className}`}>
       <div className="container">
         <div className="section-title text-center">
           <h2>
@@ -125,6 +167,20 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
           <p>
             Purchase exactly the credits you need. No monthly commitments, just pay for what you use.
           </p>
+
+          {/* Authentication Notice for Unauthenticated Users */}
+          {!isSignedIn && (
+            <div className="mt-4 mb-2">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-lg mx-auto">
+                <div className="flex items-center justify-center gap-2 text-blue-800">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium text-sm">Sign in required to purchase credits</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="row justify-content-center">
@@ -219,23 +275,42 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
               </CardContent>
 
               <CardFooter>
-                <button
-                  onClick={handlePurchase}
-                  disabled={isLoading || !amount || parseFloat(amount) < MIN_AMOUNT}
-                  className="w-full bg-violet-600 hover:bg-violet-700 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-0"
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      Processing...
-                    </div>
-                  ) : (
+                {/* Signed Out - Show Sign In Button */}
+                <SignedOut>
+                  <button
+                    className="w-full py-3 px-6 rounded-lg font-medium transition-colors border-0 bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      const redirectUrl = `/pricing?amount=${amount}&action=purchase-credits`;
+                      router.push(`/auth/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}`);
+                    }}
+                  >
                     <div className="flex items-center justify-center gap-2">
                       <CreditCard className="h-4 w-4" />
-                      {isSignedIn ? 'Purchase Credits' : 'Sign In to Purchase'}
+                      Sign In to Purchase Credits
                     </div>
-                  )}
-                </button>
+                  </button>
+                </SignedOut>
+
+                {/* Signed In - Show Purchase Button */}
+                <SignedIn>
+                  <button
+                    onClick={handlePurchase}
+                    disabled={isLoading || !amount || parseFloat(amount) < MIN_AMOUNT}
+                    className="w-full py-3 px-6 rounded-lg font-medium transition-colors border-0 bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Processing Payment...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <CreditCard className="h-4 w-4" />
+                        Purchase Credits
+                      </div>
+                    )}
+                  </button>
+                </SignedIn>
               </CardFooter>
             </Card>
           </div>

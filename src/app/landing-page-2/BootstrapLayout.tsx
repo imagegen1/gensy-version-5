@@ -332,14 +332,14 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
       {/* Start Footer Area */}
       <footer className="footer-area">
         <div className="container">
-          <div className="footer-top-area pt-100">
-            <div className="row">
+          <div className="footer-top-area pt-50 pb-30">
+            <div className="row align-items-start">
               <div className="col-lg-4 col-md-6 col-sm-6">
                 <div className="single-footer-widget">
                   <a href="/landing-page-2" className="logo">
-                    <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '45px', width: 'auto'}} />
+                    <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{height: '100px', width: 'auto'}} />
                   </a>
-                  <p>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds</p>
+                  <p style={{marginTop: '15px', marginBottom: '20px'}}>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds</p>
                   <ul className="social-links">
                     <li><a href="https://www.facebook.com/" target="_blank"><i className="ri-facebook-fill"></i></a></li>
                     <li><a href="https://www.instagram.com/" target="_blank"><i className="ri-instagram-line"></i></a></li>
@@ -349,8 +349,8 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
                 </div>
               </div>
               <div className="col-lg-4 col-md-6 col-sm-6">
-                <div className="single-footer-widget pl-5">
-                  <h3>Links</h3>
+                <div className="single-footer-widget">
+                  <h3 style={{marginTop: '15px', marginBottom: '20px'}}>Links</h3>
                   <ul className="links-list">
                     <li><a href="/">Home</a></li>
                     <li><a href="/pricing">Pricing</a></li>
@@ -359,7 +359,7 @@ export default function BootstrapLayout({ children, title, currentPage = '' }: B
               </div>
               <div className="col-lg-4 col-md-6 col-sm-6">
                 <div className="single-footer-widget">
-                  <h3>Legal</h3>
+                  <h3 style={{marginTop: '15px', marginBottom: '20px'}}>Legal</h3>
                   <ul className="links-list">
                     <li><a href="/terms-conditions">Terms & Conditions</a></li>
                     <li><a href="/pricing">Payment Method</a></li>

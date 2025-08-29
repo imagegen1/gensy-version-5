@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Clerk Cookies</title>
+</head>
+<body>
+    <h1>🧹 Clear Clerk Cookies</h1>
+    <p>This page will clear all Clerk session cookies to fix authentication issues.</p>
+    
+    <button onclick="clearCookies()">Clear All Clerk Cookies</button>
+    <div id="result"></div>
+
+    <script>
+        function clearCookies() {
+            const result = document.getElementById('result');
+            let cleared = 0;
+            
+            // Get all cookies
+            const cookies = document.cookie.split(';');
+            
+            cookies.forEach(cookie => {
+                const [name] = cookie.trim().split('=');
+                
+                // Clear Clerk-related cookies
+                if (name.startsWith('__session') || name.startsWith('__client_uat') || name.startsWith('__clerk')) {
+                    // Clear for current domain
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost`;
+                    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+                    cleared++;
+                    console.log('Cleared cookie:', name);
+                }
+            });
+            
+            result.innerHTML = `
+                <div style="margin-top: 20px; padding: 10px; background: #e8f5e8; border: 1px solid #4caf50; border-radius: 4px;">
+                    ✅ Cleared ${cleared} Clerk cookies<br>
+                    <strong>Next steps:</strong><br>
+                    1. Close this tab<br>
+                    2. Go to <a href="http://localhost:3000/pricing" target="_blank">http://localhost:3000/pricing</a><br>
+                    3. Test the authentication flow
+                </div>
+            `;
+        }
+        
+        // Auto-run on page load
+        window.onload = function() {
+            clearCookies();
+        };
+    </script>
+</body>
+</html>

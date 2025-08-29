@@ -4,6 +4,7 @@ import Script from 'next/script'
 import { ClerkProvider } from '@clerk/nextjs'
 import { ToastProvider } from '@/components/ui'
 import { NotificationProvider } from '@/components/ui/notification-system'
+import { Toaster } from 'react-hot-toast'
 import { getBaseUrl } from '@/lib/utils'
 import './globals.css'
 
@@ -148,6 +149,30 @@ export default function RootLayout({
             </div>
             <div id="modal-root" />
             <div id="toast-root" />
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#4ade80',
+                    secondary: '#fff',
+                  },
+                },
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
             <div id="clerk-captcha" />
           </ToastProvider>
         </NotificationProvider>
