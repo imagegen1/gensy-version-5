@@ -2,9 +2,9 @@
 
 import { SignedIn, SignedOut, useAuth } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
-export default function TestBuyButton({ planId }: { planId: string }) {
+function TestBuyButtonContent({ planId }: { planId: string }) {
   const router = useRouter()
   const { isSignedIn } = useAuth()
   const qs = useSearchParams()
@@ -67,5 +67,17 @@ export default function TestBuyButton({ planId }: { planId: string }) {
         </button>
       </SignedIn>
     </>
+  )
+}
+
+export default function TestBuyButton({ planId }: { planId: string }) {
+  return (
+    <Suspense fallback={
+      <button className="w-full py-2 px-4 bg-gray-400 text-white rounded" disabled>
+        Loading...
+      </button>
+    }>
+      <TestBuyButtonContent planId={planId} />
+    </Suspense>
   )
 }

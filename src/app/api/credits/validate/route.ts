@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { ServicePricingManager } from '@/lib/pricing/service-pricing'
-import { CreditManager } from '@/lib/credits'
+import { CreditService } from '@/lib/credits'
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,17 +29,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's current credit balance
-    const balance = await CreditManager.getBalance(userId)
-    if (!balance.success) {
-      return NextResponse.json(
-        { error: 'Failed to get user credit balance' },
-        { status: 500 }
-      )
-    }
+    const balance = await CreditService.getCreditBalance(userId)
 
     // Validate credits for the specific service
     const validation = await ServicePricingManager.validateCreditsForService(
-      balance.balance?.current || 0,
+      balance.current || 0,
       provider,
       model_name
     )
@@ -50,7 +44,7 @@ export async function POST(request: NextRequest) {
         hasEnoughCredits: validation.hasEnoughCredits,
         creditsRequired: validation.creditsRequired,
         creditsShort: validation.creditsShort,
-        currentBalance: balance.balance?.current || 0
+        currentBalance: balance.current || 0
       }
     })
 

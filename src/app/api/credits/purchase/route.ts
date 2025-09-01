@@ -195,12 +195,12 @@ export async function GET(request: NextRequest) {
     const packages = SubscriptionService.getCreditPackages()
     
     // Get user's current balance
-    const balance = await CreditManager.getBalance(userId)
+    const balance = await CreditService.getCreditBalance(userId)
     
     return NextResponse.json({
       success: true,
       packages,
-      current_balance: balance.success ? balance.balance?.current || 0 : 0
+      current_balance: balance.current || 0
     })
 
   } catch (error) {

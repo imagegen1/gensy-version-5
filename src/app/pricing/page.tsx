@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { cn } from '@/lib/utils';
 import { Sparkles, Crown, Building2, Rocket } from 'lucide-react';
 import {
@@ -139,7 +139,7 @@ function formatNumber(n: number) {
   return n.toLocaleString('en-IN')
 }
 
-export default function PricingPage() {
+function PricingPageContent() {
   const [isYearly, setIsYearly] = useState(true);
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -863,6 +863,21 @@ export default function PricingPage() {
       {/* End Top to Bottom */}
     </div>
   );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading pricing page...</p>
+        </div>
+      </div>
+    }>
+      <PricingPageContent />
+    </Suspense>
+  )
 }
 
 function PricingTableComponent({
