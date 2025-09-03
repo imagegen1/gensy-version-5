@@ -14,11 +14,27 @@ let StandardCheckoutPayRequest: any = null
 
 // Dynamically import PhonePe SDK to handle potential import issues
 try {
-  const phonePeSDK = require('pg-sdk-node')
-  StandardCheckoutClient = phonePeSDK.StandardCheckoutClient
-  Env = phonePeSDK.Env
-  MetaInfo = phonePeSDK.MetaInfo
-  StandardCheckoutPayRequest = phonePeSDK.StandardCheckoutPayRequest
+  // Try multiple import methods for PhonePe SDK
+  let phonePeSDK: any = null
+
+  try {
+    phonePeSDK = require('pg-sdk-node')
+  } catch (e1) {
+    try {
+      phonePeSDK = require('phonepe-pg-sdk-node')
+    } catch (e2) {
+      console.warn('⚠️ PhonePe SDK not found with standard names, trying dynamic import')
+      throw new Error('PhonePe SDK not available')
+    }
+  }
+
+  if (phonePeSDK) {
+    StandardCheckoutClient = phonePeSDK.StandardCheckoutClient
+    Env = phonePeSDK.Env
+    MetaInfo = phonePeSDK.MetaInfo
+    StandardCheckoutPayRequest = phonePeSDK.StandardCheckoutPayRequest
+    console.log('✅ PhonePe SDK imported successfully')
+  }
 } catch (error) {
   console.warn('⚠️ PhonePe SDK not available, using fallback implementation:', error)
 }
@@ -52,6 +68,18 @@ export class PhonePeService {
   private static readonly CLIENT_VERSION = parseInt(process.env.PHONEPE_CLIENT_VERSION || '1')
   private static readonly APP_URL = getBaseUrl()
   private static readonly ENVIRONMENT = process.env.PHONEPE_ENVIRONMENT || 'sandbox'
+
+  // Static initialization to log configuration on startup
+  static {
+    console.log('🔧 PhonePe Service Configuration:', {
+      baseUrl: this.PHONEPE_BASE_URL,
+      clientId: this.CLIENT_ID,
+      environment: this.ENVIRONMENT,
+      appUrl: this.APP_URL,
+      nodeEnv: process.env.NODE_ENV,
+      developmentMode: process.env.PHONEPE_DEVELOPMENT_MODE
+    })
+  }
 
   // PhonePe SDK client instance
   private static client: any = null
@@ -149,16 +177,26 @@ export class PhonePeService {
         merchantTransactionId,
         amount: request.amount,
         environment: this.ENVIRONMENT,
-        sdkAvailable: !!StandardCheckoutClient
+        sdkAvailable: !!StandardCheckoutClient,
+        baseUrl: this.PHONEPE_BASE_URL,
+        clientId: this.CLIENT_ID ? 'SET' : 'NOT_SET',
+        clientSecret: this.CLIENT_SECRET ? 'SET' : 'NOT_SET',
+        developmentMode: process.env.PHONEPE_DEVELOPMENT_MODE
       })
 
       // Check if we have valid credentials
       if (!this.isConfigured()) {
+        console.error('❌ PhonePe credentials not configured:', {
+          clientId: this.CLIENT_ID,
+          clientSecret: this.CLIENT_SECRET ? '[HIDDEN]' : 'NOT_SET',
+          environment: this.ENVIRONMENT,
+          developmentMode: process.env.PHONEPE_DEVELOPMENT_MODE
+        })
+
         if (process.env.PHONEPE_DEVELOPMENT_MODE === 'true') {
           console.warn('⚠️ PhonePe credentials not configured. Using development mode.')
           return this.createDevelopmentPaymentResponse(merchantTransactionId, request)
         } else {
-          console.error('❌ PhonePe credentials not configured in production mode')
           throw new Error('Payment gateway not configured. Please contact support.')
         }
       }
