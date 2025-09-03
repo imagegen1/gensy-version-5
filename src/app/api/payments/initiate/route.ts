@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { z } from 'zod'
 import { PhonePeService } from '@/lib/services/phonepe'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // Force Node.js runtime to ensure proper cookie handling
 export const runtime = 'nodejs'
@@ -112,6 +113,66 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Payment result successful')
+
+    // Create payment record in database for webhook processing
+    const supabase = createServiceRoleClient()
+
+    try {
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('clerk_user_id', userId)
+        .single()
+
+      if (profileError || !profile) {
+        console.error('❌ User profile not found:', userId, profileError)
+        return NextResponse.json(
+          { error: 'User profile not found' },
+          { status: 404 }
+        )
+      }
+
+      // Create payment record
+      const { data: paymentRecord, error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          user_id: profile.id,
+          transaction_id: paymentResult.merchantTransactionId,
+          amount: amount,
+          currency: 'INR',
+          type: type,
+          plan_id: planId,
+          status: 'pending',
+          gateway: 'phonepe',
+          gateway_response: {
+            merchantTransactionId: paymentResult.merchantTransactionId,
+            orderId: paymentResult.orderId,
+            paymentUrl: paymentResult.paymentUrl,
+            initiatedAt: new Date().toISOString()
+          },
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (paymentError) {
+        console.error('❌ Failed to create payment record:', paymentError)
+        return NextResponse.json(
+          { error: 'Failed to create payment record' },
+          { status: 500 }
+        )
+      }
+
+      console.log('✅ Payment record created:', paymentRecord.id)
+
+    } catch (dbError) {
+      console.error('❌ Database error:', dbError)
+      return NextResponse.json(
+        { error: 'Database error' },
+        { status: 500 }
+      )
+    }
 
     // Log payment initiation for debugging
     console.log('Payment initiated:', {
