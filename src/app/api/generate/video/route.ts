@@ -14,6 +14,9 @@ import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadFile } from '@/lib/storage/r2-client'
 import { z } from 'zod'
+import { withVideoGenerationRateLimit } from '@/middleware/rate-limiting'
+import { enforceContentPolicy } from '@/lib/content-policy'
+import { AdvancedSanitizer } from '@/lib/advanced-sanitizer'
 
 // Request validation schema - updated for proper Veo API support
 const videoGenerationSchema = z.object({
@@ -43,7 +46,8 @@ const videoGenerationSchema = z.object({
   testMode: z.boolean().optional() // For testing without authentication
 })
 
-export async function POST(request: NextRequest) {
+// Apply rate limiting to video generation endpoint
+export const POST = withVideoGenerationRateLimit(async (request: NextRequest) => {
   // Generate unique request ID for logging (mirrors image generation)
   const requestId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const startTime = Date.now()
@@ -131,6 +135,32 @@ export async function POST(request: NextRequest) {
       enhancePrompt,
       sampleCount
     } = validationResult.data
+
+    // Advanced input sanitization
+    const sanitizedPrompt = AdvancedSanitizer.sanitizePrompt(prompt)
+    const sanitizedNegativePrompt = negativePrompt ? AdvancedSanitizer.sanitizePrompt(negativePrompt) : undefined
+    const sanitizedSourceImagePrompt = sourceImagePrompt ? AdvancedSanitizer.sanitizePrompt(sourceImagePrompt) : undefined
+
+    console.log(`🧹 [${requestId}] VIDEO GENERATION: Input sanitization completed`)
+
+    // Content policy enforcement (skip for test mode)
+    if (!isTestMode) {
+      console.log(`🛡️ [${requestId}] VIDEO GENERATION: Checking content policy...`)
+      const contentPolicyResult = await enforceContentPolicy(sanitizedPrompt, userId, sourceImageUrl)
+
+      if (!contentPolicyResult.allowed) {
+        console.log(`❌ [${requestId}] VIDEO GENERATION: Content policy violation:`, contentPolicyResult.reason)
+        return NextResponse.json(
+          {
+            error: 'Content policy violation',
+            message: 'Your prompt contains content that violates our content policy. Please modify your prompt and try again.',
+            code: 'CONTENT_POLICY_VIOLATION'
+          },
+          { status: 400 }
+        )
+      }
+      console.log(`✅ [${requestId}] VIDEO GENERATION: Content policy check passed`)
+    }
 
     console.log(`✅ [${requestId}] VIDEO GENERATION: Request validation successful`)
     console.log(`📝 [${requestId}] VIDEO GENERATION: Validated parameters:`, {
@@ -927,4 +957,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

@@ -5,6 +5,7 @@
 
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { auth } from '@clerk/nextjs/server'
+import { deductCreditsAtomic, refundCreditsAtomic, checkSufficientCredits } from '@/lib/credit-manager'
 
 export interface CreditTransaction {
   id: string
@@ -161,65 +162,38 @@ export class CreditService {
   }
 
   /**
-   * Deduct credits from user account (legacy method)
+   * Deduct credits from user account using atomic operations
    */
   static async deductCredits(
     amount: number,
     description: string,
     generationId?: string,
     clerkUserId?: string
-  ): Promise<{ success: boolean; newBalance: number; error?: string }> {
+  ): Promise<{ success: boolean; newBalance: number; error?: string; transactionId?: string }> {
     try {
       const userId = clerkUserId || (await auth()).userId
       if (!userId) throw new Error('User not authenticated')
 
-      const supabase = createServiceRoleClient()
+      // Use atomic credit deduction to prevent race conditions
+      const result = await deductCreditsAtomic(
+        userId,
+        amount,
+        description,
+        { generation_id: generationId }
+      )
 
-      // Get user record
-      const { data: user, error: userError } = await supabase
-        .from('profiles')
-        .select('id, credits')
-        .eq('clerk_user_id', userId)
-        .single()
-
-      if (userError) throw userError
-      if (!user) throw new Error('User not found')
-
-      // Check sufficient credits
-      if (user.credits < amount) {
+      if (!result.success) {
         return {
           success: false,
-          newBalance: user.credits,
-          error: 'Insufficient credits'
+          newBalance: 0,
+          error: result.error
         }
       }
 
-      // Start transaction
-      const newBalance = user.credits - amount
-
-      // Update user credits
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          credits: newBalance,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id)
-
-      if (updateError) throw updateError
-
-      // Log transaction
-      await this.logTransaction({
-        user_id: user.id,
-        type: 'usage',
-        amount: -amount,
-        description,
-        generation_id: generationId
-      })
-
       return {
         success: true,
-        newBalance
+        newBalance: result.remainingCredits || 0,
+        transactionId: result.transactionId
       }
     } catch (error) {
       console.error('Error deducting credits:', error)
@@ -342,6 +316,51 @@ export class CreditService {
     } catch (error) {
       console.error('Error getting transaction history:', error)
       return []
+    }
+  }
+
+  /**
+   * Refund credits to user account using atomic operations
+   */
+  static async refundCredits(
+    amount: number,
+    description: string,
+    originalTransactionId?: string,
+    clerkUserId?: string
+  ): Promise<{ success: boolean; newBalance: number; error?: string; transactionId?: string }> {
+    try {
+      const userId = clerkUserId || (await auth()).userId
+      if (!userId) throw new Error('User not authenticated')
+
+      // Use atomic credit refund to prevent race conditions
+      const result = await refundCreditsAtomic(
+        userId,
+        amount,
+        description,
+        originalTransactionId,
+        { refund_reason: description }
+      )
+
+      if (!result.success) {
+        return {
+          success: false,
+          newBalance: 0,
+          error: result.error
+        }
+      }
+
+      return {
+        success: true,
+        newBalance: result.remainingCredits || 0,
+        transactionId: result.transactionId
+      }
+    } catch (error) {
+      console.error('Error refunding credits:', error)
+      return {
+        success: false,
+        newBalance: 0,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      }
     }
   }
 

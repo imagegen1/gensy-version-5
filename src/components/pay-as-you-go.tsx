@@ -22,7 +22,7 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
   // Credit calculation constants (based on existing system)
   const CREDIT_VALUE_INR = 0.02 // ₹0.02 per credit
-  const MIN_AMOUNT = 50 // Minimum ₹50
+  const MIN_AMOUNT = 2 // Minimum ₹2
 
   // Calculate credits based on amount
   useEffect(() => {
@@ -337,10 +337,11 @@ export default function PayAsYouGo({ className }: PayAsYouGoProps) {
 
               <CardContent className="space-y-4">
                 {[
-                  { amount: 50, description: 'Starter amount' },
-                  { amount: 100, description: 'Popular choice' },
-                  { amount: 250, description: 'Great value' },
-                  { amount: 500, description: 'Power user' },
+                  { amount: 2, description: 'Minimum amount' },
+                  { amount: 10, description: 'Small top-up' },
+                  { amount: 50, description: 'Popular choice' },
+                  { amount: 100, description: 'Great value' },
+                  { amount: 250, description: 'Power user' },
                 ].map((example) => (
                   <div
                     key={example.amount}

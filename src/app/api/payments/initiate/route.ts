@@ -16,25 +16,42 @@ const PaymentInitiationSchema = z.object({
   type: z.enum(['subscription', 'credits']),
   planId: z.string().optional(),
   packageId: z.string().optional(),
-  amount: z.number().positive(),
+  amount: z.number().min(2, 'Minimum amount is ₹2'), // Updated minimum to ₹2
   description: z.string().optional()
 })
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Payment initiation API called')
+
     const { userId } = await auth()
     if (!userId) {
+      console.log('❌ No user ID found in auth')
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
+    console.log('✅ User authenticated:', userId)
+
     // Parse and validate request body
-    const body = await request.json()
+    let body
+    try {
+      body = await request.json()
+      console.log('📝 Request body:', body)
+    } catch (parseError) {
+      console.error('❌ Failed to parse request body:', parseError)
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
+
     const validationResult = PaymentInitiationSchema.safeParse(body)
 
     if (!validationResult.success) {
+      console.log('❌ Validation failed:', validationResult.error.errors)
       return NextResponse.json(
         {
           error: 'Invalid request data',
@@ -45,15 +62,19 @@ export async function POST(request: NextRequest) {
     }
 
     const { type, planId, amount, description } = validationResult.data
+    console.log('✅ Validation passed:', { type, planId, amount, description })
 
     // Validate amount
     const amountValidation = PhonePeService.validateAmount(amount)
     if (!amountValidation.valid) {
+      console.log('❌ Amount validation failed:', amountValidation.error)
       return NextResponse.json(
         { error: amountValidation.error },
         { status: 400 }
       )
     }
+
+    console.log('✅ Amount validation passed')
 
     // Create payment request with PhonePe
     const paymentRequest = {
@@ -64,14 +85,33 @@ export async function POST(request: NextRequest) {
       description: description || `${type === 'subscription' ? 'Subscription' : 'Credits'} payment`
     }
 
-    const paymentResult = await PhonePeService.createPaymentRequest(paymentRequest)
+    console.log('🔄 Creating PhonePe payment request:', paymentRequest)
+
+    let paymentResult
+    try {
+      paymentResult = await PhonePeService.createPaymentRequest(paymentRequest)
+      console.log('📊 PhonePe service result:', paymentResult)
+    } catch (phonepeError) {
+      console.error('❌ PhonePe service error:', phonepeError)
+      return NextResponse.json(
+        {
+          error: 'Payment service error',
+          message: phonepeError instanceof Error ? phonepeError.message : 'Unknown PhonePe error',
+          debug: process.env.NODE_ENV === 'development' ? phonepeError : undefined
+        },
+        { status: 500 }
+      )
+    }
 
     if (!paymentResult.success) {
+      console.log('❌ Payment result failed:', paymentResult.error)
       return NextResponse.json(
         { error: paymentResult.error || 'Payment initiation failed' },
         { status: 500 }
       )
     }
+
+    console.log('✅ Payment result successful')
 
     // Log payment initiation for debugging
     console.log('Payment initiated:', {
@@ -95,11 +135,25 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Payment initiation error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error', message: (error as Error).message },
-      { status: 500 }
-    )
+    console.error('❌ Payment initiation error:', error)
+
+    // Ensure we always return JSON, never HTML
+    const errorResponse = {
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date().toISOString(),
+      debug: process.env.NODE_ENV === 'development' ? {
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : undefined
+      } : undefined
+    }
+
+    return NextResponse.json(errorResponse, {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
   }
 }
 

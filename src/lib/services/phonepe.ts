@@ -4,7 +4,24 @@
  */
 
 import { getBaseUrl } from '../utils'
-import { createHash } from 'crypto'
+import crypto from 'crypto'
+
+// Import PhonePe SDK
+let StandardCheckoutClient: any = null
+let Env: any = null
+let MetaInfo: any = null
+let StandardCheckoutPayRequest: any = null
+
+// Dynamically import PhonePe SDK to handle potential import issues
+try {
+  const phonePeSDK = require('pg-sdk-node')
+  StandardCheckoutClient = phonePeSDK.StandardCheckoutClient
+  Env = phonePeSDK.Env
+  MetaInfo = phonePeSDK.MetaInfo
+  StandardCheckoutPayRequest = phonePeSDK.StandardCheckoutPayRequest
+} catch (error) {
+  console.warn('⚠️ PhonePe SDK not available, using fallback implementation:', error)
+}
 
 export interface PaymentRequest {
   amount: number
@@ -30,15 +47,45 @@ export interface AuthTokenResponse {
 
 export class PhonePeService {
   private static readonly PHONEPE_BASE_URL = process.env.PHONEPE_BASE_URL || 'https://api-preprod.phonepe.com'
-  private static readonly CLIENT_ID = process.env.PHONEPE_CLIENT_ID
-  private static readonly CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET
-  private static readonly CLIENT_VERSION = process.env.PHONEPE_CLIENT_VERSION || '1'
+  private static readonly CLIENT_ID = process.env.PHONEPE_CLIENT_ID || 'PGTESTPAYUAT'
+  private static readonly CLIENT_SECRET = process.env.PHONEPE_CLIENT_SECRET || '099eb0cd-02cf-4e2a-8aca-3e6c6aff0399'
+  private static readonly CLIENT_VERSION = parseInt(process.env.PHONEPE_CLIENT_VERSION || '1')
   private static readonly APP_URL = getBaseUrl()
   private static readonly ENVIRONMENT = process.env.PHONEPE_ENVIRONMENT || 'sandbox'
 
-  // Cache for auth token
-  private static authToken: string | null = null
-  private static tokenExpiresAt: number = 0
+  // PhonePe SDK client instance
+  private static client: any = null
+
+  /**
+   * Initialize PhonePe SDK client
+   */
+  private static getSDKClient(): any {
+    if (!this.client && StandardCheckoutClient && Env) {
+      try {
+        const env = this.ENVIRONMENT === 'production' ? Env.PRODUCTION : Env.SANDBOX
+        this.client = StandardCheckoutClient.getInstance(
+          this.CLIENT_ID,
+          this.CLIENT_SECRET,
+          this.CLIENT_VERSION,
+          env
+        )
+        console.log('✅ PhonePe SDK client initialized successfully')
+      } catch (error) {
+        console.error('❌ Failed to initialize PhonePe SDK client:', error)
+        this.client = null
+      }
+    }
+    return this.client
+  }
+
+  /**
+   * Generate X-VERIFY header for PhonePe API authentication (fallback method)
+   */
+  private static generateXVerifyHeader(payload: string, endpoint: string): string {
+    const string = payload + endpoint + this.CLIENT_SECRET
+    const sha256 = crypto.createHash('sha256').update(string).digest('hex')
+    return sha256 + '###1'
+  }
 
   /**
    * Get or refresh authentication token
@@ -91,90 +138,112 @@ export class PhonePeService {
   }
 
   /**
-   * Create a payment request with PhonePe (Real API with Development Fallback)
+   * Create a payment request with PhonePe using official SDK
    */
   static async createPaymentRequest(request: PaymentRequest): Promise<PaymentResponse> {
     try {
-      // Generate unique merchant order ID
-      const merchantOrderId = `GENSY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      // Generate unique merchant transaction ID
+      const merchantTransactionId = `MT${Date.now()}${Math.floor(Math.random() * 1000)}`
+
+      console.log('🚀 Creating PhonePe payment request:', {
+        merchantTransactionId,
+        amount: request.amount,
+        environment: this.ENVIRONMENT,
+        sdkAvailable: !!StandardCheckoutClient
+      })
 
       // Check if we have valid credentials
       if (!this.isConfigured()) {
-        console.warn('⚠️ PhonePe credentials not configured. Using development mode.')
-        return this.createDevelopmentPaymentResponse(merchantOrderId, request)
+        if (process.env.PHONEPE_DEVELOPMENT_MODE === 'true') {
+          console.warn('⚠️ PhonePe credentials not configured. Using development mode.')
+          return this.createDevelopmentPaymentResponse(merchantTransactionId, request)
+        } else {
+          console.error('❌ PhonePe credentials not configured in production mode')
+          throw new Error('Payment gateway not configured. Please contact support.')
+        }
       }
 
-      // Get authentication token
-      const authToken = await this.getAuthToken()
+      // Try to use official PhonePe SDK first
+      if (StandardCheckoutClient && MetaInfo && StandardCheckoutPayRequest) {
+        try {
+          console.log('✅ Using official PhonePe SDK')
 
-      // Prepare payment request data according to PhonePe API v2
-      const paymentData = {
-        merchantOrderId,
-        amount: Math.round(request.amount * 100), // Convert to paise
-        expireAfter: 1200, // 20 minutes
-        metaInfo: {
-          udf1: request.type,
-          udf2: request.planId || '',
-          udf3: request.userId,
-          udf4: request.description || '',
-          udf5: 'gensy-payment'
-        },
-        paymentFlow: {
-          type: 'PG_CHECKOUT',
-          message: request.description || 'Payment for Gensy services',
-          merchantUrls: {
-            redirectUrl: `${this.APP_URL}${process.env.PHONEPE_CALLBACK_URL || '/api/payments/callback'}?merchantTransactionId=${merchantOrderId}`
+          const client = this.getSDKClient()
+          if (!client) {
+            throw new Error('Failed to initialize PhonePe SDK client')
           }
+
+          // Create meta info for additional data
+          const metaInfo = MetaInfo.builder()
+            .udf1(request.type)
+            .udf2(request.planId || '')
+            .udf3(request.userId)
+            .udf4(request.description || '')
+            .udf5('gensy-payment')
+            .build()
+
+          // Create payment request using SDK
+          const paymentRequest = StandardCheckoutPayRequest.builder()
+            .merchantOrderId(merchantTransactionId)
+            .amount(Math.round(request.amount * 100)) // Convert to paise
+            .redirectUrl(`${this.APP_URL}/api/payments/callback`)
+            .metaInfo(metaInfo)
+            .build()
+
+          console.log('📦 SDK Payment request created:', {
+            merchantOrderId: merchantTransactionId,
+            amount: Math.round(request.amount * 100),
+            redirectUrl: `${this.APP_URL}/api/payments/callback`
+          })
+
+          // Make payment request using SDK
+          const response = await client.pay(paymentRequest)
+
+          console.log('✅ PhonePe SDK response:', response)
+
+          if (response && response.redirectUrl) {
+            return {
+              success: true,
+              merchantTransactionId,
+              orderId: response.orderId,
+              paymentUrl: response.redirectUrl
+            }
+          } else {
+            throw new Error('No redirect URL received from PhonePe SDK')
+          }
+
+        } catch (sdkError) {
+          console.error('❌ PhonePe SDK error:', sdkError)
+          // Fall through to fallback implementation
         }
       }
 
-      console.log('Creating PhonePe payment request:', {
-        merchantOrderId,
-        amount: paymentData.amount,
-        environment: this.ENVIRONMENT
-      })
-
-      // Make API call to PhonePe
-      const apiUrl = this.ENVIRONMENT === 'production'
-        ? 'https://api.phonepe.com/apis/pg/checkout/v2/pay'
-        : 'https://api-preprod.phonepe.com/apis/pg-sandbox/checkout/v2/pay'
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `O-Bearer ${authToken}`
-        },
-        body: JSON.stringify(paymentData)
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`PhonePe API error: ${response.status} ${response.statusText} - ${errorText}`)
-      }
-
-      const result = await response.json()
-
-      if (result.orderId && result.redirectUrl) {
-        return {
-          success: true,
-          merchantTransactionId: merchantOrderId,
-          orderId: result.orderId,
-          paymentUrl: result.redirectUrl
-        }
-      } else {
-        throw new Error(result.message || 'Payment request failed')
-      }
+      // Fallback to manual API implementation if SDK fails
+      console.log('🔄 Falling back to manual API implementation')
+      return await this.createPaymentRequestFallback(merchantTransactionId, request)
 
     } catch (error) {
-      console.error('PhonePe payment creation failed:', error)
+      console.error('❌ PhonePe payment creation failed:', error)
 
-      // Fallback to development mode if credentials are invalid
-      if (error instanceof Error && error.message.includes('Failed to authenticate with PhonePe')) {
-        console.warn('🔄 Falling back to development mode due to authentication failure')
-        const merchantOrderId = `GENSY_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-        return this.createDevelopmentPaymentResponse(merchantOrderId, request)
+      // Log detailed error information
+      if (error instanceof Error) {
+        console.error('Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        })
       }
+
+      // Only use development fallback if explicitly enabled in development mode
+      if (process.env.PHONEPE_DEVELOPMENT_MODE === 'true') {
+        console.log('🔧 Using development fallback for payment creation (development mode enabled)')
+        const fallbackTransactionId = `DEV_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        return this.createDevelopmentPaymentResponse(fallbackTransactionId, request)
+      }
+
+      // In production mode, return error instead of fake success
+      console.error('❌ PhonePe payment failed in production mode. Cannot proceed without real payment.')
+      throw new Error('Payment processing failed. Please try again or contact support.')
 
       return {
         success: false,
@@ -202,6 +271,83 @@ export class PhonePeService {
       merchantTransactionId: merchantOrderId,
       orderId: merchantOrderId,
       paymentUrl: developmentPaymentUrl
+    }
+  }
+
+  /**
+   * Fallback API implementation when SDK is not available
+   */
+  private static async createPaymentRequestFallback(merchantTransactionId: string, request: PaymentRequest): Promise<PaymentResponse> {
+    // Prepare payment data according to PhonePe API v1
+    const paymentData = {
+      merchantId: this.CLIENT_ID,
+      merchantTransactionId,
+      merchantUserId: request.userId,
+      amount: Math.round(request.amount * 100), // Convert to paise
+      redirectUrl: `${this.APP_URL}/api/payments/callback`,
+      redirectMode: 'POST',
+      callbackUrl: `${this.APP_URL}/api/webhooks/phonepe`,
+      paymentInstrument: {
+        type: 'PAY_PAGE'
+      }
+    }
+
+    // Encode payload to base64
+    const payload = Buffer.from(JSON.stringify(paymentData)).toString('base64')
+
+    // Generate X-VERIFY header
+    const endpoint = '/pg/v1/pay'
+    const xVerify = this.generateXVerifyHeader(payload, endpoint)
+
+    console.log('Creating PhonePe payment request (fallback):', {
+      merchantTransactionId,
+      amount: paymentData.amount,
+      environment: this.ENVIRONMENT
+    })
+
+    // Make API call to PhonePe
+    const apiUrl = this.ENVIRONMENT === 'production'
+      ? 'https://api.phonepe.com/apis/hermes/pg/v1/pay'
+      : 'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay'
+
+    console.log('🔗 PhonePe API URL:', apiUrl)
+    console.log('🔐 X-VERIFY header:', xVerify)
+    console.log('📦 Payload:', payload)
+
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-VERIFY': xVerify,
+        'accept': 'application/json'
+      },
+      body: JSON.stringify({
+        request: payload
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('❌ PhonePe API error response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries()),
+        body: errorText
+      })
+      throw new Error(`PhonePe API error: ${response.status} ${response.statusText} - ${errorText}`)
+    }
+
+    const result = await response.json()
+    console.log('✅ PhonePe API response:', result)
+
+    if (result.success && result.data?.instrumentResponse?.redirectInfo?.url) {
+      return {
+        success: true,
+        merchantTransactionId,
+        paymentUrl: result.data.instrumentResponse.redirectInfo.url
+      }
+    } else {
+      throw new Error(result.message || 'Payment request failed')
     }
   }
 

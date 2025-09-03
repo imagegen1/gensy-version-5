@@ -12,6 +12,9 @@ import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadFile } from '@/lib/storage/r2-client'
 import { z } from 'zod'
+import { withImageGenerationRateLimit } from '@/middleware/rate-limiting'
+import { enforceContentPolicy } from '@/lib/content-policy'
+import { AdvancedSanitizer } from '@/lib/advanced-sanitizer'
 
 // Request validation schema
 const generateImageSchema = z.object({
@@ -51,7 +54,8 @@ const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance
   'Flux Dev': { id: 'flux-dev', service: 'bfl' },
 }
 
-export async function POST(request: NextRequest) {
+// Apply rate limiting to image generation endpoint
+export const POST = withImageGenerationRateLimit(async (request: NextRequest) => {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   console.log(`🚀 [${requestId}] IMAGE GENERATION REQUEST STARTED`)
   console.log(`📝 [${requestId}] Timestamp: ${new Date().toISOString()}`)
@@ -116,6 +120,31 @@ export async function POST(request: NextRequest) {
       guidanceScale,
       model
     } = validationResult.data
+
+    // Advanced input sanitization
+    const sanitizedPrompt = AdvancedSanitizer.sanitizePrompt(prompt)
+    const sanitizedNegativePrompt = negativePrompt ? AdvancedSanitizer.sanitizePrompt(negativePrompt) : undefined
+
+    console.log(`🧹 [${requestId}] Input sanitization completed`)
+
+    // Content policy enforcement (skip for test mode)
+    if (!isTestMode) {
+      console.log(`🛡️ [${requestId}] Checking content policy...`)
+      const contentPolicyResult = await enforceContentPolicy(sanitizedPrompt, userId, referenceImage)
+
+      if (!contentPolicyResult.allowed) {
+        console.log(`❌ [${requestId}] Content policy violation:`, contentPolicyResult.reason)
+        return NextResponse.json(
+          {
+            error: 'Content policy violation',
+            message: 'Your prompt contains content that violates our content policy. Please modify your prompt and try again.',
+            code: 'CONTENT_POLICY_VIOLATION'
+          },
+          { status: 400 }
+        )
+      }
+      console.log(`✅ [${requestId}] Content policy check passed`)
+    }
 
     // Determine the actual model ID and service to use
     const modelConfig = model && MODEL_MAPPING[model] ? MODEL_MAPPING[model] : { id: 'imagen-4.0-generate-preview-06-06', service: 'vertex' as const }
@@ -616,4 +645,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

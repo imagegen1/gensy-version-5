@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate minimum purchase (different for pay-as-you-go vs packages)
-    const minCredits = type === 'pay-as-you-go' ? 2500 : 100 // 2500 credits = ₹50 for pay-as-you-go
+    const minCredits = type === 'pay-as-you-go' ? 100 : 100 // 100 credits = ₹2 for pay-as-you-go
     if (creditsToAdd < minCredits) {
       return NextResponse.json(
         { error: `Minimum purchase is ${minCredits} credits` },
