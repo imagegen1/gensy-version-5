@@ -792,7 +792,7 @@ export const POST = withVideoGenerationRateLimit(async (request: NextRequest) =>
       { status: 500 }
     )
   }
-}
+})
 
 // Helper function to handle video completion
 async function handleVideoCompletion(
@@ -957,4 +957,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-})
+}

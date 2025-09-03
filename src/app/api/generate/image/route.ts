@@ -589,7 +589,7 @@ export const POST = withImageGenerationRateLimit(async (request: NextRequest) =>
       { status: 500 }
     )
   }
-}
+})
 
 export async function GET(request: NextRequest) {
   try {
@@ -645,4 +645,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-})
+}
