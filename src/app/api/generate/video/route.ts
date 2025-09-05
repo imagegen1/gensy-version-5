@@ -14,7 +14,7 @@ import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadFile } from '@/lib/storage/r2-client'
 import { z } from 'zod'
-import { withVideoGenerationRateLimit } from '@/middleware/rate-limiting'
+import { withRateLimit } from '@/lib/middleware/rate-limit'
 import { enforceContentPolicy } from '@/lib/content-policy'
 import { AdvancedSanitizer } from '@/lib/advanced-sanitizer'
 
@@ -46,8 +46,8 @@ const videoGenerationSchema = z.object({
   testMode: z.boolean().optional() // For testing without authentication
 })
 
-// Apply rate limiting to video generation endpoint
-export const POST = withVideoGenerationRateLimit(async (request: NextRequest) => {
+// Apply database-driven rate limiting to video generation endpoint
+export const POST = withRateLimit('/api/generate/video', async (request: NextRequest) => {
   // Generate unique request ID for logging (mirrors image generation)
   const requestId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const startTime = Date.now()

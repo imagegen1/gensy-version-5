@@ -109,7 +109,7 @@ async function processSuccessfulPayment(merchantTransactionId: string): Promise<
         *,
         user:profiles!inner(id, clerk_user_id)
       `)
-      .eq('transaction_id', merchantTransactionId)
+      .eq('gateway_transaction_id', merchantTransactionId)
       .single()
 
     if (paymentError || !payment) {
@@ -125,8 +125,8 @@ async function processSuccessfulPayment(merchantTransactionId: string): Promise<
       .update({
         status: 'completed',
         completed_at: new Date().toISOString(),
-        gateway_response: {
-          ...payment.gateway_response,
+        metadata: {
+          ...payment.metadata,
           status: 'COMPLETED',
           completedAt: new Date().toISOString()
         }

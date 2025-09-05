@@ -8,6 +8,7 @@ import { auth } from '@clerk/nextjs/server'
 import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadToR2 } from '@/lib/storage/r2-client'
+import { withRateLimit } from '@/lib/middleware/rate-limit'
 import { z } from 'zod'
 
 // Request validation schema
@@ -18,7 +19,8 @@ const upscaleImageSchema = z.object({
   quality: z.number().min(10).max(100).default(90),
 })
 
-export async function POST(request: NextRequest) {
+// Apply database-driven rate limiting to upscale endpoint
+export const POST = withRateLimit('/api/upscale/image', async (request: NextRequest) => {
   try {
     // Check authentication
     const { userId } = await auth()
@@ -480,4 +482,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})

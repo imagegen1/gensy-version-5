@@ -12,7 +12,7 @@ import { CreditService, CREDIT_COSTS } from '@/lib/credits'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 import { uploadFile } from '@/lib/storage/r2-client'
 import { z } from 'zod'
-import { withImageGenerationRateLimit } from '@/middleware/rate-limiting'
+import { withRateLimit } from '@/lib/middleware/rate-limit'
 import { enforceContentPolicy } from '@/lib/content-policy'
 import { AdvancedSanitizer } from '@/lib/advanced-sanitizer'
 
@@ -54,8 +54,8 @@ const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance
   'Flux Dev': { id: 'flux-dev', service: 'bfl' },
 }
 
-// Apply rate limiting to image generation endpoint
-export const POST = withImageGenerationRateLimit(async (request: NextRequest) => {
+// Apply database-driven rate limiting to image generation endpoint
+export const POST = withRateLimit('/api/generate/image', async (request: NextRequest) => {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   console.log(`🚀 [${requestId}] IMAGE GENERATION REQUEST STARTED`)
   console.log(`📝 [${requestId}] Timestamp: ${new Date().toISOString()}`)

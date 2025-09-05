@@ -1,0 +1,813 @@
+# Gensy AI Creative Suite - Unified Admin Panel Architecture
+
+## 📌 Executive Summary
+
+This document outlines a **comprehensive admin panel architecture** that seamlessly integrates **technical operations** with **business intelligence** for the Gensy AI Creative Suite. Unlike standard admin interfaces, this panel is designed to provide **complete visibility** across both system operations and business performance, enabling data-driven decisions that optimize both technical reliability and financial performance.
+
+The admin panel addresses critical gaps in the current architecture by providing:
+
+- **Real-time system observability** across all technical components
+- **Granular business intelligence** with financial metrics and user behavior
+- **Unified view of technical performance and business impact**
+- **Proactive system management** before issues affect revenue
+- **Strategic pricing tools** based on real cost data
+- **Developer-grade debugging capabilities** for complex production issues
+- **Compliance-ready documentation** for security and financial regulations
+
+## 🎯 Purpose and Scope
+
+### Primary Objectives
+1. Provide **developer-grade visibility** into all system components
+2. Deliver **business intelligence** with financial metrics and user analytics
+3. Enable **proactive system management** before issues affect users or revenue
+4. Offer **granular debugging capabilities** for complex production issues
+5. Provide **strategic pricing tools** based on real cost data
+6. Facilitate **customer support** with integrated error tracking
+7. Support **compliance requirements** with audit-ready documentation
+
+### Out of Scope
+- User-facing administrative functions (handled by frontend)
+- Direct payment processing (integrated with PhonePe)
+- Content creation tools (handled by main application)
+
+## 🧩 Core Components Architecture
+
+### 1. Unified Monitoring Dashboard (Technical + Business)
+
+#### Features
+- **Dual-pane monitoring** showing:
+  - Technical health (API status, queue depth, error rates)
+  - Business impact (revenue impact, user affected, generation value)
+  
+- **Financial impact visualization**:
+  ```mermaid
+  graph LR
+    A[Technical Incident] --> B[Queue Depth Increase]
+    B --> C[Generation Delay]
+    C --> D[Revenue Impact]
+    D --> E[Estimated Loss: ₹XX,XXX]
+    E --> F[Priority Rating: Critical]
+  ```
+
+- **Real-time profit tracking**:
+  - Current revenue rate (₹/minute)
+  - Cost vs revenue per generation
+  - Profit margin by model type
+  - Real-time credit balance (purchased vs used)
+
+- **System Health Indicators**:
+  - API Gateway health (Next.js edge functions)
+  - Database performance (Supabase connection metrics)
+  - AI provider status (Vertex AI, ByteDance, etc.)
+  - Storage system health (Cloudflare R2)
+  - Queue system status
+
+#### UI/UX Design
+- **Business/Technical toggle** to switch focus between operational and financial views
+- **Impact matrix** showing technical metrics with business impact indicators
+- **Profit heatmap** showing generation profitability by model and user segment
+- **Revenue timeline** with technical events overlaid for correlation analysis
+- **Custom dashboard builder** allowing both engineers and business teams to create personalized views
+- **Top-level health ring** showing overall system status (green/yellow/red)
+- **Interactive component map** with live status indicators
+
+### 2. AI Generation Management System (Technical + Business)
+
+#### Features
+- **Real-time queue monitoring** with:
+  - Visual representation of queue depth by priority/user tier
+  - Current processing rates and estimated completion times
+  - Model-specific capacity utilization (e.g., Imagen 4: 6/7 slots used)
+  - Financial impact indicators (revenue at stake per minute)
+  
+- **Generation economics tracking**:
+  - True cost vs revenue per generation
+  - Profit margin by model (using the 55% gross margin pricing sheet)
+  - Generation value by user tier
+  - Cost optimization opportunities
+
+- **Generation inspection tools**:
+  - Searchable generation log with filtering by:
+    - User ID
+    - Generation type (image/video)
+    - Model used
+    - Status (pending/processing/completed/failed)
+    - Time range
+    - Profitability (high/medium/low margin)
+  - Detailed generation inspection showing:
+    - Full request parameters
+    - Processing timeline
+    - Resource consumption metrics
+    - Cost breakdown (API cost + storage)
+    - Revenue generated (credits charged)
+    - Profit margin (revenue - true cost)
+
+- **Queue System Features**:
+  - Priority queuing based on user subscription tiers
+  - Model-agnostic queue architecture supporting all AI generation types
+  - Advanced retry mechanisms with exponential backoff
+  - Comprehensive queue monitoring and analytics dashboard
+  - Real-time status updates via WebSocket/SSE
+  - Queue position tracking and wait time estimation
+
+#### UI/UX Design
+- **Profit-focused queue visualization** showing requests color-coded by profitability
+- **Generation timeline view** with cost/revenue markers at each stage
+- **Model economics wheel** showing utilization vs profitability
+- **Filter builder** with business-focused filters ("show high-margin generations")
+- **Generation economics pane** showing real-time margin calculations
+- **Queue visualization** as a dynamic flow diagram showing requests moving through the system
+- **Generation preview pane** with side-by-side comparison of inputs/outputs
+
+### 3. Financial Operations Center
+
+#### Features
+- **Revenue Dashboard**:
+  - Real-time revenue tracking (hourly/daily/weekly)
+  - Revenue by plan type (yearly/pay-as-you-go)
+  - Revenue by model type (image/video)
+  - Revenue by user tier (free/pro/enterprise)
+  - Revenue conversion funnels
+
+- **Credit System Monitoring**:
+  - Credit purchase tracking (pay-as-you-go)
+  - Credit balance by user
+  - Credit usage patterns
+  - Credit refund tracking
+  - Credit fraud detection
+
+- **Profitability Analytics**:
+  - True cost vs revenue by model (using the 55% margin pricing sheet)
+  - Margin by user segment
+  - Cost optimization opportunities
+  - Model profitability trends
+  - Break-even analysis
+
+- **Subscription Management**:
+  - Active subscriptions by tier
+  - Churn rate tracking
+  - Renewal forecasts
+  - Revenue per user (RPU) metrics
+  - Customer lifetime value (CLV) calculations
+
+- **Pricing Sheet Integration**:
+  - True cost tracking per model (using the 55% gross margin pricing sheet)
+  - Revenue calculation per generation
+  - Profit margin visualization
+  - Margin threshold alerts
+
+#### UI/UX Design
+- **Financial health ring** showing revenue status vs targets
+- **Profit margin heatmap** by model and user tier
+- **Credit flow visualization** showing purchases and usage
+- **Subscription waterfall** showing conversion and churn
+- **Pricing simulator** showing impact of price changes
+- **Model profitability matrix** showing usage vs margin
+- **Cost breakdown visualizer** showing API/storage costs
+- **Model comparison matrix** with sortable financial metrics
+
+### 4. Special Discount & Promotion System
+
+#### Features
+- **Discount Code Management**:
+  - Create percentage discounts (10%, 20%, etc.)
+  - Create fixed-amount discounts (₹100 off)
+  - Create free credit promotions (100 free credits)
+  - Set expiration dates and usage limits
+  
+- **Targeted Promotion Tools**:
+  - Segment selection (by user tier, usage patterns, geography)
+  - A/B testing for promotions
+  - Usage tracking and effectiveness metrics
+  - ROI calculation for each promotion
+  
+- **Special Access Management**:
+  - Grant temporary elevated model access
+  - Increase credit limits for specific users
+  - Override rate limits for priority users
+  - Create custom pricing tiers
+
+- **Promotion Analytics**:
+  - Conversion rate by promotion
+  - Revenue impact (immediate vs long-term)
+  - Customer acquisition cost
+  - Promotion effectiveness scoring
+
+#### UI/UX Design
+- **Discount code creator** with real-time impact simulation
+- **User segment selector** with visual targeting interface
+- **Promotion timeline** showing active and upcoming promotions
+- **Effectiveness dashboard** showing ROI metrics
+- **Special access matrix** showing current overrides
+- **Discount impact calculator** before applying promotions
+
+### 5. User Error Reporting & Support System
+
+#### Features
+- **User Error Collection**:
+  - User-submitted error reports with context
+  - Automatic error capture (screenshots, browser info)
+  - User feedback on error severity
+  - Error categorization (technical, billing, usability)
+  
+- **Support Ticket Management**:
+  - Ticket assignment and tracking
+  - Response time monitoring
+  - Resolution status tracking
+  - Knowledge base integration
+  
+- **User Communication Tools**:
+  - In-app messaging system
+  - Email templates for common issues
+  - Response tracking and analytics
+  - User satisfaction measurement
+
+- **Error Analytics**:
+  - Error frequency by type
+  - Error impact on user retention
+  - Root cause analysis
+  - Error resolution time metrics
+
+#### UI/UX Design
+- **Error inbox** with priority sorting
+- **User context view** showing user history and current state
+- **Response composer** with templates and knowledge base
+- **Error resolution workflow** with status tracking
+- **Error impact dashboard** showing business impact
+- **Error reporting system** with user feedback integration
+
+### 6. Security Monitoring & Incident Response
+
+#### Features
+- **Threat detection dashboard** showing:
+  - Real-time security events with severity levels
+  - Suspicious pattern recognition (login attempts, content policy violations)
+  - IP reputation tracking
+  - Anomaly detection in user behavior
+
+- **Incident management workflow**:
+  - Automated incident creation from security events
+  - Collaborative investigation interface
+  - Response playbook integration
+  - Post-incident analysis tools
+
+- **Compliance monitoring**:
+  - Real-time GDPR compliance status
+  - Audit trail for sensitive operations
+  - Data retention policy enforcement
+  - User consent tracking
+
+- **Security Event Logging**:
+  - Comprehensive security event logging
+  - Threat detection algorithms
+  - Suspicious activity pattern recognition
+  - Automated security alerting
+  - Security dashboard for monitoring
+  - IP-based threat tracking
+  - User behavior anomaly detection
+
+#### UI/UX Design
+- **Security event timeline** with visual clustering of related events
+- **Threat severity matrix** showing impact/likelihood for active threats
+- **Incident war room** interface with shared context and response tools
+- **Compliance status dashboard** with pass/fail indicators for key requirements
+- **Forensic investigation mode** with timeline scrubbing and data correlation
+- **Security event timeline** showing real-time security events
+
+### 7. Performance Optimization Center
+
+#### Features
+- **Multi-layer caching analytics**:
+  - L1/L2/L3 cache hit/miss ratios
+  - Cache warming effectiveness
+  - Invalidation pattern analysis
+  - Memory pressure metrics
+
+- **Core Web Vitals monitoring**:
+  - LCP, FID, CLS metrics by user segment
+  - Performance regression detection
+  - Resource loading waterfall visualization
+  - Mobile/desktop performance comparison
+
+- **Optimization recommendations**:
+  - Automated suggestions based on usage patterns
+  - Impact estimation for proposed changes
+  - A/B test configuration for performance changes
+  - Historical performance comparison
+
+- **Performance Monitoring**:
+  - Prometheus metrics collection
+  - Performance monitoring dashboard
+  - Health check endpoints for all services
+  - Queue performance metrics
+  - Cache performance monitoring
+  - Alerting for performance degradation
+  - User experience metrics tracking
+
+#### UI/UX Design
+- **Caching effectiveness visualizer** showing data flow through cache layers
+- **Performance waterfall analyzer** with interactive timeline scrubbing
+- **Optimization recommendation cards** with implementation effort/impact scoring
+- **Performance budget dashboard** showing current status against targets
+- **Resource dependency graph** showing critical rendering paths
+- **Performance waterfall analyzer** showing resource loading timelines
+
+### 8. Model Capacity Management
+
+#### Features
+- **Real-time model capacity dashboard**:
+  - Concurrent usage vs. limits for each model
+  - Historical utilization patterns
+  - Predictive capacity planning
+  - Fallback mechanism effectiveness
+  
+- **Model configuration management**:
+  - Capacity limit adjustments
+  - Fallback priority configuration
+  - Quality/speed tradeoff settings
+  - Cost optimization parameters
+
+- **Model performance analytics**:
+  - Generation success rates by model
+  - Processing time distributions
+  - Cost per generation metrics
+  - Quality assessment metrics
+
+- **Model Capacity Management**:
+  - Model capacity tracking and load balancing
+  - Capacity reservation and release system
+  - Alternative model mapping with quality/speed metrics
+  - Automatic fallback system with user notifications
+  - Model performance tracking and optimization
+  - Predictive capacity planning based on usage patterns
+  - Capacity analytics and monitoring dashboard
+
+#### UI/UX Design
+- **Model capacity utilization wheel** showing real-time usage against limits
+- **Fallback chain visualization** showing current routing decisions
+- **Model comparison matrix** with sortable performance metrics
+- **Capacity forecasting timeline** showing predicted usage patterns
+- **Model configuration sandbox** for testing changes before deployment
+- **Model capacity heat map** showing utilization across all AI providers
+
+### 9. Developer Debugging Toolkit
+
+#### Features
+- **Request tracing system**:
+  - End-to-end request visualization
+  - Performance bottleneck identification
+  - Distributed tracing across services
+  - Error reproduction capability
+
+- **Test generation environment**:
+  - API request builder with full parameter control
+  - Model selection and configuration
+  - Request simulation with custom parameters
+  - Comparison tool for different model outputs
+
+- **Log analysis system**:
+  - Unified log viewer across all services
+  - Pattern recognition for common issues
+  - Log-based alert creation
+  - Custom log filtering with natural language
+
+- **Advanced Error Handling**:
+  - Standardized APIErrorHandler class
+  - Error categorization and severity levels
+  - Error tracking and analytics
+  - User-friendly error messages
+  - Error recovery mechanisms
+  - Error reporting to monitoring systems
+  - Error documentation and troubleshooting guides
+
+#### UI/UX Design
+- **Request flow visualizer** showing the complete processing path with timing
+- **API request composer** with auto-complete and validation
+- **Log explorer** with semantic search and pattern recognition
+- **Debugging sandbox** allowing safe reproduction of production issues
+- **Performance hotspot identifier** highlighting slow processing stages
+- **Request flow visualizer** showing the complete processing path
+
+## 🖼️ UI/UX Design Principles
+
+### Core Design Philosophy
+- **Unified business/technical perspective** - Show technical metrics with business impact
+- **Information density over minimalism** - Prioritize actionable data over visual simplicity
+- **Context preservation** - Maintain relevant context during navigation
+- **Progressive disclosure** - Show essential information first, with options to drill deeper
+- **Action-oriented interface** - Make it easy to take corrective actions from monitoring views
+- **Role-based views** - Technical vs business admin perspectives
+- **Financial context** - Always show cost/revenue implications
+- **Proactive recommendations** - Suggest actions based on data
+
+### Key UI Patterns
+
+#### 1. Unified Information Architecture
+```mermaid
+graph LR
+    A[Navigation] --> B[Technical Operations]
+    A --> C[Business Intelligence]
+    A --> D[User Management]
+    A --> E[Financial Operations]
+    B --> B1[System Health]
+    B --> B2[Queue Management]
+    B --> B3[Security Monitoring]
+    B --> B4[Performance Center]
+    C --> C1[Revenue Analytics]
+    C --> C2[User Analytics]
+    C --> C3[Model Economics]
+    D --> D1[User Management]
+    D --> D2[Error Reporting]
+    D --> D3[Support Tools]
+    E --> E1[Credit System]
+    E --> E2[Discount Management]
+    E --> E3[Financial Reporting]
+```
+
+#### 2. Data Visualization Approach
+- **Financial impact indicators** on all technical metrics
+- **Profit-focused color coding** (green = high margin, red = low margin)
+- **Cost/revenue timelines** for generation processes
+- **Pricing sheet integration** showing real-time margin calculations
+- **Revenue impact alerts** for technical issues
+- **Time-series visualizations** with interactive scrubbing
+- **Heat maps** for capacity utilization and performance metrics
+- **Flow diagrams** for request processing and queue management
+- **Matrix views** for multi-dimensional data comparison
+- **Anomaly highlighting** using statistical deviation indicators
+
+#### 3. Interaction Patterns
+- **Business/Technical toggle** for all views
+- **Profit simulation tools** for pricing changes
+- **Discount impact calculator** before applying promotions
+- **Financial context panels** showing cost data
+- **Revenue impact forecasting** for technical decisions
+- **Drill-down navigation** with breadcrumb trail for context
+- **Multi-selection** for batch operations
+- **Command palette** for power users (Ctrl+K interface)
+- **Natural language filtering** for complex queries
+- **Drag-and-drop** for queue management and prioritization
+
+### Visual Design System
+- **Dual-color scheme**:
+  - Blue tones: Technical metrics
+  - Green tones: Financial metrics
+  - Purple tones: Combined business/technical views
+- **Data-focused color palette** with semantic meaning:
+  - Green: Healthy/positive metrics
+  - Yellow: Warning/cautionary metrics
+  - Red: Critical issues requiring attention
+  - Blue: Informational/contextual data
+  - Purple: Developer-specific tools and information
+- **Financial indicators** embedded in technical views
+- **Revenue impact badges** on all critical metrics
+- **Cost-aware navigation** highlighting high-value areas
+- **Financial context panels** showing real-time calculations
+- **Dark theme** optimized for extended viewing
+- **Consistent typography** with clear information hierarchy
+- **Interactive elements** designed for precision targeting
+- **Custom icons** optimized for technical concepts
+
+## ⚙️ Technical Architecture
+
+### Frontend Architecture
+```
+src/admin/
+├── components/
+│   ├── monitoring/       # System monitoring components
+│   ├── queues/           # Queue management components
+│   ├── security/         # Security monitoring components
+│   ├── performance/      # Performance optimization components
+│   ├── models/           # Model management components
+│   ├── finance/          # Financial operations components
+│   ├── discounts/        # Discount management components
+│   ├── support/          # Support tools components
+│   └── debug/            # Developer debugging tools
+├── layouts/
+│   └── admin-layout.tsx  # Admin-specific layout
+├── pages/
+│   ├── admin/            # Admin route base
+│   │   ├── dashboard/    # Unified dashboard
+│   │   ├── queues/       # Queue management
+│   │   ├── security/     # Security monitoring
+│   │   ├── performance/  # Performance center
+│   │   ├── models/       # Model management
+│   │   ├── finance/      # Financial operations
+│   │   ├── discounts/    # Discount management
+│   │   ├── support/      # Support tools
+│   │   └── debug/        # Debugging tools
+│   └── api/
+│       └── admin/        # Admin API routes
+├── lib/
+│   ├── admin-api.ts      # Admin API client
+│   ├── monitoring.ts     # Monitoring data access
+│   ├── security.ts       # Security data access
+│   ├── finance.ts        # Financial data access
+│   ├── discounts.ts      # Discount management
+│   ├── support.ts        # Support tools
+│   └── debug-tools.ts    # Debugging utilities
+└── styles/
+    └── admin-theme.css   # Admin-specific styles
+```
+
+### Backend Integration Points
+- **Monitoring Data**: Integrates with Prometheus metrics and tracing system
+- **Queue Management**: Connects to Redis-based queue system
+- **Security Events**: Pulls from security event logging system
+- **Performance Data**: Accesses caching analytics and performance metrics
+- **Model Management**: Interfaces with ModelCapacityManager and LoadBalancer
+- **Financial Data**: Connects to credit system and payment processor
+- **User Data**: Integrates with Clerk authentication and user database
+- **Error Reporting**: Connects to user feedback and error tracking systems
+
+### Financial Data Integration
+```typescript
+// Financial data service integrating with pricing sheet
+class FinancialDataService {
+  // Get true cost based on pricing sheet
+  static getTrueCost(model: string, isVideo: boolean = false): number {
+    const pricingSheet = {
+      'imagen-4-fast': { trueCost: 1.77 },
+      'flux-dev': { trueCost: 2.21 },
+      // ... other models from pricing sheet
+      'veo-3': { trueCost: 660.39 }
+    }
+    return pricingSheet[model]?.trueCost || 0
+  }
+  
+  // Calculate revenue based on credit pricing
+  static calculateRevenue(credits: number): number {
+    return credits * 0.02 // ₹0.02 per credit
+  }
+  
+  // Calculate profit margin
+  static calculateMargin(model: string, credits: number, isVideo: boolean = false): number {
+    const trueCost = this.getTrueCost(model, isVideo)
+    const revenue = this.calculateRevenue(credits)
+    return ((revenue - trueCost) / revenue) * 100
+  }
+  
+  // Get generations per plan
+  static getGenerationsPerPlan(planPrice: number, model: string): number {
+    const pricingSheet = {
+      'imagen-4-fast': { creditsPerGeneration: 197 },
+      'flux-dev': { creditsPerGeneration: 246 },
+      // ... other models
+      'veo-3': { creditsPerGeneration: 73377 }
+    }
+    const creditsPerGeneration = pricingSheet[model]?.creditsPerGeneration || 0
+    const totalCredits = planPrice / 0.02
+    return Math.floor(totalCredits / creditsPerGeneration)
+  }
+  
+  // Calculate credit usage
+  static calculateCreditUsage(userId: string): Promise<CreditUsage> {
+    return supabase
+      .from('credit_transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .then(result => {
+        const transactions = result.data || []
+        const totalPurchased = transactions
+          .filter(t => t.type === 'purchase')
+          .reduce((sum, t) => sum + t.amount, 0)
+        const totalUsed = transactions
+          .filter(t => t.type === 'deduction')
+          .reduce((sum, t => sum + t.amount, 0)
+        return {
+          totalPurchased,
+          totalUsed,
+          remaining: totalPurchased - totalUsed
+        }
+      })
+  }
+}
+```
+
+### Security Event Integration
+```typescript
+// Security event tracking
+class SecurityEventService {
+  static async logSecurityEvent(
+    userId: string | null,
+    eventType: SecurityEventType,
+    details: Record<string, any>
+  ): Promise<void> {
+    await supabase
+      .from('security_events')
+      .insert({
+        user_id: userId,
+        event_type: eventType,
+        ip_address: details.ip,
+        user_agent: details.userAgent,
+        timestamp: new Date().toISOString(),
+        metadata: details
+      })
+    
+    // Check for suspicious patterns
+    this.checkForThreats(userId, eventType, details)
+  }
+  
+  private static async checkForThreats(
+    userId: string | null,
+    eventType: SecurityEventType,
+    details: Record<string, any>
+  ): Promise<void> {
+    // Check for multiple failed logins
+    if (eventType === 'login_failed') {
+      const recentFailures = await this.getRecentEvents(
+        userId,
+        'login_failed',
+        5 * 60 * 1000 // 5 minutes
+      )
+      
+      if (recentFailures.length >= 5) {
+        await this.triggerSecurityAlert(
+          'MULTIPLE_LOGIN_FAILURES',
+          `User ${userId} has ${recentFailures.length} failed login attempts`,
+          { userId, failures: recentFailures.length },
+          'high'
+        )
+      }
+    }
+    
+    // Check for content policy violations
+    if (eventType === 'content_policy_violation') {
+      await this.triggerSecurityAlert(
+        'CONTENT_POLICY_VIOLATION',
+        `Content policy violation by user ${userId}`,
+        details,
+        'medium'
+      )
+    }
+  }
+  
+  static async triggerSecurityAlert(
+    alertType: string,
+    message: string,
+    metadata: Record<string, any>,
+    severity: 'low' | 'medium' | 'high'
+  ): Promise<void> {
+    // Create alert in database
+    const { data, error } = await supabase
+      .from('security_alerts')
+      .insert({
+        alert_type: alertType,
+        message,
+        metadata,
+        severity,
+        status: 'active',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+    
+    if (error) throw new Error(`Failed to create security alert: ${error.message}`)
+    
+    // Send notification based on severity
+    if (severity === 'high') {
+      await this.sendSlackAlert(data)
+    }
+    
+    if (severity === 'medium') {
+      await this.sendEmailAlert(data)
+    }
+  }
+}
+```
+
+## 🔒 Security Considerations
+
+### Access Control
+- **Role-based access control** with four tiers:
+  1. **Viewer**: Read-only access to monitoring data
+  2. **Operator**: Can perform operational tasks (queue management, restart services)
+  3. **Finance Admin**: Access to financial data and discount management
+  4. **Super Admin**: Full access including financial and security controls
+
+- **Just-in-time permissions** for sensitive operations (discount creation, credit adjustments)
+- **Audit logging** for all administrative actions
+- **Session isolation** to prevent accidental production changes
+- **Financial data segregation** to protect sensitive financial information
+- **Strict RBAC implementation** using Supabase RLS policies
+
+### Data Protection
+- **Masking of sensitive financial data** in logs and displays
+- **No caching of admin panel content** in browser
+- **Automatic logout** after 10 minutes of inactivity
+- **Encrypted communication** for all admin traffic
+- **Financial data encryption** at rest
+- **Masking of sensitive data** in logs and displays
+
+### Secure Development Practices
+- **Separate admin API routes** with enhanced security
+- **Input validation** for all admin operations
+- **Rate limiting** for admin endpoints
+- **Change verification** for critical operations
+- **Secure session settings** with rolling sessions
+- **Concurrent session limits**
+- **Session hijacking detection**
+- **Session cleanup mechanisms**
+
+## 💰 Financial Data Integration
+
+### Credit System Monitoring
+- **Real-time credit tracking**:
+  - Total credits purchased (pay-as-you-go)
+  - Total credits used
+  - Credit balance across all users
+  - Credit refund rate
+  - Suspicious credit activity detection
+
+- **Credit usage analytics**:
+  - Credit usage by model
+  - Credit usage by user tier
+  - Credit usage patterns over time
+  - Credit fraud detection
+
+### Pricing & Margin Management
+- **Pricing sheet integration**:
+  - True cost tracking per model
+  - Revenue calculation per generation
+  - Profit margin visualization
+  - Margin threshold alerts
+
+- **Pricing simulator**:
+  - Impact of price changes on revenue
+  - Impact of margin changes on user behavior
+  - Break-even analysis for new models
+  - Competitive pricing analysis
+
+### User Financial Management
+- **User credit tracking**:
+  - Credits purchased
+  - Credits used
+  - Credits remaining
+  - Credit history
+
+- **Special discount management**:
+  - Discount code creation
+  - Discount application tracking
+  - Discount effectiveness analysis
+  - Discount expiration management
+
+## 📅 Implementation Roadmap
+
+### Phase 1: Core Monitoring & Financial Integration (Weeks 1-2)
+- Unified monitoring dashboard implementation
+- Financial data integration with pricing sheet
+- Basic credit system monitoring
+- Model economics visualization
+- System health dashboard implementation
+- Basic queue monitoring
+
+### Phase 2: Business Intelligence & User Management (Weeks 3-4)
+- Revenue analytics dashboard
+- User segmentation tools
+- Error reporting system
+- Basic discount management
+- Security event logging interface
+- Performance metrics visualization
+
+### Phase 3: Financial Operations & Support (Weeks 5-6)
+- Advanced financial reporting
+- Special discount system
+- Support ticket management
+- Security incident response workflow
+- Model capacity management
+- Performance optimization recommendations
+
+### Phase 4: Optimization & Enhancement (Weeks 7-8)
+- Pricing simulator
+- Profit optimization recommendations
+- Advanced financial analytics
+- Mobile admin interface
+- Model performance analytics
+- Developer debugging toolkit
+
+## 📊 Success Metrics
+
+| Category | Metric | Target |
+|----------|--------|--------|
+| **Adoption** | Active admin users | 100% of engineering and business teams |
+| **Adoption** | Active admin users | 100% of engineering team |
+| **Financial Impact** | Revenue impact detection | < 5 minutes |
+| **Effectiveness** | Mean time to detect issues | < 5 minutes |
+| **Profit Optimization** | Margin improvement | 5%+ through better model routing |
+| **Efficiency** | Mean time to resolve issues | 40% reduction |
+| **Support Efficiency** | Mean time to resolve errors | 50% reduction |
+| **Promotion Effectiveness** | Discount ROI | 3:1 or better |
+| **Quality** | Production incidents detected in advance | 75%+ |
+| **Data Accuracy** | Financial data accuracy | 100% |
+| **Security** | Unauthorized access attempts | 0 |
+| **Compliance** | Audit readiness | 100% |
+
+## 💡 Conclusion
+
+This unified admin panel architecture provides the **complete visibility and control** necessary to operate the Gensy AI Creative Suite profitably and reliably at scale. Unlike generic admin interfaces, this design specifically addresses the complex challenges of managing a multi-provider AI generation platform with demanding performance, security, and financial requirements.
+
+The panel transforms raw monitoring data into **actionable business insights** while providing the **granular control** needed to manage complex systems. By focusing on the specific needs of both platform engineers and business stakeholders, this implementation ensures the Gensy platform can maintain reliability, security, and profitability as it scales to 10,000+ concurrent users.
+
+This architecture directly supports the goals outlined in Sprints 1-4 by providing the operational visibility, financial intelligence, and management capabilities needed for true production excellence and business success. The integration of technical operations with business intelligence creates a powerful tool that enables data-driven decisions across the entire organization.
+
+The unified approach ensures that both technical and business teams are working from the same data, making coordinated decisions that optimize both system performance and financial outcomes. This is essential for a platform like Gensy that must balance technical complexity with business viability in a competitive market.

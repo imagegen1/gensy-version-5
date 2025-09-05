@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         *,
         user:users!inner(id, clerk_user_id)
       `)
-      .eq('transaction_id', merchantTransactionId)
+      .eq('gateway_transaction_id', merchantTransactionId)
       .single()
 
     if (paymentError || !payment) {
@@ -74,8 +74,8 @@ export async function POST(request: NextRequest) {
         .from('payments')
         .update({
           status: 'pending',
-          gateway_response: {
-            ...payment.gateway_response,
+          metadata: {
+            ...payment.metadata,
             state,
             responseCode,
             transactionId,
@@ -112,9 +112,9 @@ async function handleSuccessfulPayment(
       .from('payments')
       .update({
         status: 'completed',
-        completed_at: new Date().toISOString(),
-        gateway_response: {
-          ...payment.gateway_response,
+        updated_at: new Date().toISOString(),
+        metadata: {
+          ...payment.metadata,
           state: 'COMPLETED',
           responseCode: 'SUCCESS',
           transactionId,
@@ -173,9 +173,9 @@ async function handleSuccessfulPayment(
       .from('payments')
       .update({
         status: 'completed',
-        completed_at: new Date().toISOString(),
-        gateway_response: {
-          ...payment.gateway_response,
+        updated_at: new Date().toISOString(),
+        metadata: {
+          ...payment.metadata,
           state: 'COMPLETED',
           responseCode: 'SUCCESS',
           transactionId,
@@ -206,8 +206,9 @@ async function handleFailedPayment(
       .from('payments')
       .update({
         status: 'failed',
-        gateway_response: {
-          ...payment.gateway_response,
+        updated_at: new Date().toISOString(),
+        metadata: {
+          ...payment.metadata,
           state,
           responseCode,
           failedAt: new Date().toISOString()

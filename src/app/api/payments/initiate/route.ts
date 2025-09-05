@@ -133,25 +133,26 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Create payment record
+      // Create payment record using correct column names
       const { data: paymentRecord, error: paymentError } = await supabase
         .from('payments')
         .insert({
           user_id: profile.id,
-          transaction_id: paymentResult.merchantTransactionId,
+          gateway_transaction_id: paymentResult.merchantTransactionId,
           amount: amount,
           currency: 'INR',
-          type: type,
-          plan_id: planId,
           status: 'pending',
-          gateway: 'phonepe',
-          gateway_response: {
+          payment_gateway: 'phonepe',
+          payment_method: 'phonepe',
+          description: `${type === 'credits' ? 'Credit purchase' : 'Subscription'} - ${planId || 'N/A'}`,
+          metadata: {
+            type: type,
+            planId: planId,
             merchantTransactionId: paymentResult.merchantTransactionId,
             orderId: paymentResult.orderId,
             paymentUrl: paymentResult.paymentUrl,
             initiatedAt: new Date().toISOString()
-          },
-          created_at: new Date().toISOString()
+          }
         })
         .select()
         .single()

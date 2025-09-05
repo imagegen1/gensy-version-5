@@ -53,7 +53,7 @@ export async function GET(
         *,
         plan:subscription_plans(name, description)
       `)
-      .eq('transaction_id', transactionId)
+      .eq('gateway_transaction_id', transactionId)
       .eq('user_id', user.id)
       .single()
 
@@ -77,7 +77,7 @@ export async function GET(
         creditsReceived: payment.credits_purchased,
         createdAt: payment.created_at,
         completedAt: payment.completed_at,
-        gatewayResponse: payment.gateway_response
+        gatewayResponse: payment.metadata
       })
     }
 
@@ -113,11 +113,12 @@ export async function GET(
         .from('payments')
         .update({
           status: updatedStatus,
-          completed_at: completedAt,
-          gateway_response: {
-            ...payment.gateway_response,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            ...payment.metadata,
             latestStatus: statusResult.status,
-            lastChecked: new Date().toISOString()
+            lastChecked: new Date().toISOString(),
+            completedAt: completedAt
           }
         })
         .eq('id', payment.id)
@@ -215,8 +216,9 @@ export async function POST(
         .from('payments')
         .update({
           status: 'cancelled',
-          gateway_response: {
-            ...payment.gateway_response,
+          updated_at: new Date().toISOString(),
+          metadata: {
+            ...payment.metadata,
             cancelledAt: new Date().toISOString(),
             cancelledBy: 'user'
           }
@@ -267,7 +269,7 @@ export async function POST(
           plan_id: payment.plan_id,
           credits_purchased: payment.credits_purchased,
           payment_method: 'phonepe',
-          gateway_response: {
+          metadata: {
             merchantTransactionId: paymentResult.merchantTransactionId,
             initiatedAt: new Date().toISOString(),
             retryOf: transactionId
