@@ -55,7 +55,7 @@ const MODEL_MAPPING: Record<string, { id: string; service: 'vertex' | 'bytedance
 }
 
 // Apply database-driven rate limiting to image generation endpoint
-export const POST = withRateLimit('/api/generate/image', async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   console.log(`🚀 [${requestId}] IMAGE GENERATION REQUEST STARTED`)
   console.log(`📝 [${requestId}] Timestamp: ${new Date().toISOString()}`)
@@ -589,7 +589,7 @@ export const POST = withRateLimit('/api/generate/image', async (request: NextReq
       { status: 500 }
     )
   }
-})
+}
 
 export async function GET(request: NextRequest) {
   try {

@@ -47,7 +47,7 @@ const videoGenerationSchema = z.object({
 })
 
 // Apply database-driven rate limiting to video generation endpoint
-export const POST = withRateLimit('/api/generate/video', async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   // Generate unique request ID for logging (mirrors image generation)
   const requestId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const startTime = Date.now()
@@ -792,7 +792,7 @@ export const POST = withRateLimit('/api/generate/video', async (request: NextReq
       { status: 500 }
     )
   }
-})
+}
 
 // Helper function to handle video completion
 async function handleVideoCompletion(

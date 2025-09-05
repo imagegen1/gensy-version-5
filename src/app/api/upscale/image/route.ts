@@ -20,7 +20,7 @@ const upscaleImageSchema = z.object({
 })
 
 // Apply database-driven rate limiting to upscale endpoint
-export const POST = withRateLimit('/api/upscale/image', async (request: NextRequest) => {
+export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const { userId } = await auth()
@@ -482,4 +482,4 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     )
   }
-})
+}
