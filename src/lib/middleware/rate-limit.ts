@@ -6,7 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/client';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { auth } from '@clerk/nextjs/server';
 
 // Rate limit result interface

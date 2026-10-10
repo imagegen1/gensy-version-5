@@ -15,7 +15,7 @@ import {
   checkRateLimit,
   addRateLimitHeaders
 } from '@/lib/rate-limit'
-import { createServiceRoleClient } from '@/lib/supabase/client'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 /**
  * Get user information from Clerk and Supabase

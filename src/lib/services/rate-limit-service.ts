@@ -5,7 +5,7 @@
  * Provides utilities for monitoring and managing the rate limiting system.
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/client';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export interface RateLimitStats {
   totalRequests: number;

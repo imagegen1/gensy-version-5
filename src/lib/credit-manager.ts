@@ -7,7 +7,7 @@
  * Critical security fix for CVSS 8.5 vulnerability.
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/client'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // Credit transaction types
 export enum CreditTransactionType {

@@ -9,7 +9,6 @@ import crypto from 'crypto'
 import bcrypt from 'bcrypt'
 import { z } from 'zod'
 import { env } from './env'
-import { containsHarmfulContent, enforceContentPolicy } from './content-policy'
 import { AdvancedSanitizer } from './advanced-sanitizer'
 
 // Security headers configuration
@@ -386,9 +385,6 @@ export class SecurityAudit {
     }
   }
 }
-
-// Export content policy functions for backward compatibility
-export { containsHarmfulContent, enforceContentPolicy }
 
 // Export advanced sanitizer functions
 export { AdvancedSanitizer }

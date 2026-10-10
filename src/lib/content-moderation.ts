@@ -5,7 +5,7 @@
  * for content policy violations.
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/client'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 import { ViolationType, ContentPolicyResult } from '@/lib/content-policy'
 
 // Moderation status enum

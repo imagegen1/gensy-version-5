@@ -7,7 +7,7 @@
  * Critical security implementation addressing CVSS 8.7 vulnerability.
  */
 
-import { createServiceRoleClient } from '@/lib/supabase/client'
+import { createServiceRoleClient } from '@/lib/supabase/server'
 
 // Content policy violation categories
 export enum ViolationType {

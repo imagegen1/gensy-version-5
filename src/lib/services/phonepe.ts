@@ -12,29 +12,14 @@ let Env: any = null
 let MetaInfo: any = null
 let StandardCheckoutPayRequest: any = null
 
-// Dynamically import PhonePe SDK to handle potential import issues
+// The package is installed as the `pg-sdk-node` npm alias.
 try {
-  // Try multiple import methods for PhonePe SDK
-  let phonePeSDK: any = null
-
-  try {
-    phonePeSDK = require('pg-sdk-node')
-  } catch (e1) {
-    try {
-      phonePeSDK = require('phonepe-pg-sdk-node')
-    } catch (e2) {
-      console.warn('⚠️ PhonePe SDK not found with standard names, trying dynamic import')
-      throw new Error('PhonePe SDK not available')
-    }
-  }
-
-  if (phonePeSDK) {
-    StandardCheckoutClient = phonePeSDK.StandardCheckoutClient
-    Env = phonePeSDK.Env
-    MetaInfo = phonePeSDK.MetaInfo
-    StandardCheckoutPayRequest = phonePeSDK.StandardCheckoutPayRequest
-    console.log('✅ PhonePe SDK imported successfully')
-  }
+  const phonePeSDK = require('pg-sdk-node')
+  StandardCheckoutClient = phonePeSDK.StandardCheckoutClient
+  Env = phonePeSDK.Env
+  MetaInfo = phonePeSDK.MetaInfo
+  StandardCheckoutPayRequest = phonePeSDK.StandardCheckoutPayRequest
+  console.log('✅ PhonePe SDK imported successfully')
 } catch (error) {
   console.warn('⚠️ PhonePe SDK not available, using fallback implementation:', error)
 }
