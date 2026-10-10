@@ -19,7 +19,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.839.0",
     "@aws-sdk/s3-request-presigner": "^3.658.1",
-    "@clerk/nextjs": "^6.25.3",
+    "@clerk/nextjs": "^6.39.7",
     "@google-cloud/storage": "^7.16.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@headlessui/react": "^2.2.4",
@@ -56,9 +56,9 @@
     "mime-types": "^2.1.35",
     "motion": "^12.23.9",
     "multer": "^2.0.1",
-    "next": "^15.5.0",
+    "next": "^15.5.27",
     "node-fetch": "^3.3.2",
-    "pg-sdk-node": "https://phonepe.mycloudrepo.io/public/repositories/phonepe-pg-sdk-node/releases/v2/phonepe-pg-sdk-node.tgz",
+    "pg-sdk-node": "npm:@phonepe-pg/pg-sdk-node@^2.0.6",
     "playwright": "^1.55.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -87,6 +87,14 @@
     "prettier": "^3.3.2",
     "tailwindcss": "^3.4.4",
     "typescript": "^5.5.2"
+  },
+  "overrides": {
+    "@google-cloud/storage": {
+      "fast-xml-parser": "^4.5.5"
+    },
+    "@aws-sdk/core": {
+      "fast-xml-parser": "^5.11.2"
+    }
   },
   "keywords": [
     "ai",
