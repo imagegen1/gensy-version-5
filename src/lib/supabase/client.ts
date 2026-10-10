@@ -25,8 +25,16 @@ export function createClient() {
   return client
 }
 
-// Export the client for direct use
-export const supabase = createClient()
+// Export a lazily-initialized client so importing this module never creates a
+// Supabase client at build/import time (env vars may be unavailable then).
+export const supabase = new Proxy({} as ReturnType<typeof createClient>, {
+  get(_target, prop) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const instance = createClient() as any
+    const value = instance[prop]
+    return typeof value === 'function' ? value.bind(instance) : value
+  },
+})
 
 // Type exports for convenience
 export type SupabaseClient = ReturnType<typeof createClient>
