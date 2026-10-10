@@ -20,8 +20,6 @@ export const videoConfigs: Record<string, VideoConfig> = {
   hero: {
     webm: '/videos/hailuo-ai-video-02.webm',
     mp4: '/videos/hailuo-ai-video-02.mp4',
-    stubMp4: '/videos/hero_stub.mp4',
-    stubWebm: '/videos/hero_stub.webm',
     poster: '/images/hero-poster.jpg',
     autoplay: true,
     loop: true,
