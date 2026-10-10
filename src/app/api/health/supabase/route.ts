@@ -4,11 +4,39 @@
  */
 
 import { NextResponse } from 'next/server'
-import { healthCheck } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
+
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const health = await healthCheck()
+    const supabase = await createClient()
+    const tables = ['profiles', 'generations', 'credit_transactions'] as const
+    const tableTests = await Promise.all(
+      tables.map(async (table) => {
+        const { error } = await supabase.from(table).select('id').limit(1)
+        return { table, accessible: !error, error: error?.message }
+      })
+    )
+    const connectionError = tableTests[0]?.error
+    const allTablesAccessible = tableTests.every((test) => test.accessible)
+    const health = connectionError
+      ? {
+          status: 'unhealthy' as const,
+          details: {
+            connection: false,
+            error: connectionError,
+            timestamp: new Date().toISOString(),
+          },
+        }
+      : {
+          status: allTablesAccessible ? 'healthy' as const : 'unhealthy' as const,
+          details: {
+            connection: true,
+            tables: tableTests,
+            timestamp: new Date().toISOString(),
+          },
+        }
     
     return NextResponse.json({
       service: 'Gensy AI Creative Suite',

@@ -9,13 +9,18 @@ import { Webhook } from 'svix'
 import { syncUserProfile, deleteUserAccount } from '@/lib/auth/user-sync'
 import { createServiceRoleClient } from '@/lib/supabase/server'
 
-const webhookSecret = process.env.CLERK_WEBHOOK_SECRET
-
-if (!webhookSecret) {
-  throw new Error('Please add CLERK_WEBHOOK_SECRET to your environment variables')
-}
+export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET
+  if (!webhookSecret) {
+    console.error('CLERK_WEBHOOK_SECRET is not configured')
+    return NextResponse.json(
+      { error: 'Webhook is not configured' },
+      { status: 500 }
+    )
+  }
+
   try {
     // Get the headers
     const headerPayload = await headers()

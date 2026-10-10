@@ -142,7 +142,11 @@ function validateEnv() {
   // During build time or when essential vars are missing, use permissive validation
   const isBuildTime = process.env.NEXT_PHASE === 'phase-production-build' ||
                      process.env.CI === 'true' ||
-                     process.env.VERCEL === '1'
+                     process.env.VERCEL === '1' ||
+                     process.env.RAILWAY_ENVIRONMENT !== undefined ||
+                     process.env.RAILWAY_STATIC_URL !== undefined ||
+                     process.env.RAILWAY_PROJECT_ID !== undefined ||
+                     process.env.BUILDING === 'true'
 
   const hasEssentialVars = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
                           process.env.GOOGLE_CLOUD_PROJECT_ID
@@ -155,20 +159,23 @@ function validateEnv() {
       NEXT_PUBLIC_APP_NAME: 'Gensy',
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'https://gensy.vercel.app',
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA',
-      CLERK_SECRET_KEY: 'sk_test_build_time_secret_key',
-      CLERK_WEBHOOK_SECRET: 'whsec_build_time_webhook_secret',
-      NEXTAUTH_SECRET: 'build_time_secret_32_chars_exactly',
-      JWT_SECRET: 'build_time_jwt_secret_32_chars_exactly',
-      ENCRYPTION_KEY: 'build_time_encryption_32_chars_exactly',
+      CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || 'sk_test_build_time_secret_key',
+      CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET || 'whsec_build_time_webhook_secret',
+      NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'build_time_secret_32_chars_exactly',
+      JWT_SECRET: process.env.JWT_SECRET || 'build_time_jwt_secret_32_chars_exactly',
+      ENCRYPTION_KEY: process.env.ENCRYPTION_KEY || 'build_time_encryption_32_chars_exactly',
       NEXT_PUBLIC_CLERK_SIGN_IN_URL: '/auth/sign-in',
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/auth/sign-up',
       NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
       NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/onboarding',
-      GOOGLE_CLOUD_LOCATION: 'us-central1',
-      CLOUDFLARE_R2_BUCKET_NAME: 'gensy',
-      PHONEPE_SALT_INDEX: '1',
-      PHONEPE_ENVIRONMENT: 'sandbox',
-      PHONEPE_CALLBACK_URL: '/api/payments/callback',
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+      SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key',
+      GOOGLE_CLOUD_LOCATION: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
+      CLOUDFLARE_R2_BUCKET_NAME: process.env.CLOUDFLARE_R2_BUCKET_NAME || 'gensy',
+      PHONEPE_SALT_INDEX: process.env.PHONEPE_SALT_INDEX || '1',
+      PHONEPE_ENVIRONMENT: (process.env.PHONEPE_ENVIRONMENT as any) || 'sandbox',
+      PHONEPE_CALLBACK_URL: process.env.PHONEPE_CALLBACK_URL || '/api/payments/callback',
       NEXT_PUBLIC_ENABLE_VIDEO_GENERATION: true,
       NEXT_PUBLIC_ENABLE_IMAGE_UPSCALING: true,
       NEXT_PUBLIC_ENABLE_BATCH_PROCESSING: true,
@@ -201,6 +208,9 @@ function validateEnv() {
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: '/auth/sign-up',
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: '/dashboard',
           NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: '/onboarding',
+          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+          SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-service-role-key',
           GOOGLE_CLOUD_LOCATION: 'us-central1',
           CLOUDFLARE_R2_BUCKET_NAME: 'gensy',
           PHONEPE_SALT_INDEX: '1',
