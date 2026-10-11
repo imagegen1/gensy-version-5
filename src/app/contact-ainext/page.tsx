@@ -33,8 +33,8 @@ export default function ContactPage() {
               <div className="section-title">
                 <div className="width">
                   <div className="sub-t">Contact</div>
-                  <h2>Join Our Network</h2>
-                  <p>We'd love to have you! Join our 100% remote network of creators & freelancers.</p>
+                  <h2>Get in Touch with Gensy</h2>
+                  <p>Have questions, feedback, or enterprise inquiries? Reach out directly to our team.</p>
                 </div>
               </div>
               <div className="contact-form">
@@ -83,8 +83,19 @@ export default function ContactPage() {
               </div>
             </div>
             <div className="col-lg-6">
+              <div className="contact-info-card p-4 rounded mb-4" style={{backgroundColor: '#18181b', border: '1px solid #27272a'}}>
+                <h3 className="text-white mb-3" style={{fontSize: '22px'}}>Company Information</h3>
+                <ul style={{listStyle: 'none', padding: 0, margin: 0, lineHeight: '2.2', color: '#d4d4d8'}}>
+                  <li><strong style={{color: '#fff'}}>Company Name:</strong> Gensy Technologies</li>
+                  <li><strong style={{color: '#fff'}}>Founder & CEO:</strong> Gopi U.</li>
+                  <li><strong style={{color: '#fff'}}>Website:</strong> <a href="https://gensy.online" style={{color: '#a855f7'}}>Gensy.online</a></li>
+                  <li><strong style={{color: '#fff'}}>Support Email:</strong> <a href="mailto:info@gensy.online" style={{color: '#a855f7'}}>info@gensy.online</a></li>
+                  <li><strong style={{color: '#fff'}}>Phone:</strong> (+91) 9943764364</li>
+                  <li><strong style={{color: '#fff'}}>Registered Address:</strong> 7/10 Abirami Gardens, 5th Cross, Salem, Tamil Nadu, 636302, India</li>
+                </ul>
+              </div>
               <div className="image">
-                <img src="/ainext-template/assets/img/contact.jpg" alt="image" />
+                <img src="/ainext-template/assets/img/contact.jpg" alt="Contact Gensy" style={{borderRadius: '8px'}} />
               </div>
             </div>
           </div>
@@ -92,74 +103,74 @@ export default function ContactPage() {
       </div>
       {/* End Contact Area */}
 
-      {/* Start Insta Gallery Area */}
+      {/* Start Showcase Gallery Area */}
       <div className="insta-gallery">
         <div className="conatiner-fluid">
           <div className="ins-gallery owl-carousel owl-theme">
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
           </div>
         </div>
       </div>
-      {/* End Insta Gallery Area */}
+      {/* End Showcase Gallery Area */}
     </BootstrapLayout>
   )
 }

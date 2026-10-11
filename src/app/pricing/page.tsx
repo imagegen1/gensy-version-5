@@ -807,45 +807,53 @@ function PricingPageContent() {
       <footer className="footer-area">
         <div className="container">
           <div className="footer-top-area pt-100">
-            <div className="row">
-              <div className="col-lg-4 col-md-6 col-sm-6">
+            <div className="row align-items-start">
+              <div className="col-lg-4 col-md-6 col-sm-12">
                 <div className="single-footer-widget">
                   <a href="/landing-page-2" className="logo">
                     <img src="/ainext-template/assets/img/main logo.svg" alt="Gensy Logo" style={{width: '226.66px', height: '170px'}} />
                   </a>
-                  <p>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds</p>
-                  <ul className="social-links">
-                    <li><a href="https://www.facebook.com/" target="_blank"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/" target="_blank"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/" target="_blank"><i className="ri-linkedin-fill"></i></a></li>
-                    <li><a href="https://www.youtube.com/" target="_blank"><i className="ri-youtube-line"></i></a></li>
-                  </ul>
+                  <p>The platform for transforming your creative ideas into breathtaking AI-generated videos, art, and images in seconds.</p>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6 col-sm-6">
+              <div className="col-lg-2 col-md-3 col-sm-6">
                 <div className="single-footer-widget pl-5">
-                  <h3>Links</h3>
+                  <h3>Platform</h3>
                   <ul className="links-list">
                     <li><a href="/">Home</a></li>
                     <li><a href="/pricing">Pricing</a></li>
+                    <li><a href="/generate/image">Images</a></li>
+                    <li><a href="/video">Videos</a></li>
                   </ul>
                 </div>
               </div>
-              <div className="col-lg-4 col-md-6 col-sm-6">
+              <div className="col-lg-2 col-md-3 col-sm-6">
                 <div className="single-footer-widget">
                   <h3>Legal</h3>
                   <ul className="links-list">
                     <li><a href="/terms-conditions">Terms & Conditions</a></li>
-                    <li><a href="/pricing">Payment Method</a></li>
                     <li><a href="/privacy-policy">Privacy Policy</a></li>
+                    <li><a href="/pricing">Payment Method</a></li>
+                  </ul>
+                </div>
+              </div>
+              <div className="col-lg-4 col-md-6 col-sm-12">
+                <div className="single-footer-widget">
+                  <h3>Company & Contact</h3>
+                  <ul className="links-list" style={{lineHeight: '1.9'}}>
+                    <li><span style={{color: '#aaa'}}>Company:</span> <strong>Gensy Technologies</strong></li>
+                    <li><span style={{color: '#aaa'}}>Founder:</span> <strong>Gopi U.</strong></li>
+                    <li><span style={{color: '#aaa'}}>Website:</span> <a href="https://gensy.online" style={{color: '#9333ea'}}>Gensy.online</a></li>
+                    <li><span style={{color: '#aaa'}}>Email:</span> <a href="mailto:info@gensy.online" style={{color: '#9333ea'}}>info@gensy.online</a></li>
+                    <li><span style={{color: '#aaa'}}>Location:</span> 7/10 Abirami Gardens, Salem, Tamil Nadu, India</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
           <div className="pr-line"></div>
-          <div className="footer-bottom-area">
-            <p>© Copyright | <a href="https://gensy.io" target="_blank">Gensy</a> | All Rights Reserved is Proudly </p>
+          <div className="footer-bottom-area text-center py-3">
+            <p style={{margin: 0}}>© {new Date().getFullYear()} Gensy. All Rights Reserved.</p>
           </div>
         </div>
         <div className="lines">

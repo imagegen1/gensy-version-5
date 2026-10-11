@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FaCampground, FaFire, FaTint, FaHotTub, FaHiking } from 'react-icons/fa';
+import { FaCamera, FaMagic, FaFont, FaPalette, FaVideo } from 'react-icons/fa';
 
 const InteractiveSelector = () => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -9,34 +9,34 @@ const InteractiveSelector = () => {
 
   const options = [
     {
-      title: "Luxury Tent",
-      description: "Cozy glamping under the stars",
+      title: "Cinematic Realism",
+      description: "Ultra-detailed 4K photorealistic scenes",
       image: "/flux-kontext-1.png",
-      icon: <FaCampground size={24} className="text-white" />
+      icon: <FaCamera size={24} className="text-white" />
     },
     {
-      title: "Campfire Feast",
-      description: "Gourmet s'mores & stories",
+      title: "In-Context Editing",
+      description: "Precise local adjustments & character consistency",
       image: "/flux-kontext-2.png",
-      icon: <FaFire size={24} className="text-white" />
+      icon: <FaMagic size={24} className="text-white" />
     },
     {
-      title: "Lakeside Retreat",
-      description: "Private dock & canoe rides",
+      title: "Typography & Text",
+      description: "Flawless text & signage rendered inside images",
       image: "/flux-kontext-3.png",
-      icon: <FaTint size={24} className="text-white" />
+      icon: <FaFont size={24} className="text-white" />
     },
     {
-      title: "Mountain Spa",
-      description: "Outdoor sauna & hot tub",
+      title: "Artistic Styles",
+      description: "Seamless anime, 3D, digital art & concept design",
       image: "/flux-kontext-4.png",
-      icon: <FaHotTub size={24} className="text-white" />
+      icon: <FaPalette size={24} className="text-white" />
     },
     {
-      title: "Guided Adventure",
-      description: "Expert-led nature tours",
+      title: "Prompt to Motion",
+      description: "Dynamic AI video synthesis from static frames",
       image: "/flux-kontext-5.png",
-      icon: <FaHiking size={24} className="text-white" />
+      icon: <FaVideo size={24} className="text-white" />
     }
   ];
 

@@ -21,7 +21,7 @@ export default function TermsConditionsPage() {
           <div className="legal-section">
             <p className="intro-text">We are <strong>Gensy</strong> ('Company', 'we', 'us', or 'our'), a company registered in India at 7/10 abirami gardens 5th cross, salem, tamil nadu 636302.</p>
 
-            <p>We operate the website <a href="https://www.gensy.io">https://www.gensy.io</a> (the 'Site'), as well as any other related products and services that refer or link to these legal terms (the 'Legal Terms') (collectively, the 'Services').</p>
+            <p>We operate the website <a href="https://gensy.online">https://gensy.online</a> (the 'Site'), as well as any other related products and services that refer or link to these legal terms (the 'Legal Terms') (collectively, the 'Services').</p>
 
             <div className="legal-info-box">
               <p><i className="ri-robot-line legal-icon"></i>The Gensy platform ("the Service") offers a suite of creative AI tools accessible via our website. The Service enables users to create original visual content, such as videos and images, by providing text-based descriptions ("Prompts"). Additional features include, but are not limited to, image upscaling and enhancement.</p>
@@ -31,7 +31,7 @@ export default function TermsConditionsPage() {
               <h6><i className="ri-contacts-line legal-icon"></i>Contact Information</h6>
               <p>
                 <i className="ri-phone-line legal-icon-success"></i>Phone: (+91)9943764364<br />
-                <i className="ri-mail-line legal-icon-success"></i>Email: <a href="mailto:info@gensy.io">info@gensy.io</a><br />
+                <i className="ri-mail-line legal-icon-success"></i>Email: <a href="mailto:info@gensy.online">info@gensy.online</a><br />
                 <i className="ri-map-pin-line legal-icon-success"></i>Address: 7/10 abirami gardens 5th cross salem, tamil nadu 636302, India
               </p>
             </div>
@@ -45,7 +45,7 @@ export default function TermsConditionsPage() {
           </div>
 
           <div className="legal-section">
-            <p>We will provide you with prior notice of any scheduled changes to the Services you are using. The modified Legal Terms will become effective upon posting or notifying you by <a href="mailto:info@gensy.io">info@gensy.io</a>, as stated in the email message. By continuing to use the Services after the effective date of any changes, you agree to be bound by the modified terms.</p>
+            <p>We will provide you with prior notice of any scheduled changes to the Services you are using. The modified Legal Terms will become effective upon posting or notifying you by <a href="mailto:info@gensy.online">info@gensy.online</a>, as stated in the email message. By continuing to use the Services after the effective date of any changes, you agree to be bound by the modified terms.</p>
 
             <div className="row g-3 mt-2">
               <div className="col-md-6">
@@ -88,7 +88,7 @@ export default function TermsConditionsPage() {
 
             <p>Except as set out in this section or elsewhere in our Legal Terms, no part of the Services and no Content or Marks may be copied, reproduced, aggregated, republished, uploaded, posted, publicly displayed, encoded, translated, transmitted, distributed, sold, licensed, or otherwise exploited for any commercial purpose whatsoever, without our express prior written permission.</p>
 
-            <p>If you wish to make any use of the Services, Content, or Marks other than as set out in this section or elsewhere in our Legal Terms, please address your request to: <a href="mailto:info@gensy.io">info@gensy.io</a>. If we ever grant you the permission to post, reproduce, or publicly display any part of our Services or Content, you must identify us as the owners or licensors of the Services, Content, or Marks and ensure that any copyright or proprietary notice appears or is visible on posting, reproducing, or displaying our Content.</p>
+            <p>If you wish to make any use of the Services, Content, or Marks other than as set out in this section or elsewhere in our Legal Terms, please address your request to: <a href="mailto:info@gensy.online">info@gensy.online</a>. If we ever grant you the permission to post, reproduce, or publicly display any part of our Services or Content, you must identify us as the owners or licensors of the Services, Content, or Marks and ensure that any copyright or proprietary notice appears or is visible on posting, reproducing, or displaying our Content.</p>
 
             <p>We reserve all rights not expressly granted to you in and to the Services, Content, and Marks.</p>
 
@@ -153,7 +153,7 @@ export default function TermsConditionsPage() {
             <p>Your subscription will continue and automatically renew unless cancelled. You consent to our charging your payment method on a recurring basis without requiring your prior approval for each recurring charge, until such time as you cancel the applicable order. The length of your billing cycle will depend on the type of subscription plan you choose when you subscribed to the Services.</p>
 
             <h3>Cancellation</h3>
-            <p>All purchases are non-refundable. You can cancel your subscription at any time by logging into your account. Your cancellation will take effect at the end of the current paid term. If you have any questions or are unsatisfied with our Services, please email us at <a href="mailto:info@gensy.io">info@gensy.io</a>.</p>
+            <p>All purchases are non-refundable. You can cancel your subscription at any time by logging into your account. Your cancellation will take effect at the end of the current paid term. If you have any questions or are unsatisfied with our Services, please email us at <a href="mailto:info@gensy.online">info@gensy.online</a>.</p>
 
             <h3>Fee Changes</h3>
             <p>We may, from time to time, make changes to the subscription fee and will communicate any price changes to you in accordance with applicable law.</p>
@@ -200,13 +200,13 @@ export default function TermsConditionsPage() {
               salem, tamil nadu 636302<br />
               India<br />
               <i className="ri-phone-line legal-icon-success"></i>Phone: (+91)9943764364<br />
-              <i className="ri-mail-line legal-icon-success"></i><a href="mailto:info@gensy.io">info@gensy.io</a>
+              <i className="ri-mail-line legal-icon-success"></i><a href="mailto:info@gensy.online">info@gensy.online</a>
             </p>
           </div>
 
           <div className="legal-section mt-4">
             <div className="legal-info-box">
-              <p className="text-center"><i className="ri-building-line legal-icon"></i><strong>This website is owned by Abirich Vaithiyalingam.</strong></p>
+              <p className="text-center"><i className="ri-building-line legal-icon"></i><strong>This website is owned by Gensy Technologies (Founded by Gopi U.).</strong></p>
             </div>
           </div>
         </div>

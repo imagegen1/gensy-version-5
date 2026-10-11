@@ -33,13 +33,8 @@ export default function TeamPage() {
               <div className="image-item">
                 <img src="/ainext-template/assets/img/about-image-1.jpg" alt="image" />
                 <div className="hover-content">
-                  <h4>Christian Haol</h4>
-                  <p>Web Developer</p>
-                  <ul>
-                    <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                  </ul>
+                  <h4>Gopi U.</h4>
+                  <p>Founder & CEO</p>
                 </div>
               </div>
             </div>
@@ -49,11 +44,6 @@ export default function TeamPage() {
                 <div className="hover-content">
                   <h4>Sarah Johnson</h4>
                   <p>CTO</p>
-                  <ul>
-                    <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                  </ul>
                 </div>
               </div>
             </div>
@@ -63,11 +53,6 @@ export default function TeamPage() {
                 <div className="hover-content">
                   <h4>Michael Chen</h4>
                   <p>Lead AI Engineer</p>
-                  <ul>
-                    <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                  </ul>
                 </div>
               </div>
             </div>
@@ -77,11 +62,6 @@ export default function TeamPage() {
                 <div className="hover-content">
                   <h4>Emily Rodriguez</h4>
                   <p>Product Manager</p>
-                  <ul>
-                    <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                  </ul>
                 </div>
               </div>
             </div>
@@ -91,11 +71,6 @@ export default function TeamPage() {
                 <div className="hover-content">
                   <h4>David Kim</h4>
                   <p>UI/UX Designer</p>
-                  <ul>
-                    <li><a href="https://www.facebook.com/"><i className="ri-facebook-fill"></i></a></li>
-                    <li><a href="https://www.instagram.com/"><i className="ri-instagram-line"></i></a></li>
-                    <li><a href="https://www.linkedin.com/"><i className="ri-linkedin-fill"></i></a></li>
-                  </ul>
                 </div>
               </div>
             </div>

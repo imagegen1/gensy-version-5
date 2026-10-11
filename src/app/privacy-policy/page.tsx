@@ -17,15 +17,15 @@ export default function PrivacyPolicyPage() {
           <p className="lead-text"><strong>Last updated July 16, 2025</strong></p>
 
           <div className="legal-section">
-            <p className="intro-text">This Privacy Notice for AbiriCh Vaithiyalingam ('we', 'us', or 'our'), describes how and why we might access, collect, store, use, and/or share ('process') your personal information when you use our services ('Services'), including when you:</p>
+            <p className="intro-text">This Privacy Notice for Gensy Technologies ('we', 'us', or 'our'), describes how and why we might access, collect, store, use, and/or share ('process') your personal information when you use our services ('Services'), including when you:</p>
             <ul>
-              <li>Visit our website at <a href="https://www.gensy.io">https://www.gensy.io</a> or any website of ours that links to this Privacy Notice</li>
-              <li>Use Gensy.io, AI image and video generating platform</li>
+              <li>Visit our website at <a href="https://gensy.online">https://gensy.online</a> or any website of ours that links to this Privacy Notice</li>
+              <li>Use Gensy.online, AI image and video generating platform</li>
               <li>Engage with us in other related ways, including any sales, marketing, or events</li>
             </ul>
 
             <div className="legal-info-box">
-              <p><strong><i className="ri-question-line legal-icon"></i>Questions or concerns?</strong> Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="mailto:info@gensy.io">info@gensy.io</a>.</p>
+              <p><strong><i className="ri-question-line legal-icon"></i>Questions or concerns?</strong> Reading this Privacy Notice will help you understand your privacy rights and choices. We are responsible for making decisions about how your personal information is processed. If you do not agree with our policies and practices, please do not use our Services. If you still have any questions or concerns, please contact us at <a href="mailto:info@gensy.online">info@gensy.online</a>.</p>
             </div>
           </div>
 
@@ -179,7 +179,7 @@ export default function PrivacyPolicyPage() {
             <h2>9. DO WE COLLECT INFORMATION FROM MINORS?</h2>
             <p><strong>In Short:</strong> We do not knowingly collect data from or market to children under 18 years of age.</p>
 
-            <p>We do not knowingly collect, solicit data from, or market to children under 18 years of age, nor do we knowingly sell such personal information. By using the Services, you represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent's use of the Services. If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. If you become aware of any data we may have collected from children under age 18, please contact us at <a href="mailto:info@gensy.io">info@gensy.io</a>.</p>
+            <p>We do not knowingly collect, solicit data from, or market to children under 18 years of age, nor do we knowingly sell such personal information. By using the Services, you represent that you are at least 18 or that you are the parent or guardian of such a minor and consent to such minor dependent's use of the Services. If we learn that personal information from users less than 18 years of age has been collected, we will deactivate the account and take reasonable measures to promptly delete such data from our records. If you become aware of any data we may have collected from children under age 18, please contact us at <a href="mailto:info@gensy.online">info@gensy.online</a>.</p>
 
             <h2>10. WHAT ARE YOUR PRIVACY RIGHTS?</h2>
             <p><strong>In Short:</strong> You may review, change, or terminate your account at any time, depending on your country, province, or state of residence.</p>
@@ -195,7 +195,7 @@ export default function PrivacyPolicyPage() {
 
             <p><strong>Cookies and similar technologies:</strong> Most Web browsers are set to accept cookies by default. If you prefer, you can usually choose to set your browser to remove cookies and to reject cookies. If you choose to remove cookies or reject cookies, this could affect certain features or services of our Services. For further information, please see our Cookie Notice.</p>
 
-            <p>If you have questions or comments about your privacy rights, you may email us at <a href="mailto:info@gensy.io">info@gensy.io</a>.</p>
+            <p>If you have questions or comments about your privacy rights, you may email us at <a href="mailto:info@gensy.online">info@gensy.online</a>.</p>
 
             <h2>11. CONTROLS FOR DO-NOT-TRACK FEATURES</h2>
             <p>Most web browsers and some mobile operating systems and mobile applications include a Do-Not-Track ('DNT') feature or setting you can activate to signal your privacy preference not to have data about your online browsing activities monitored and collected. At this stage, no uniform technology standard for recognising and implementing DNT signals has been finalised. As such, we do not currently respond to DNT browser signals or any other mechanism that automatically communicates your choice not to be tracked online. If a standard for online tracking is adopted that we must follow in the future, we will inform you about that practice in a revised version of this Privacy Notice.</p>
@@ -206,7 +206,7 @@ export default function PrivacyPolicyPage() {
             <p>We may update this Privacy Notice from time to time. The updated version will be indicated by an updated 'Revised' date at the top of this Privacy Notice. If we make material changes to this Privacy Notice, we may notify you either by prominently posting a notice of such changes or by directly sending you a notification. We encourage you to review this Privacy Notice frequently to be informed of how we are protecting your information.</p>
 
           <h2 id="section-13"><span className="legal-toc-number">13</span>HOW CAN YOU CONTACT US ABOUT THIS NOTICE?</h2>
-          <p>If you have questions or comments about this notice, you may email us at <a href="mailto:info@gensy.io">info@gensy.io</a> or contact us by post at:</p>
+          <p>If you have questions or comments about this notice, you may email us at <a href="mailto:info@gensy.online">info@gensy.online</a> or contact us by post at:</p>
 
           <div className="legal-contact-card">
             <h6><i className="ri-contacts-line legal-icon"></i>Contact Information</h6>

@@ -25,9 +25,12 @@ export const metadata: Metadata = {
     'digital art',
     'content creation',
   ],
-  authors: [{ name: 'Gensy Team' }],
-  creator: 'Gensy',
-  publisher: 'Gensy',
+  authors: [
+    { name: 'Gopi U. (Founder)', url: 'https://gensy.online' },
+    { name: 'Gensy Team' },
+  ],
+  creator: 'Gensy (Founded by Gopi U.)',
+  publisher: 'Gensy Technologies',
   formatDetection: {
     email: false,
     address: false,
@@ -68,9 +71,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
-  verification: {
-    google: 'your-google-verification-code',
-  },
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? {
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    },
+  } : {}),
 }
 
 export default function RootLayout({

@@ -28,6 +28,11 @@ export function getBaseUrl(): string {
     return window.location.origin
   }
 
-  // Final fallback for server/build environments
-  return 'http://localhost:3000'
+  // In production or build environments, use the production domain so sharing previews never point to localhost
+  if (process.env.NODE_ENV === 'production' || process.env.VERCEL || process.env.RAILWAY_ENVIRONMENT) {
+    return 'https://gensy.online'
+  }
+
+  // Canonical domain for social sharing previews
+  return 'https://gensy.online'
 }

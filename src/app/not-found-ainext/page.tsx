@@ -42,74 +42,74 @@ export default function NotFoundPage() {
       </div>
       {/* End Not Found Area */}
 
-      {/* Start Insta Gallery Area */}
+      {/* Start Showcase Gallery Area */}
       <div className="insta-gallery">
         <div className="conatiner-fluid">
           <div className="ins-gallery owl-carousel owl-theme">
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-1.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-10.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-2.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-3.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-4.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-5.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-6.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-7.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-8.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
             <div className="items">
-              <a href="https://www.instagram.com/" target="_blank">
-                <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="image" />
-                <i className="ri-instagram-line"></i>
+              <a href="/generate/image">
+                <img src="/ainext-template/assets/img/gallery/insta-9.jpg" alt="AI Generated Asset" />
+                <i className="ri-sparkling-fill"></i>
               </a>
             </div>
           </div>
         </div>
       </div>
-      {/* End Insta Gallery Area */}
+      {/* End Showcase Gallery Area */}
     </BootstrapLayout>
   )
 }

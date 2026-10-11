@@ -2,22 +2,22 @@ import { Metadata } from 'next'
 import BootstrapLayout from '../landing-page-2/BootstrapLayout'
 
 export const metadata: Metadata = {
-  title: 'About Us - AiNext',
-  description: 'Learn more about AiNext and our mission to provide cutting-edge AI solutions.',
+  title: 'About Us - Gensy',
+  description: 'Learn more about Gensy AI Creative Suite, founded by Gopi U., and our mission to empower creators with next-generation generative AI.',
 }
 
 export default function AboutPage() {
   return (
-    <BootstrapLayout title="About Us - AiNext" currentPage="about">
+    <BootstrapLayout title="About Us - Gensy" currentPage="about">
       {/* Start Section Banner */}
       <div className="section-banner">
         <div className="container">
           <div className="section-banner-title">
-            <h1>About us</h1>
+            <h1>About Us</h1>
             <nav style={{"--bs-breadcrumb-divider": "'/'"} as React.CSSProperties} aria-label="breadcrumb">
               <ol className="breadcrumb">
-                <li className="breadcrumb-item"><a href="/landing-page-2">Home</a></li>
-                <li className="breadcrumb-item active" aria-current="page">About us</li>
+                <li className="breadcrumb-item"><a href="/">Home</a></li>
+                <li className="breadcrumb-item active" aria-current="page">About Us</li>
               </ol>
             </nav>
           </div>
@@ -31,42 +31,45 @@ export default function AboutPage() {
           <div className="row align-items-center">
             <div className="col-lg-6">
               <div className="image">
-                <img src="/ainext-template/assets/img/about-2.jpg" alt="image" />
+                <img src="/ainext-template/assets/img/about-2.jpg" alt="About Gensy" />
               </div>
             </div>
             <div className="col-lg-6">
               <div className="content">
-                <div className="sub-t">About Us</div>
-                <h2>Create your own AI business easily.</h2>
-                <p>Malesuada nunc vel risus commodo viverra maecenas accumsan lacus vel. Nam aliquam sem et tortor consequat. Porttitor leo a diam sollicitudin tempor id eu. Nisl pretium fusce id velit ut. At lectus urna duis convallis convallis tellus id interdum.</p>
+                <div className="sub-t">About Gensy</div>
+                <h2>Next-Generation AI Creative Studio</h2>
+                <p>Founded by Gopi U., Gensy is an all-in-one AI creative suite engineered for digital creators, animators, and media professionals. We combine industry-leading foundational models like Google Veo, FLUX, ByteDance, and MiniMax into a unified, lightning-fast generation workflow.</p>
+                <p>From high-definition 4K image synthesis and 1080p video generation to seamless in-context edits, Gensy removes creative boundaries and accelerates production from hours to seconds.</p>
                 <div className="row">
                   <div className="col-lg-4 col-md-4 col-4">
                     <div className="sub-counter">
                       <h3>
-                        <span className="odometer" data-count="5000">00</span>
+                        <span className="odometer" data-count="50">00</span>
+                        <span className="target">K+</span>
                       </h3>
-                      <p>Clients</p>
+                      <p>Generations</p>
                     </div>
                   </div>
                   <div className="col-lg-4 col-md-4 col-4">
                     <div className="sub-counter">
                       <h3>
-                        <span className="odometer" data-count="10">00</span>
+                        <span className="odometer" data-count="99">00</span>
+                        <span className="target">%</span>
+                      </h3>
+                      <p>Uptime</p>
+                    </div>
+                  </div>
+                  <div className="col-lg-4 col-md-4 col-4">
+                    <div className="sub-counter">
+                      <h3>
+                        <span className="odometer" data-count="4">00</span>
                         <span className="target">K</span>
                       </h3>
-                      <p>Projects</p>
-                    </div>
-                  </div>
-                  <div className="col-lg-4 col-md-4 col-4">
-                    <div className="sub-counter">
-                      <h3>
-                        <span className="odometer" data-count="250">00</span>
-                      </h3>
-                      <p>Years</p>
+                      <p>Ultra HD</p>
                     </div>
                   </div>
                 </div>
-                <a className="main-btn" href="/about"><span></span><i className="ri-quill-pen-line"></i> About Us</a>
+                <a className="main-btn mt-4" href="/generate/image"><span></span><i className="ri-sparkling-fill"></i> Try Gensy AI</a>
               </div>
             </div>
           </div>
