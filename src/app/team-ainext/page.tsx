@@ -33,8 +33,17 @@ export default function TeamPage() {
               <div className="image-item">
                 <img src="/ainext-template/assets/img/about-image-1.jpg" alt="image" />
                 <div className="hover-content">
-                  <h4>Gopi U.</h4>
+                  <h4>Abirich Vaithiyalingam</h4>
                   <p>Founder & CEO</p>
+                </div>
+              </div>
+            </div>
+            <div className="courser-item">
+              <div className="image-item">
+                <img src="/ainext-template/assets/img/about-image-6.jpg" alt="image" />
+                <div className="hover-content">
+                  <h4>Gobinath S</h4>
+                  <p>Developer</p>
                 </div>
               </div>
             </div>

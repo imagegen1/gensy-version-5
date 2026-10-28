@@ -206,7 +206,7 @@ export default function TermsConditionsPage() {
 
           <div className="legal-section mt-4">
             <div className="legal-info-box">
-              <p className="text-center"><i className="ri-building-line legal-icon"></i><strong>This website is owned by Gensy Technologies (Founded by Gopi U.).</strong></p>
+              <p className="text-center"><i className="ri-building-line legal-icon"></i><strong>This website is owned by Gensy Technologies (Founded by Abirich Vaithiyalingam, Developed by Abirich Vaithiyalingam & Gobinath S).</strong></p>
             </div>
           </div>
         </div>

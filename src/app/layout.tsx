@@ -26,10 +26,11 @@ export const metadata: Metadata = {
     'content creation',
   ],
   authors: [
-    { name: 'Gopi U. (Founder)', url: 'https://gensy.online' },
+    { name: 'Abirich Vaithiyalingam (Founder & Developer)', url: 'https://gensy.online' },
+    { name: 'Gobinath S (Developer)', url: 'https://gensy.online' },
     { name: 'Gensy Team' },
   ],
-  creator: 'Gensy (Founded by Gopi U.)',
+  creator: 'Gensy (Founded by Abirich Vaithiyalingam, Developed by Abirich Vaithiyalingam & Gobinath S)',
   publisher: 'Gensy Technologies',
   formatDetection: {
     email: false,
