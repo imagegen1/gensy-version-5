@@ -3,7 +3,7 @@ import BootstrapLayout from '../landing-page-2/BootstrapLayout'
 
 export const metadata: Metadata = {
   title: 'About Us - Gensy',
-  description: 'Learn more about Gensy AI Creative Suite, founded by Gopi U., and our mission to empower creators with next-generation generative AI.',
+  description: 'Learn more about Gensy AI Creative Suite, founded by Abirich Vaithiyalingam, developed by Abirich Vaithiyalingam and Gobinath S, and our mission to empower creators with next-generation generative AI.',
 }
 
 export default function AboutPage() {
@@ -38,7 +38,7 @@ export default function AboutPage() {
               <div className="content">
                 <div className="sub-t">About Gensy</div>
                 <h2>Next-Generation AI Creative Studio</h2>
-                <p>Founded by Gopi U., Gensy is an all-in-one AI creative suite engineered for digital creators, animators, and media professionals. We combine industry-leading foundational models like Google Veo, FLUX, ByteDance, and MiniMax into a unified, lightning-fast generation workflow.</p>
+                <p>Founded by Abirich Vaithiyalingam and developed by Abirich Vaithiyalingam and Gobinath S, Gensy is an all-in-one AI creative suite engineered for digital creators, animators, and media professionals. We combine industry-leading foundational models like Google Veo, FLUX, ByteDance, and MiniMax into a unified, lightning-fast generation workflow.</p>
                 <p>From high-definition 4K image synthesis and 1080p video generation to seamless in-context edits, Gensy removes creative boundaries and accelerates production from hours to seconds.</p>
                 <div className="row">
                   <div className="col-lg-4 col-md-4 col-4">

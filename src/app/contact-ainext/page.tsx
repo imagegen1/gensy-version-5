@@ -87,7 +87,8 @@ export default function ContactPage() {
                 <h3 className="text-white mb-3" style={{fontSize: '22px'}}>Company Information</h3>
                 <ul style={{listStyle: 'none', padding: 0, margin: 0, lineHeight: '2.2', color: '#d4d4d8'}}>
                   <li><strong style={{color: '#fff'}}>Company Name:</strong> Gensy Technologies</li>
-                  <li><strong style={{color: '#fff'}}>Founder & CEO:</strong> Gopi U.</li>
+                  <li><strong style={{color: '#fff'}}>Founder & CEO:</strong> Abirich Vaithiyalingam</li>
+                  <li><strong style={{color: '#fff'}}>Developers:</strong> Abirich Vaithiyalingam, Gobinath S</li>
                   <li><strong style={{color: '#fff'}}>Website:</strong> <a href="https://gensy.online" style={{color: '#a855f7'}}>Gensy.online</a></li>
                   <li><strong style={{color: '#fff'}}>Support Email:</strong> <a href="mailto:info@gensy.online" style={{color: '#a855f7'}}>info@gensy.online</a></li>
                   <li><strong style={{color: '#fff'}}>Phone:</strong> (+91) 9943764364</li>

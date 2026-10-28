@@ -842,7 +842,8 @@ function PricingPageContent() {
                   <h3>Company & Contact</h3>
                   <ul className="links-list" style={{lineHeight: '1.9'}}>
                     <li><span style={{color: '#aaa'}}>Company:</span> <strong>Gensy Technologies</strong></li>
-                    <li><span style={{color: '#aaa'}}>Founder:</span> <strong>Gopi U.</strong></li>
+                    <li><span style={{color: '#aaa'}}>Founder:</span> <strong>Abirich Vaithiyalingam</strong></li>
+                    <li><span style={{color: '#aaa'}}>Developers:</span> <strong>Abirich Vaithiyalingam, Gobinath S</strong></li>
                     <li><span style={{color: '#aaa'}}>Website:</span> <a href="https://gensy.online" style={{color: '#9333ea'}}>Gensy.online</a></li>
                     <li><span style={{color: '#aaa'}}>Email:</span> <a href="mailto:info@gensy.online" style={{color: '#9333ea'}}>info@gensy.online</a></li>
                     <li><span style={{color: '#aaa'}}>Location:</span> 7/10 Abirami Gardens, Salem, Tamil Nadu, India</li>
