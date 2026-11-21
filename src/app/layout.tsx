@@ -92,7 +92,7 @@ export default function RootLayout({
                      process.env.VERCEL === '1'
 
   // Use a properly formatted test key for build time
-  const buildTimeKey = 'pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA'
+  const buildTimeKey = 'pk_test_bGVuaWVudC1tb3VzZS0zMi5jbGVyay5hY2NvdW50cy5kZXYk'
   const effectiveKey = clerkPublishableKey || buildTimeKey
 
   // Content wrapper

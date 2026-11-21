@@ -56,6 +56,15 @@ const nextConfig = {
       },
     ]
   },
+  async redirects() {
+    return [
+      {
+        source: '/payment',
+        destination: '/pricing',
+        permanent: false,
+      },
+    ]
+  },
   env: {
     CUSTOM_KEY: 'gensy-ai-creative-suite',
   },
